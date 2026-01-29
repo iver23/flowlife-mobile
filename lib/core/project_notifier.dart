@@ -18,6 +18,14 @@ class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
     });
   }
 
+  Future<void> addProject(ProjectModel project) async {
+    await _service.addProject(project);
+  }
+
+  Future<void> updateProject(ProjectModel project) async {
+    await _service.updateProject(project);
+  }
+
   Future<void> deleteProject(String projectId) async {
     // Note: In a real app, you might want to delete associated tasks too
     // or keep them as unassigned. Firestore doesn't delete sub-collections automatically.

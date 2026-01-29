@@ -3,14 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'presentation/widgets/ui_components.dart';
 import 'presentation/screens/dashboard_screen.dart';
-import 'presentation/screens/inbox_screen.dart';
+import 'presentation/screens/projects_screen.dart';
+import 'presentation/screens/tasks_screen.dart';
 import 'presentation/screens/ideas_screen.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/widgets/search_overlay.dart';
+import 'presentation/widgets/multi_action_fab.dart';
+import 'presentation/widgets/project_edit_sheet.dart';
+import 'presentation/widgets/task_edit_sheet.dart';
 import 'core/confetti_notifier.dart';
 import 'core/auth_notifier.dart';
+import 'core/project_notifier.dart';
+import 'core/task_notifier.dart';
+import 'core/idea_notifier.dart';
 import 'core/notification_service.dart';
+import 'data/models/models.dart';
 import 'package:confetti/confetti.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
@@ -69,7 +77,8 @@ class _MainScreenState extends State<MainScreen> {
 
   static const List<Widget> _screens = [
     DashboardScreen(),
-    InboxScreen(),
+    ProjectsScreen(),
+    TasksScreen(),
     IdeasScreen(),
   ];
 
@@ -157,7 +166,8 @@ class _MainScreenState extends State<MainScreen> {
                             unselectedIconTheme: const IconThemeData(color: FlowColors.slate500),
                             destinations: const [
                               NavigationRailDestination(icon: Icon(Icons.dashboard_rounded), label: Text('Dash')),
-                              NavigationRailDestination(icon: Icon(Icons.inbox_rounded), label: Text('Inbox')),
+                              NavigationRailDestination(icon: Icon(LucideIcons.folder), label: Text('Projects')),
+                              NavigationRailDestination(icon: Icon(Icons.check_box_rounded), label: Text('Tasks')),
                               NavigationRailDestination(icon: Icon(Icons.lightbulb_rounded), label: Text('Ideas')),
                             ],
                           ),
@@ -169,16 +179,19 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
+                    floatingActionButton: _buildFAB(context, ref),
                     bottomNavigationBar: isWide ? null : BottomNavigationBar(
                       currentIndex: _selectedIndex,
                       onTap: (index) => setState(() => _selectedIndex = index),
                       selectedItemColor: FlowColors.primary,
                       unselectedItemColor: FlowColors.slate500,
+                      type: BottomNavigationBarType.fixed,
                       showSelectedLabels: true,
                       showUnselectedLabels: false,
                       items: const [
                         BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dash'),
-                        BottomNavigationBarItem(icon: Icon(Icons.inbox_rounded), label: 'Inbox'),
+                        BottomNavigationBarItem(icon: Icon(LucideIcons.folder), label: 'Projects'),
+                        BottomNavigationBarItem(icon: Icon(Icons.check_box_rounded), label: 'Tasks'),
                         BottomNavigationBarItem(icon: Icon(Icons.lightbulb_rounded), label: 'Ideas'),
                       ],
                     ),
@@ -203,6 +216,94 @@ class _MainScreenState extends State<MainScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildFAB(BuildContext context, WidgetRef ref) {
+    switch (_selectedIndex) {
+      case 0: // Dashboard
+        return MultiActionFAB(
+          onAddProject: () => _showAddProjectSheet(context, ref),
+          onAddTask: () => _showAddTaskSheet(context, ref),
+          onAddIdea: () => _showAddIdeaSheet(context, ref),
+        );
+      case 1: // Projects
+        return FloatingActionButton(
+          onPressed: () => _showAddProjectSheet(context, ref),
+          backgroundColor: FlowColors.primary,
+          child: const Icon(LucideIcons.plus, color: Colors.white),
+        );
+      case 2: // Tasks
+        return FloatingActionButton(
+          onPressed: () => _showAddTaskSheet(context, ref),
+          backgroundColor: FlowColors.primary,
+          child: const Icon(LucideIcons.plus, color: Colors.white),
+        );
+      case 3: // Ideas
+        return FloatingActionButton(
+          onPressed: () => _showAddIdeaSheet(context, ref),
+          backgroundColor: FlowColors.primary,
+          child: const Icon(LucideIcons.plus, color: Colors.white),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  void _showAddProjectSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ProjectEditSheet(
+        onSave: (project) => ref.read(projectNotifierProvider.notifier).addProject(project),
+      ),
+    );
+  }
+
+  void _showAddTaskSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TaskEditSheet(
+        task: TaskModel(
+          id: '',
+          title: '',
+          completed: false,
+          subtasks: [],
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+        ),
+        onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(task.title),
+      ),
+    );
+  }
+
+  void _showAddIdeaSheet(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('New Idea'),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'What\'s on your mind?'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                ref.read(ideaNotifierProvider.notifier).addIdea(controller.text);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
     );
   }
 }

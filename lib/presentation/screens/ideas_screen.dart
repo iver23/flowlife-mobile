@@ -21,7 +21,6 @@ class IdeasScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context),
-            _buildCaptureCard(context, ideaNotifier, textController),
             Expanded(
               child: ideasAsync.when(
                 data: (ideas) {

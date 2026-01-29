@@ -254,7 +254,22 @@ class ProjectDetailScreen extends ConsumerWidget {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
-        // TODO: Open Add Task Sheet for this project
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => TaskEditSheet(
+            task: TaskModel(
+              id: '',
+              title: '',
+              completed: false,
+              subtasks: [],
+              createdAt: DateTime.now().millisecondsSinceEpoch,
+              projectId: project.id,
+            ),
+            onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(task.title, projectId: project.id),
+          ),
+        );
       },
       child: Container(
         height: 100,

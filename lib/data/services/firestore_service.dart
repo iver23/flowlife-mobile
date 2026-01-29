@@ -21,6 +21,23 @@ class FirestoreService {
             .toList());
   }
 
+  Future<void> addProject(ProjectModel project) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('projects')
+        .add(project.toMap());
+  }
+
+  Future<void> updateProject(ProjectModel project) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('projects')
+        .doc(project.id)
+        .update(project.toMap());
+  }
+
   Future<void> deleteProject(String projectId) {
     return _db
         .collection('users')
