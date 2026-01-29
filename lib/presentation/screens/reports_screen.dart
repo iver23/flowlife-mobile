@@ -104,7 +104,7 @@ class ReportsScreen extends ConsumerWidget {
               children: [
                 const Text('Focus Score', style: TextStyle(fontSize: 12, color: FlowColors.slate500)),
                 const SizedBox(height: 8),
-                const Text('84%', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.emerald)),
+                const Text('84%', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
               ],
             ),
           ),

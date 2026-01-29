@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/auth_notifier.dart';
@@ -98,6 +99,8 @@ class SettingsScreen extends ConsumerWidget {
               (t) => ref.read(themeNotifierProvider.notifier).setScheduled(true, endH: t.hour, endM: t.minute),
             ),
           ],
+          _buildSettingsTile(
+            icon: LucideIcons.bell,
             title: 'Notifications',
             trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
           ),

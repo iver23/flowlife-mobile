@@ -90,7 +90,11 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
         dueDate: nextDueDate,
         recurrence: task.recurrence,
         completed: false,
-        subtasks: task.subtasks.map((st) => Subtask(id: DateTime.now().millisecondsSinceEpoch.toString(), title: st.title, completed: false)).toList(),
+        subtasks: task.subtasks.map((st) => Subtask(
+          id: DateTime.now().millisecondsSinceEpoch.toString() + st.id, 
+          title: st.title, 
+          completed: false,
+        )).toList(),
         createdAt: DateTime.now().millisecondsSinceEpoch,
         energyLevel: task.energyLevel,
         order: task.order,

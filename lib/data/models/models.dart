@@ -55,7 +55,7 @@ class TaskModel {
   final bool completed;
   final int? completedAt;
   final EnergyLevel? energyLevel;
-  final List<String> subtasks;
+  final List<Subtask> subtasks;
   final List<String> customTags;
   final bool isPinned;
   final int createdAt;
@@ -116,9 +116,9 @@ class TaskModel {
               orElse: () => EnergyLevel.MEDIUM,
             )
           : null,
-      subtasks: List<Subtask>.from(
-        (map['subtasks'] ?? []).map((x) => Subtask.fromMap(x)),
-      ),
+      subtasks: (map['subtasks'] as List? ?? [])
+          .map((x) => Subtask.fromMap(x as Map<String, dynamic>))
+          .toList(),
       customTags: List<String>.from(map['customTags'] ?? []),
       isPinned: map['isPinned'] ?? false,
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,

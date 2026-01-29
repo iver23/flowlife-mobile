@@ -22,6 +22,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   late String? _selectedProjectId;
   late List<String> _selectedCustomTags;
   late bool _isPinned;
+  late List<Subtask> _subtasks;
 
   @override
   void initState() {

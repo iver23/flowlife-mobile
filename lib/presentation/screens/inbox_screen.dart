@@ -40,6 +40,7 @@ class InboxScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: TaskCard(
                           task: task,
+                          projectTitle: 'Inbox',
                           projectIcon: 'inbox',
                           projectColor: FlowColors.primary,
                           onToggle: () => taskNotifier.toggleTask(task),
