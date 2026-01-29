@@ -22,7 +22,6 @@ class IdeaNotifier extends StateNotifier<AsyncValue<List<IdeaModel>>> {
     final newIdea = IdeaModel(
       id: '',
       content: content,
-      tags: [],
       projectId: projectId,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );

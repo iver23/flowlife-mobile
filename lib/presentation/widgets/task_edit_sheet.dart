@@ -120,7 +120,6 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   id: widget.task.id,
                   title: _titleController.text,
                   description: _descController.text,
-                  projectId: widget.task.projectId,
                   dueDate: widget.task.dueDate,
                   recurrence: widget.task.recurrence,
                   completed: widget.task.completed,

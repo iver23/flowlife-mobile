@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/providers.dart';
 import '../../core/idea_notifier.dart';
+import '../../core/project_notifier.dart';
 import '../../core/date_formatter.dart';
 import '../widgets/ui_components.dart';
 import '../../data/models/models.dart';
