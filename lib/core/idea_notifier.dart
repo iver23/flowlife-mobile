@@ -18,11 +18,12 @@ class IdeaNotifier extends StateNotifier<AsyncValue<List<IdeaModel>>> {
     });
   }
 
-  Future<void> addIdea(String content) async {
+  Future<void> addIdea(String content, {String? projectId}) async {
     final newIdea = IdeaModel(
       id: '',
       content: content,
       tags: [],
+      projectId: projectId,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     await _service.addIdea(newIdea);
@@ -37,6 +38,7 @@ class IdeaNotifier extends StateNotifier<AsyncValue<List<IdeaModel>>> {
     final newTask = TaskModel(
       id: '',
       title: idea.content,
+      projectId: idea.projectId, // Carry over the project
       completed: false,
       subtasks: [],
       createdAt: DateTime.now().millisecondsSinceEpoch,

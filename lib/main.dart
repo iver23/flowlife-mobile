@@ -12,6 +12,7 @@ import 'presentation/widgets/search_overlay.dart';
 import 'presentation/widgets/multi_action_fab.dart';
 import 'presentation/widgets/project_edit_sheet.dart';
 import 'presentation/widgets/task_edit_sheet.dart';
+import 'presentation/widgets/project_picker.dart';
 import 'core/confetti_notifier.dart';
 import 'core/auth_notifier.dart';
 import 'core/project_notifier.dart';
@@ -289,28 +290,45 @@ class _MainScreenState extends State<MainScreen> {
 
   void _showAddIdeaSheet(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
+    String? selectedProjectId;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New Idea'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'What\'s on your mind?'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
-          TextButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                ref.read(ideaNotifierProvider.notifier).addIdea(controller.text);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('SAVE'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('New Idea'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                autofocus: true,
+                decoration: const InputDecoration(hintText: 'What\'s on your mind?'),
+              ),
+              const SizedBox(height: 24),
+              ProjectPicker(
+                selectedProjectId: selectedProjectId,
+                onSelected: (id) => setDialogState(() => selectedProjectId = id),
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+            TextButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  ref.read(ideaNotifierProvider.notifier).addIdea(
+                    controller.text,
+                    projectId: selectedProjectId,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('SAVE'),
+            ),
+          ],
+        ),
       ),
     );
   }

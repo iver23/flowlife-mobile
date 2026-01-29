@@ -13,8 +13,8 @@ class IdeasScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ideasAsync = ref.watch(ideaNotifierProvider);
+    final projectsAsync = ref.watch(projectNotifierProvider);
     final ideaNotifier = ref.read(ideaNotifierProvider.notifier);
-    final textController = TextEditingController();
 
     return Scaffold(
       body: SafeArea(
@@ -34,7 +34,11 @@ class IdeasScreen extends ConsumerWidget {
                       final idea = ideas[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildIdeaCard(context, idea, ideaNotifier, ref),
+                        child: projectsAsync.when(
+                          data: (projects) => _buildIdeaCard(context, idea, ideaNotifier, projects, ref),
+                          loading: () => _buildIdeaCard(context, idea, ideaNotifier, [], ref),
+                          error: (_, __) => _buildIdeaCard(context, idea, ideaNotifier, [], ref),
+                        ),
                       );
                     },
                   );
@@ -70,83 +74,33 @@ class IdeasScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCaptureCard(BuildContext context, IdeaNotifier notifier, TextEditingController controller) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: FlowCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'QUICK CAPTURE',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: FlowColors.slate500,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'What\'s on your mind?',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: FlowColors.slate500.withOpacity(0.5)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(LucideIcons.hash, size: 14, color: FlowColors.slate500),
-                    const SizedBox(width: 4),
-                    const Text('Add Tag', style: TextStyle(fontSize: 12, color: FlowColors.slate500)),
-                  ],
-                ),
-                FlowButton(
-                  label: 'SAVE IDEA',
-                  onPressed: () {
-                    if (controller.text.isNotEmpty) {
-                      notifier.addIdea(controller.text);
-                      controller.clear();
-                    }
-                  },
-                  isPrimary: true,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildIdeaCard(BuildContext context, IdeaModel idea, IdeaNotifier notifier, WidgetRef ref) {
+  Widget _buildIdeaCard(BuildContext context, IdeaModel idea, IdeaNotifier notifier, List<ProjectModel> projects, WidgetRef ref) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    ProjectModel? project;
+    if (idea.projectId != null) {
+      project = projects.firstWhere((p) => p.id == idea.projectId, orElse: () => _defaultProject());
+    }
+
     return FlowCard(
       padding: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            idea.content,
-            style: const TextStyle(fontSize: 16, height: 1.5),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  idea.content,
+                  style: const TextStyle(fontSize: 16, height: 1.5),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildProjectTag(project),
+            ],
           ),
-          if (idea.tags.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: idea.tags.map((tag) => FlowBadge(
-                label: tag,
-                color: FlowColors.primaryDark,
-              )).toList(),
-            ),
-          ],
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,5 +148,34 @@ class IdeasScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildProjectTag(ProjectModel? project) {
+    return FlowBadge(
+      label: project?.title ?? '#OTHER',
+      color: project != null ? _parseColor(project.color) : FlowColors.slate500,
+    );
+  }
+
+  ProjectModel _defaultProject() {
+    return ProjectModel(
+      id: '',
+      title: 'Other',
+      color: 'slate',
+      icon: 'hash',
+      weight: Importance.low,
+    );
+  }
+
+  Color _parseColor(String colorStr) {
+    switch (colorStr.toLowerCase()) {
+      case 'emerald': return Colors.green;
+      case 'blue': return Colors.blue;
+      case 'violet': return Colors.purple;
+      case 'rose': return Colors.pink;
+      case 'amber': return Colors.amber;
+      case 'cyan': return Colors.cyan;
+      default: return FlowColors.primary;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../data/models/models.dart';
 import 'ui_components.dart';
+import 'project_picker.dart';
 
 class TaskEditSheet extends StatefulWidget {
   final TaskModel task;
@@ -18,6 +19,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   late TextEditingController _descController;
   late EnergyLevel? _energyLevel;
   late List<Subtask> _subtasks;
+  late String? _selectedProjectId;
 
   @override
   void initState() {
@@ -26,6 +28,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     _descController = TextEditingController(text: widget.task.description);
     _energyLevel = widget.task.energyLevel;
     _subtasks = List.from(widget.task.subtasks);
+    _selectedProjectId = widget.task.projectId;
   }
 
   @override
@@ -97,6 +100,11 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
               ],
             ),
             const SizedBox(height: 32),
+            ProjectPicker(
+              selectedProjectId: _selectedProjectId,
+              onSelected: (id) => setState(() => _selectedProjectId = id),
+            ),
+            const SizedBox(height: 32),
             const Text(
               'SUBTASKS',
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500),
@@ -118,6 +126,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   completed: widget.task.completed,
                   completedAt: widget.task.completedAt,
                   energyLevel: _energyLevel,
+                  projectId: _selectedProjectId,
                   subtasks: _subtasks,
                   createdAt: widget.task.createdAt,
                   order: widget.task.order,

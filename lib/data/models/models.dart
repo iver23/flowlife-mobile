@@ -162,13 +162,14 @@ class ProjectModel {
 class IdeaModel {
   final String id;
   final String content;
-  final List<String> tags;
+  final String? projectId;
   final int createdAt;
 
   IdeaModel({
     required this.id,
     required this.content,
     required this.tags,
+    this.projectId,
     required this.createdAt,
   });
 
@@ -177,6 +178,7 @@ class IdeaModel {
       'id': id,
       'content': content,
       'tags': tags,
+      'projectId': projectId,
       'createdAt': createdAt,
     };
   }
@@ -186,6 +188,7 @@ class IdeaModel {
       id: docId,
       content: map['content'] ?? '',
       tags: List<String>.from(map['tags'] ?? []),
+      projectId: map['projectId'],
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
