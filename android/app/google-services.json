@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "530192722374",
+    "project_id": "flow-life-e88f0",
+    "storage_bucket": "flow-life-e88f0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:530192722374:android:e7a6ff5e26076d016a2ac7",
+        "android_client_info": {
+          "package_name": "app.flowlife.flowlifemobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "530192722374-7b4lthlvc6bmbqlmq3nqmsf8t4i0olj8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq25VY63ba_Q_0rkILM4gBphuwdxPJFT8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "530192722374-7b4lthlvc6bmbqlmq3nqmsf8t4i0olj8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "530192722374-6kvutai9qoa4jee6ofrir5nf5h5k9plt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.flowlife.flowlifemobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

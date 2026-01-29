@@ -12,14 +12,13 @@ import 'core/confetti_notifier.dart';
 import 'core/auth_notifier.dart';
 import 'core/notification_service.dart';
 import 'package:confetti/confetti.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await NotificationService.init();
-  // Note: Firebase.initializeApp() is usually done here, 
-  // but assuming it's already handled in the platform side
-  // or via a separate config for this migration task.
   runApp(
     const ProviderScope(
       child: MyApp(),
