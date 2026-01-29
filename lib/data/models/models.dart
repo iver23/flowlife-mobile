@@ -55,7 +55,9 @@ class TaskModel {
   final bool completed;
   final int? completedAt;
   final EnergyLevel? energyLevel;
-  final List<Subtask> subtasks;
+  final List<String> subtasks;
+  final List<String> customTags;
+  final bool isPinned;
   final int createdAt;
   final int? order;
 
@@ -70,6 +72,8 @@ class TaskModel {
     this.completedAt,
     this.energyLevel,
     required this.subtasks,
+    this.customTags = const [],
+    this.isPinned = false,
     required this.createdAt,
     this.order,
   });
@@ -86,6 +90,8 @@ class TaskModel {
       'completedAt': completedAt,
       'energyLevel': energyLevel?.name.toUpperCase(),
       'subtasks': subtasks.map((x) => x.toMap()).toList(),
+      'customTags': customTags,
+      'isPinned': isPinned,
       'createdAt': createdAt,
       'order': order,
     };
@@ -113,6 +119,8 @@ class TaskModel {
       subtasks: List<Subtask>.from(
         (map['subtasks'] ?? []).map((x) => Subtask.fromMap(x)),
       ),
+      customTags: List<String>.from(map['customTags'] ?? []),
+      isPinned: map['isPinned'] ?? false,
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
       order: map['order'],
     );
@@ -162,12 +170,14 @@ class ProjectModel {
 class IdeaModel {
   final String id;
   final String content;
+  final List<String> customTags;
   final String? projectId;
   final int createdAt;
 
   IdeaModel({
     required this.id,
     required this.content,
+    this.customTags = const [],
     this.projectId,
     required this.createdAt,
   });
@@ -176,6 +186,7 @@ class IdeaModel {
     return {
       'id': id,
       'content': content,
+      'customTags': customTags,
       'projectId': projectId,
       'createdAt': createdAt,
     };
@@ -185,6 +196,7 @@ class IdeaModel {
     return IdeaModel(
       id: docId,
       content: map['content'] ?? '',
+      customTags: List<String>.from(map['customTags'] ?? []),
       projectId: map['projectId'],
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
     );

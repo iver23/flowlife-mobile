@@ -24,8 +24,12 @@ class ProjectDetailScreen extends ConsumerWidget {
         child: tasksAsync.when(
           data: (tasks) {
             final projectTasks = tasks.where((t) => t.projectId == project.id).toList();
-            // Sort by order or createdAt
+            
+            // Sort: Pinned first, then by order/createdAt
             projectTasks.sort((a, b) {
+              if (a.isPinned && !b.isPinned) return -1;
+              if (!a.isPinned && b.isPinned) return 1;
+              
               if (a.order != null && b.order != null) {
                 return a.order!.compareTo(b.order!);
               }
@@ -88,12 +92,20 @@ class ProjectDetailScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final task = projectTasks[index];
-                      return Padding(
-                        key: ValueKey(task.id),
+                SliverReorderableList(
+                  itemCount: projectTasks.length,
+                  onReorder: (oldIndex, newIndex) {
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final item = projectTasks.removeAt(oldIndex);
+                    projectTasks.insert(newIndex, item);
+                    taskNotifier.reorderTasks(projectTasks);
+                  },
+                  itemBuilder: (context, index) {
+                    final task = projectTasks[index];
+                    return ReorderableDelayedDragStartListener(
+                      key: ValueKey(task.id),
+                      index: index,
+                      child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
                         child: TaskCard(
                           task: task,
@@ -114,10 +126,9 @@ class ProjectDetailScreen extends ConsumerWidget {
                             );
                           },
                         ),
-                      );
-                    },
-                    childCount: projectTasks.length,
-                  ),
+                      ),
+                    );
+                  },
                 ),
                 SliverToBoxAdapter(
                   child: Padding(

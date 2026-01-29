@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
+import '../models/tag_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -44,6 +45,36 @@ class FirestoreService {
         .doc(userId)
         .collection('projects')
         .doc(projectId)
+        .delete();
+  }
+
+  // --- Tags ---
+  Stream<List<TagModel>> streamTags() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('tags')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => TagModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Future<void> addTag(TagModel tag) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('tags')
+        .add(tag.toMap());
+  }
+
+  Future<void> deleteTag(String tagId) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('tags')
+        .doc(tagId)
         .delete();
   }
 

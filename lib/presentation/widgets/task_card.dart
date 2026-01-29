@@ -80,7 +80,7 @@ class TaskCard extends StatelessWidget {
                       child: Icon(
                         task.completed ? LucideIcons.check : LucideIcons.circle,
                         size: 20,
-                        color: task.completed ? Colors.green : projectColor,
+                        color: task.completed ? Colors.green : (task.isPinned ? Colors.orange : projectColor),
                       ),
                     ),
                   ),
@@ -107,6 +107,10 @@ class TaskCard extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (task.isPinned && !task.completed) ...[
+                          const Icon(LucideIcons.pin, size: 14, color: Colors.orange),
+                          const SizedBox(width: 8),
+                        ],
                         if (!task.completed) ...[
                           const SizedBox(width: 8),
                           FlowBadge(
@@ -126,6 +130,24 @@ class TaskCard extends StatelessWidget {
                           fontSize: 12,
                           color: FlowColors.slate500,
                         ),
+                      ),
+                    ],
+                    if (task.customTags.isNotEmpty && !task.completed) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: task.customTags.map((t) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: FlowColors.slate400.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            t,
+                            style: const TextStyle(fontSize: 9, color: FlowColors.slate500, fontWeight: FontWeight.bold),
+                          ),
+                        )).toList(),
                       ),
                     ],
                     if (task.dueDate != null || task.subtasks.isNotEmpty) ...[

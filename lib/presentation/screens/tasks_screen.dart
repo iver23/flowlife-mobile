@@ -27,15 +27,29 @@ class TasksScreen extends ConsumerWidget {
               child: tasksAsync.when(
                 data: (tasks) {
                   final activeTasks = tasks.where((t) => !t.completed).toList();
+                  
+                  // Sort: Pinned first, then by creation date (newest first)
+                  activeTasks.sort((a, b) {
+                    if (a.isPinned && !b.isPinned) return -1;
+                    if (!a.isPinned && b.isPinned) return 1;
+                    return b.createdAt.compareTo(a.createdAt);
+                  });
+
                   if (activeTasks.isEmpty) {
                     return _buildEmptyState();
                   }
 
                   return projectsAsync.when(
                     data: (projects) {
-                      return ListView.builder(
+                      return ReorderableListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         itemCount: activeTasks.length,
+                        onReorder: (oldIndex, newIndex) {
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final item = activeTasks.removeAt(oldIndex);
+                          activeTasks.insert(newIndex, item);
+                          taskNotifier.reorderTasks(activeTasks);
+                        },
                         itemBuilder: (context, index) {
                           final task = activeTasks[index];
                           final project = task.projectId != null 
@@ -43,6 +57,7 @@ class TasksScreen extends ConsumerWidget {
                               : _defaultProject();
 
                           return Padding(
+                            key: ValueKey(task.id),
                             padding: const EdgeInsets.only(bottom: 12),
                             child: TaskCard(
                               task: task,

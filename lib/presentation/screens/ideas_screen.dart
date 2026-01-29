@@ -103,6 +103,24 @@ class IdeasScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
+          if (idea.customTags.isNotEmpty) ...[
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: idea.customTags.map((t) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: FlowColors.slate400.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  t,
+                  style: const TextStyle(fontSize: 10, color: FlowColors.slate500, fontWeight: FontWeight.bold),
+                ),
+              )).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

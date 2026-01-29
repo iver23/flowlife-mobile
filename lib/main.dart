@@ -9,9 +9,11 @@ import 'presentation/screens/ideas_screen.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/widgets/search_overlay.dart';
+import 'presentation/screens/search_screen.dart';
 import 'presentation/widgets/multi_action_fab.dart';
 import 'presentation/widgets/project_edit_sheet.dart';
 import 'presentation/widgets/task_edit_sheet.dart';
+import 'presentation/widgets/tag_picker.dart';
 import 'presentation/widgets/project_picker.dart';
 import 'core/confetti_notifier.dart';
 import 'core/auth_notifier.dart';
@@ -48,14 +50,14 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider);
-    final themeMode = ref.watch(themeNotifierProvider);
+    final themeState = ref.watch(themeNotifierProvider);
 
     return MaterialApp(
       title: 'FlowLife',
       debugShowCheckedModeBanner: false,
       theme: FlowTheme.light(),
       darkTheme: FlowTheme.dark(),
-      themeMode: themeMode,
+      themeMode: themeState.mode,
       home: user == null ? const LoginScreen() : const MainScreen(),
     );
   }
@@ -129,35 +131,21 @@ class _MainScreenState extends State<MainScreen> {
                       backgroundColor: Colors.transparent,
                       actions: [
                         IconButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              barrierColor: Colors.transparent,
-                              builder: (context) => const SearchOverlay(),
-                            );
-                          },
-                          icon: Icon(LucideIcons.search, size: 20),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen())),
+                          icon: const Icon(LucideIcons.search, size: 20),
                         ),
                         IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                            );
-                          },
-                          icon: Hero(
-                            tag: 'avatar',
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: FlowColors.primary.withOpacity(0.5), width: 1),
-                              ),
-                              child: CircleAvatar(
-                                radius: 12,
-                                backgroundColor: FlowColors.primary,
-                                child: Icon(LucideIcons.user, size: 14, color: Colors.white),
-                              ),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
+                          icon: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: FlowColors.primary.withOpacity(0.5), width: 1),
+                            ),
+                            child: const CircleAvatar(
+                              radius: 12,
+                              backgroundColor: FlowColors.primary,
+                              child: Icon(LucideIcons.user, size: 14, color: Colors.white),
                             ),
                           ),
                         ),
@@ -294,6 +282,7 @@ class _MainScreenState extends State<MainScreen> {
   void _showAddIdeaSheet(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     String? selectedProjectId;
+    List<String> selectedCustomTags = [];
 
     showDialog(
       context: context,
@@ -314,6 +303,11 @@ class _MainScreenState extends State<MainScreen> {
                 selectedProjectId: selectedProjectId,
                 onSelected: (id) => setDialogState(() => selectedProjectId = id),
               ),
+              const SizedBox(height: 24),
+              TagPicker(
+                selectedTagNames: selectedCustomTags,
+                onSelected: (tags) => setDialogState(() => selectedCustomTags = tags),
+              ),
             ],
           ),
           actions: [
@@ -324,6 +318,7 @@ class _MainScreenState extends State<MainScreen> {
                   ref.read(ideaNotifierProvider.notifier).addIdea(
                     controller.text,
                     projectId: selectedProjectId,
+                    customTags: selectedCustomTags,
                   );
                   Navigator.pop(context);
                 }

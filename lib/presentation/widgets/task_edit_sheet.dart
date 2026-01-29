@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../data/models/models.dart';
 import 'ui_components.dart';
 import 'project_picker.dart';
+import 'tag_picker.dart';
 
 class TaskEditSheet extends StatefulWidget {
   final TaskModel task;
@@ -18,8 +19,9 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late EnergyLevel? _energyLevel;
-  late List<Subtask> _subtasks;
   late String? _selectedProjectId;
+  late List<String> _selectedCustomTags;
+  late bool _isPinned;
 
   @override
   void initState() {
@@ -29,6 +31,8 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     _energyLevel = widget.task.energyLevel;
     _subtasks = List.from(widget.task.subtasks);
     _selectedProjectId = widget.task.projectId;
+    _selectedCustomTags = List.from(widget.task.customTags);
+    _isPinned = widget.task.isPinned;
   }
 
   @override
@@ -56,6 +60,14 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                 const Text(
                   'Edit Task',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  onPressed: () => setState(() => _isPinned = !_isPinned),
+                  icon: Icon(
+                    _isPinned ? LucideIcons.pin : LucideIcons.pinOff,
+                    size: 20,
+                    color: _isPinned ? FlowColors.primary : FlowColors.slate400,
+                  ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
@@ -105,6 +117,11 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
               onSelected: (id) => setState(() => _selectedProjectId = id),
             ),
             const SizedBox(height: 32),
+            TagPicker(
+              selectedTagNames: _selectedCustomTags,
+              onSelected: (tags) => setState(() => _selectedCustomTags = tags),
+            ),
+            const SizedBox(height: 32),
             const Text(
               'SUBTASKS',
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500),
@@ -126,6 +143,8 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   completedAt: widget.task.completedAt,
                   energyLevel: _energyLevel,
                   projectId: _selectedProjectId,
+                  customTags: _selectedCustomTags,
+                  isPinned: _isPinned,
                   subtasks: _subtasks,
                   createdAt: widget.task.createdAt,
                   order: widget.task.order,
