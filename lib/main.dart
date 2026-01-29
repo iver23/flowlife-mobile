@@ -22,14 +22,21 @@ import 'data/models/models.dart';
 import 'package:confetti/confetti.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/theme_notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await NotificationService.init();
+  final prefs = await SharedPreferences.getInstance();
+  
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -40,13 +47,14 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider);
+    final themeMode = ref.watch(themeNotifierProvider);
 
     return MaterialApp(
       title: 'FlowLife',
       debugShowCheckedModeBanner: false,
       theme: FlowTheme.light(),
       darkTheme: FlowTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       home: user == null ? const LoginScreen() : const MainScreen(),
     );
   }

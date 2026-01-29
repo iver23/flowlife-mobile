@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/auth_notifier.dart';
+import '../../core/theme_notifier.dart';
 import '../widgets/ui_components.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -57,7 +58,11 @@ class SettingsScreen extends ConsumerWidget {
           _buildSettingsTile(
             icon: LucideIcons.moon,
             title: 'Dark Mode',
-            trailing: Switch(value: true, onChanged: (v) {}),
+            trailing: Switch(
+              value: ref.watch(themeNotifierProvider) == ThemeMode.dark,
+              onChanged: (v) => ref.read(themeNotifierProvider.notifier).toggleTheme(v),
+              activeColor: FlowColors.primary,
+            ),
           ),
           _buildSettingsTile(
             icon: LucideIcons.bell,

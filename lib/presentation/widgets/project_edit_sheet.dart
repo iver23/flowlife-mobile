@@ -42,7 +42,12 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       decoration: BoxDecoration(
         color: isDark ? FlowColors.cardDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),

@@ -7,9 +7,29 @@ class AuthNotifier extends StateNotifier<User?> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  AuthNotifier() : super(FirebaseAuth.instance.currentUser) {
-    _auth.authStateChanges().listen((user) {
+  AuthNotifier() : super(null) {
+    _init();
+  }
+
+  void _init() async {
+    // 1. Listen to Firebase Auth changes
+    _auth.authStateChanges().listen((user) async {
       state = user;
+      
+      // If no firebase user, try silent google sign in to recover session if possible
+      if (user == null) {
+        try {
+          final silentUser = await _googleSignIn.signInSilently();
+          if (silentUser != null) {
+            final auth = await silentUser.authentication;
+            final credential = GoogleAuthProvider.credential(
+              accessToken: auth.accessToken,
+              idToken: auth.idToken,
+            );
+            await _auth.signInWithCredential(credential);
+          }
+        } catch (_) {}
+      }
     });
   }
 
@@ -31,6 +51,7 @@ class AuthNotifier extends StateNotifier<User?> {
   }
 
   Future<void> signOut() async {
+    await _googleSignIn.disconnect(); // This forces account picker next time
     await _googleSignIn.signOut();
     await _auth.signOut();
   }

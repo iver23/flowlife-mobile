@@ -124,7 +124,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 24),
-                        _buildAddTaskButton(context),
+                        _buildAddTaskButton(context, ref),
                         const SizedBox(height: 100),
                       ],
                     ),
@@ -250,7 +250,7 @@ class ProjectDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAddTaskButton(BuildContext context) {
+  Widget _buildAddTaskButton(BuildContext context, WidgetRef ref) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
