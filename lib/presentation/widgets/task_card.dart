@@ -7,6 +7,7 @@ import '../../core/date_formatter.dart';
 
 class TaskCard extends StatelessWidget {
   final TaskModel task;
+  final String projectTitle;
   final String projectIcon;
   final Color projectColor;
   final VoidCallback onToggle;
@@ -16,6 +17,7 @@ class TaskCard extends StatelessWidget {
   const TaskCard({
     super.key,
     required this.task,
+    required this.projectTitle,
     required this.projectIcon,
     required this.projectColor,
     required this.onToggle,
@@ -90,16 +92,29 @@ class TaskCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      task.title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        decoration: task.completed ? TextDecoration.lineThrough : null,
-                        color: task.completed
-                            ? FlowColors.slate500
-                            : (isDark ? Colors.white : FlowColors.textLight),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            task.title,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              decoration: task.completed ? TextDecoration.lineThrough : null,
+                              color: task.completed
+                                  ? FlowColors.slate500
+                                  : (isDark ? Colors.white : FlowColors.textLight),
+                            ),
+                          ),
+                        ),
+                        if (!task.completed) ...[
+                          const SizedBox(width: 8),
+                          FlowBadge(
+                            label: projectTitle,
+                            color: projectColor,
+                          ),
+                        ],
+                      ],
                     ),
                     if (task.description != null && !task.completed) ...[
                       const SizedBox(height: 4),

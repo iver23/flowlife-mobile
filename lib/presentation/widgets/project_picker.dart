@@ -51,7 +51,7 @@ class ProjectPicker extends ConsumerWidget {
                       isSelected: selectedProjectId == p.id,
                       onTap: () => onSelected(p.id),
                       icon: _parseIcon(p.icon),
-                      color: _parseColor(p.color),
+                      color: FlowColors.parseProjectColor(p.color),
                     ),
                   )),
                 ],
@@ -104,17 +104,6 @@ class ProjectPicker extends ConsumerWidget {
     );
   }
 
-  Color _parseColor(String colorStr) {
-    switch (colorStr.toLowerCase()) {
-      case 'emerald': return Colors.green;
-      case 'blue': return Colors.blue;
-      case 'violet': return Colors.purple;
-      case 'rose': return Colors.pink;
-      case 'amber': return Colors.amber;
-      case 'cyan': return Colors.cyan;
-      default: return FlowColors.primary;
-    }
-  }
 
   IconData _parseIcon(String iconName) {
     switch (iconName.toLowerCase()) {

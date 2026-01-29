@@ -97,8 +97,9 @@ class ProjectDetailScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
                         child: TaskCard(
                           task: task,
+                          projectTitle: project.title,
                           projectIcon: project.icon,
-                          projectColor: _parseColor(project.color),
+                          projectColor: FlowColors.parseProjectColor(project.color),
                           onToggle: () => taskNotifier.toggleTask(task),
                           onDelete: () => taskNotifier.deleteTask(task.id),
                           onTap: () {
@@ -267,7 +268,10 @@ class ProjectDetailScreen extends ConsumerWidget {
               createdAt: DateTime.now().millisecondsSinceEpoch,
               projectId: project.id,
             ),
-            onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(task.title, projectId: project.id),
+            onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(
+              task.title, 
+              projectId: task.projectId,
+            ),
           ),
         );
       },
@@ -308,15 +312,4 @@ class ProjectDetailScreen extends ConsumerWidget {
     );
   }
 
-  Color _parseColor(String colorStr) {
-    switch (colorStr.toLowerCase()) {
-      case 'emerald': return Colors.green;
-      case 'blue': return Colors.blue;
-      case 'violet': return Colors.purple;
-      case 'rose': return Colors.pink;
-      case 'amber': return Colors.amber;
-      case 'cyan': return Colors.cyan;
-      default: return FlowColors.primary;
-    }
-  }
 }

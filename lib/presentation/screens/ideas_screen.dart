@@ -154,7 +154,7 @@ class IdeasScreen extends ConsumerWidget {
   Widget _buildProjectTag(ProjectModel? project) {
     return FlowBadge(
       label: project?.title ?? '#OTHER',
-      color: project != null ? _parseColor(project.color) : FlowColors.slate500,
+      color: FlowColors.parseProjectColor(project?.color),
     );
   }
 
@@ -168,15 +168,4 @@ class IdeasScreen extends ConsumerWidget {
     );
   }
 
-  Color _parseColor(String colorStr) {
-    switch (colorStr.toLowerCase()) {
-      case 'emerald': return Colors.green;
-      case 'blue': return Colors.blue;
-      case 'violet': return Colors.purple;
-      case 'rose': return Colors.pink;
-      case 'amber': return Colors.amber;
-      case 'cyan': return Colors.cyan;
-      default: return FlowColors.primary;
-    }
-  }
 }

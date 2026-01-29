@@ -11,6 +11,19 @@ class FlowColors {
   static const Color textDark = Colors.white;
   static const Color slate500 = Color(0xFF64748B);
   static const Color slate400 = Color(0xFF94A3B8);
+
+  static Color parseProjectColor(String? colorStr) {
+    if (colorStr == null) return slate500;
+    switch (colorStr.toLowerCase()) {
+      case 'emerald': return Colors.green;
+      case 'blue': return Colors.blue;
+      case 'violet': return Colors.purple;
+      case 'rose': return Colors.pink;
+      case 'amber': return Colors.amber;
+      case 'cyan': return Colors.cyan;
+      default: return primary;
+    }
+  }
 }
 
 class FlowTheme {

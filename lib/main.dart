@@ -283,7 +283,10 @@ class _MainScreenState extends State<MainScreen> {
           subtasks: [],
           createdAt: DateTime.now().millisecondsSinceEpoch,
         ),
-        onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(task.title),
+        onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(
+          task.title, 
+          projectId: task.projectId,
+        ),
       ),
     );
   }
