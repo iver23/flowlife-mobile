@@ -32,6 +32,14 @@ class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
     // For now, mirroring the likely web behavior of just deleting the project doc.
     await _service.deleteProject(projectId);
   }
+
+  Future<void> archiveProject(ProjectModel project) async {
+    await updateProject(project.copyWith(isArchived: true));
+  }
+
+  Future<void> unarchiveProject(ProjectModel project) async {
+    await updateProject(project.copyWith(isArchived: false));
+  }
 }
 
 final projectNotifierProvider = StateNotifierProvider<ProjectNotifier, AsyncValue<List<ProjectModel>>>((ref) {

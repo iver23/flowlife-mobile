@@ -134,6 +134,7 @@ class ProjectModel {
   final String icon;
   final Importance weight;
   final String? description;
+  final bool isArchived;
 
   ProjectModel({
     required this.id,
@@ -142,6 +143,7 @@ class ProjectModel {
     required this.icon,
     required this.weight,
     this.description,
+    this.isArchived = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -152,6 +154,7 @@ class ProjectModel {
       'icon': icon,
       'weight': weight.value,
       'description': description,
+      'isArchived': isArchived,
     };
   }
 
@@ -163,6 +166,26 @@ class ProjectModel {
       icon: map['icon'] ?? 'work',
       weight: Importance.fromValue(map['weight'] ?? 1),
       description: map['description'],
+      isArchived: map['isArchived'] ?? false,
+    );
+  }
+
+  ProjectModel copyWith({
+    String? title,
+    String? color,
+    String? icon,
+    Importance? weight,
+    String? description,
+    bool? isArchived,
+  }) {
+    return ProjectModel(
+      id: id,
+      title: title ?? this.title,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      weight: weight ?? this.weight,
+      description: description ?? this.description,
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 }

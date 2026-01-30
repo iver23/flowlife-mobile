@@ -8,11 +8,18 @@ import '../widgets/ui_components.dart';
 import 'project_detail_screen.dart';
 import '../widgets/project_edit_sheet.dart';
 
-class ProjectsScreen extends ConsumerWidget {
+class ProjectsScreen extends ConsumerStatefulWidget {
   const ProjectsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProjectsScreen> createState() => _ProjectsScreenState();
+}
+
+class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
+  bool _showArchived = false;
+
+  @override
+  Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectNotifierProvider);
 
     return Scaffold(
@@ -20,22 +27,24 @@ class ProjectsScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context),
+            _buildViewToggle(),
             Expanded(
               child: projectsAsync.when(
                 data: (projects) {
-                  if (projects.isEmpty) {
+                  final filteredProjects = projects.where((p) => p.isArchived == _showArchived).toList();
+                  
+                  if (filteredProjects.isEmpty) {
                     return _buildEmptyState();
                   }
                   
                   // Sort projects by weight (importance) descending
-                  final sortedProjects = [...projects];
-                  sortedProjects.sort((a, b) => b.weight.value.compareTo(a.weight.value));
+                  filteredProjects.sort((a, b) => b.weight.value.compareTo(a.weight.value));
 
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    itemCount: sortedProjects.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    itemCount: filteredProjects.length,
                     itemBuilder: (context, index) {
-                      final project = sortedProjects[index];
+                      final project = filteredProjects[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: _buildProjectCard(context, project, ref),
@@ -53,9 +62,51 @@ class ProjectsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildViewToggle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+      child: Row(
+        children: [
+          _buildToggleItem("Active", !_showArchived),
+          const SizedBox(width: 8),
+          _buildToggleItem("Archived", _showArchived),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleItem(String label, bool isActive) {
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _showArchived = label == "Archived"),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive ? FlowColors.primary : FlowColors.slate200.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              color: isActive ? FlowColors.primary : FlowColors.slate500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.all(24.0),
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -75,56 +126,79 @@ class ProjectsScreen extends ConsumerWidget {
   }
 
   Widget _buildProjectCard(BuildContext context, ProjectModel project, WidgetRef ref) {
-    return FlowCard(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProjectDetailScreen(project: project),
-          ),
-        );
+    return Dismissible(
+      key: Key(project.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: project.isArchived ? Colors.green : Colors.amber,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Icon(
+          project.isArchived ? LucideIcons.refreshCcw : LucideIcons.archive,
+          color: Colors.white,
+        ),
+      ),
+      onDismissed: (_) {
+        if (project.isArchived) {
+          ref.read(projectNotifierProvider.notifier).unarchiveProject(project);
+        } else {
+          ref.read(projectNotifierProvider.notifier).archiveProject(project);
+        }
       },
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _parseColor(project.color).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
+      child: FlowCard(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProjectDetailScreen(project: project),
             ),
-            child: Icon(_parseIcon(project.icon), color: _parseColor(project.color), size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  project.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                if (project.description != null && project.description!.isNotEmpty)
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _parseColor(project.color).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(_parseIcon(project.icon), color: _parseColor(project.color), size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    project.description!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
+                    project.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
+                  if (project.description != null && project.description!.isNotEmpty)
+                    Text(
+                      project.description!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
+                    ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FlowBadge(
+                  label: project.weight.name,
+                  color: _getWeightColor(project.weight),
+                ),
+                const SizedBox(height: 8),
+                _buildProgressMini(project.id, ref),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FlowBadge(
-                label: project.weight.name,
-                color: _getWeightColor(project.weight),
-              ),
-              const SizedBox(height: 8),
-              _buildProgressMini(project.id, ref),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -149,11 +223,19 @@ class ProjectsScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(LucideIcons.folder, size: 64, color: FlowColors.slate500),
+          Icon(LucideIcons.folder, size: 64, color: FlowColors.slate500.withOpacity(0.3)),
           const SizedBox(height: 16),
-          const Text('No projects yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            _showArchived ? 'No archived projects' : 'No active projects',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          const Text('Create your first project to get started!', style: TextStyle(color: FlowColors.slate500)),
+          Text(
+            _showArchived 
+                ? 'Your archived projects will appear here.' 
+                : 'Create your first project to get started!',
+            style: const TextStyle(color: FlowColors.slate500),
+          ),
         ],
       ),
     );

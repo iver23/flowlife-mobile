@@ -19,6 +19,7 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
   late String _selectedColor;
   late String _selectedIcon;
   late Importance _selectedWeight;
+  late bool _isArchived;
 
   final List<String> _colors = ['emerald', 'blue', 'violet', 'rose', 'amber', 'cyan'];
   final List<String> _icons = [
@@ -35,6 +36,7 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
     _selectedColor = widget.project?.color ?? 'blue';
     _selectedIcon = widget.project?.icon ?? 'work';
     _selectedWeight = widget.project?.weight ?? Importance.medium;
+    _isArchived = widget.project?.isArchived ?? false;
   }
 
   @override
@@ -99,9 +101,21 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
             const SizedBox(height: 12),
             _buildColorPicker(),
             const SizedBox(height: 24),
-            _buildSectionTitle('ICON'),
-            const SizedBox(height: 12),
             _buildIconPicker(),
+            const SizedBox(height: 24),
+            if (widget.project != null) ...[
+              _buildSectionTitle('PROJECT STATUS'),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Archived', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                subtitle: const Text('Archived projects are hidden from the main view', style: TextStyle(fontSize: 12)),
+                value: _isArchived,
+                onChanged: (val) => setState(() => _isArchived = val),
+                activeColor: FlowColors.primary,
+              ),
+              const SizedBox(height: 16),
+            ],
             const SizedBox(height: 40),
             FlowButton(
               label: widget.project == null ? 'CREATE PROJECT' : 'SAVE CHANGES',
@@ -114,6 +128,7 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
                     color: _selectedColor,
                     icon: _selectedIcon,
                     weight: _selectedWeight,
+                    isArchived: _isArchived,
                   );
                   widget.onSave(project);
                   Navigator.pop(context);
