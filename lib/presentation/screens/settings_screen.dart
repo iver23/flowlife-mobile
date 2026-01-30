@@ -99,6 +99,7 @@ class SettingsScreen extends ConsumerWidget {
               (t) => ref.read(themeNotifierProvider.notifier).setScheduled(true, endH: t.hour, endM: t.minute),
             ),
           ],
+          const SizedBox(height: 12),
           _buildSettingsTile(
             icon: LucideIcons.bell,
             title: 'Notifications',

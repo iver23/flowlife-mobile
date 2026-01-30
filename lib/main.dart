@@ -10,6 +10,7 @@ import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/widgets/search_overlay.dart';
 import 'presentation/screens/search_screen.dart';
+import 'presentation/widgets/custom_nav_bar.dart';
 import 'presentation/widgets/multi_action_fab.dart';
 import 'presentation/widgets/project_edit_sheet.dart';
 import 'presentation/widgets/task_edit_sheet.dart';
@@ -71,7 +72,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2; // Default to Dashboard
   late ConfettiController _confettiController;
 
   @override
@@ -87,10 +88,21 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   static const List<Widget> _screens = [
-    DashboardScreen(),
     ProjectsScreen(),
     TasksScreen(),
+    DashboardScreen(),
     IdeasScreen(),
+    Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(LucideIcons.bookOpen, size: 64, color: FlowColors.slate400),
+          SizedBox(height: 16),
+          Text('Study Mode', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text('Coming Soon', style: TextStyle(color: FlowColors.slate500)),
+        ],
+      ),
+    ),
   ];
 
   @override
@@ -125,17 +137,18 @@ class _MainScreenState extends State<MainScreen> {
               child: Stack(
                 children: [
                   Scaffold(
+                    extendBody: true,
                     appBar: AppBar(
                       title: const Text('FlowLife', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
                       elevation: 0,
                       backgroundColor: Colors.transparent,
                       actions: [
                         IconButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen())),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchScreen())),
                           icon: const Icon(LucideIcons.search, size: 20),
                         ),
                         IconButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen())),
                           icon: Container(
                             padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
@@ -176,21 +189,9 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
-                    floatingActionButton: _buildFAB(context, ref),
-                    bottomNavigationBar: isWide ? null : BottomNavigationBar(
+                    bottomNavigationBar: isWide ? null : FlowNavigationBar(
                       currentIndex: _selectedIndex,
                       onTap: (index) => setState(() => _selectedIndex = index),
-                      selectedItemColor: FlowColors.primary,
-                      unselectedItemColor: FlowColors.slate500,
-                      type: BottomNavigationBarType.fixed,
-                      showSelectedLabels: true,
-                      showUnselectedLabels: false,
-                      items: const [
-                        BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dash'),
-                        BottomNavigationBarItem(icon: Icon(LucideIcons.folder), label: 'Projects'),
-                        BottomNavigationBarItem(icon: Icon(Icons.check_box_rounded), label: 'Tasks'),
-                        BottomNavigationBarItem(icon: Icon(Icons.lightbulb_rounded), label: 'Ideas'),
-                      ],
                     ),
                   ),
                   Align(
@@ -289,26 +290,28 @@ class _MainScreenState extends State<MainScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('New Idea'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller,
-                maxLines: 3,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: 'What\'s on your mind?'),
-              ),
-              const SizedBox(height: 24),
-              ProjectPicker(
-                selectedProjectId: selectedProjectId,
-                onSelected: (id) => setDialogState(() => selectedProjectId = id),
-              ),
-              const SizedBox(height: 24),
-              TagPicker(
-                selectedTagNames: selectedCustomTags,
-                onSelected: (tags) => setDialogState(() => selectedCustomTags = tags),
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: controller,
+                  maxLines: 3,
+                  autofocus: true,
+                  decoration: const InputDecoration(hintText: 'What\'s on your mind?'),
+                ),
+                const SizedBox(height: 24),
+                ProjectPicker(
+                  selectedProjectId: selectedProjectId,
+                  onSelected: (id) => setDialogState(() => selectedProjectId = id),
+                ),
+                const SizedBox(height: 24),
+                TagPicker(
+                  selectedTagNames: selectedCustomTags,
+                  onSelected: (tags) => setDialogState(() => selectedCustomTags = tags),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
