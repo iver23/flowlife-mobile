@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FlowColors {
-  static const Color primary = Color(0xFF10B981); // Emerald 500
-  static const Color primaryDark = Color(0xFF059669); // Emerald 600
+  // New Palette
+  static const Color duskBlue = Color(0xFF355070);
+  static const Color dustyLavender = Color(0xFF6D597A);
+  static const Color rosewood = Color(0xFFB56576);
+  static const Color lightCoral = Color(0xFFE56B6F);
+  static const Color lightBronze = Color(0xFFEAAC8B);
+
+  static const Color primary = duskBlue;
+  static const Color primaryDark = Color(0xFF2A425A); // Deepened Dusk Blue
   static const Color cardLight = Colors.white;
   static const Color cardDark = Color(0xFF1E1E1E);
   static const Color surfaceDark = Color(0xFF121212);
-  static const Color textLight = Color(0xFF0F172A); // Slate 900
+  static const Color textLight = Color(0xFF0F172A);
   static const Color textDark = Colors.white;
   static const Color slate500 = Color(0xFF64748B);
   static const Color slate400 = Color(0xFF94A3B8);
@@ -15,12 +22,17 @@ class FlowColors {
   static Color parseProjectColor(String? colorStr) {
     if (colorStr == null) return slate500;
     switch (colorStr.toLowerCase()) {
-      case 'emerald': return Colors.green;
-      case 'blue': return Colors.blue;
-      case 'violet': return Colors.purple;
-      case 'rose': return Colors.pink;
-      case 'amber': return Colors.amber;
-      case 'cyan': return Colors.cyan;
+      case 'duskblue':
+      case 'blue': return duskBlue;
+      case 'lavender':
+      case 'violet': return dustyLavender;
+      case 'rosewood':
+      case 'rose': return rosewood;
+      case 'coral':
+      case 'red': return lightCoral;
+      case 'bronze':
+      case 'amber': return lightBronze;
+      case 'emerald': return const Color(0xFF10B981);
       default: return primary;
     }
   }
