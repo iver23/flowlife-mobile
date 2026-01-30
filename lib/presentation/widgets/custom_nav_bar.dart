@@ -122,32 +122,29 @@ class NotchedPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     Path path = Path();
-    double notchRadius = 38;
+    double notchWidth = 100;
+    double notchHeight = 32;
     double centerX = size.width / 2;
 
     path.moveTo(0, 0);
-    path.lineTo(centerX - notchRadius * 1.6, 0);
+    path.lineTo(centerX - notchWidth / 2 - 20, 0);
     
-    // Smooth entrance to notch
-    path.quadraticBezierTo(
-      centerX - notchRadius, 
+    // Smooth organic curve
+    path.cubicTo(
+      centerX - notchWidth / 2, 
       0, 
-      centerX - notchRadius, 
-      notchRadius * 0.4
+      centerX - notchWidth / 4, 
+      notchHeight, 
+      centerX, 
+      notchHeight
     );
     
-    // Circular notch
-    path.arcToPoint(
-      Offset(centerX + notchRadius, notchRadius * 0.4),
-      radius: Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    
-    // Smooth exit from notch
-    path.quadraticBezierTo(
-      centerX + notchRadius, 
+    path.cubicTo(
+      centerX + notchWidth / 4, 
+      notchHeight, 
+      centerX + notchWidth / 2, 
       0, 
-      centerX + notchRadius * 1.6, 
+      centerX + notchWidth / 2 + 20, 
       0
     );
 

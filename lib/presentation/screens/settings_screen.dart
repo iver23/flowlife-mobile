@@ -52,54 +52,76 @@ class SettingsScreen extends ConsumerWidget {
           ],
 
           const Text(
-            'PREFERENCES',
+            'APPEARANCE',
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 1.2),
           ),
           const SizedBox(height: 16),
-          _buildSettingsTile(
-            icon: LucideIcons.moon,
-            title: 'Dark Mode',
-            trailing: Switch(
-              value: ref.watch(themeNotifierProvider).mode == ThemeMode.dark,
-              onChanged: (v) => ref.read(themeNotifierProvider.notifier).toggleTheme(v),
-              activeColor: FlowColors.primary,
+          FlowCard(
+            padding: 0,
+            child: Column(
+              children: [
+                _buildThemeOption(
+                  ref,
+                  ThemeSelection.system,
+                  'Follow System',
+                  LucideIcons.monitor,
+                ),
+                const Divider(height: 1, indent: 52, endIndent: 16),
+                _buildThemeOption(
+                  ref,
+                  ThemeSelection.light,
+                  'Light Mode',
+                  LucideIcons.sun,
+                ),
+                const Divider(height: 1, indent: 52, endIndent: 16),
+                _buildThemeOption(
+                  ref,
+                  ThemeSelection.dark,
+                  'Dark Mode',
+                  LucideIcons.moon,
+                ),
+                const Divider(height: 1, indent: 52, endIndent: 16),
+                _buildThemeOption(
+                  ref,
+                  ThemeSelection.scheduled,
+                  'Auto Schedule',
+                  LucideIcons.calendar,
+                ),
+                if (ref.watch(themeNotifierProvider).selection == ThemeSelection.scheduled) ...[
+                  const Divider(height: 1, indent: 52, endIndent: 16),
+                  _buildTimeRow(
+                    context,
+                    ref,
+                    'Start Time',
+                    TimeOfDay(
+                      hour: ref.watch(themeNotifierProvider).startHour,
+                      minute: ref.watch(themeNotifierProvider).startMinute,
+                    ),
+                    (t) => ref.read(themeNotifierProvider.notifier).setScheduleTimes(startH: t.hour, startM: t.minute),
+                    useCard: false,
+                  ),
+                  const Divider(height: 1, indent: 52, endIndent: 16),
+                  _buildTimeRow(
+                    context,
+                    ref,
+                    'End Time',
+                    TimeOfDay(
+                      hour: ref.watch(themeNotifierProvider).endHour,
+                      minute: ref.watch(themeNotifierProvider).endMinute,
+                    ),
+                    (t) => ref.read(themeNotifierProvider.notifier).setScheduleTimes(endH: t.hour, endM: t.minute),
+                    useCard: false,
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          _buildSettingsTile(
-            icon: LucideIcons.calendar,
-            title: 'Auto Schedule',
-            trailing: Switch(
-              value: ref.watch(themeNotifierProvider).isScheduled,
-              onChanged: (v) => ref.read(themeNotifierProvider.notifier).setScheduled(v),
-              activeColor: FlowColors.primary,
-            ),
+          const SizedBox(height: 24),
+          const Text(
+            'NOTIFICATIONS',
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 1.2),
           ),
-          if (ref.watch(themeNotifierProvider).isScheduled) ...[
-            const SizedBox(height: 12),
-            _buildTimeRow(
-              context,
-              ref,
-              'Start Time',
-              TimeOfDay(
-                hour: ref.watch(themeNotifierProvider).startHour,
-                minute: ref.watch(themeNotifierProvider).startMinute,
-              ),
-              (t) => ref.read(themeNotifierProvider.notifier).setScheduled(true, startH: t.hour, startM: t.minute),
-            ),
-            const SizedBox(height: 12),
-            _buildTimeRow(
-              context,
-              ref,
-              'End Time',
-              TimeOfDay(
-                hour: ref.watch(themeNotifierProvider).endHour,
-                minute: ref.watch(themeNotifierProvider).endMinute,
-              ),
-              (t) => ref.read(themeNotifierProvider.notifier).setScheduled(true, endH: t.hour, endM: t.minute),
-            ),
-          ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildSettingsTile(
             icon: LucideIcons.bell,
             title: 'Notifications',
@@ -133,13 +155,38 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTimeRow(BuildContext context, WidgetRef ref, String label, TimeOfDay time, Function(TimeOfDay) onChange) {
-    return FlowCard(
-      padding: 16,
-      onTap: () async {
-        final t = await showTimePicker(context: context, initialTime: time);
-        if (t != null) onChange(t);
-      },
+  Widget _buildThemeOption(WidgetRef ref, ThemeSelection selection, String label, IconData icon) {
+    final currentSelection = ref.watch(themeNotifierProvider).selection;
+    final isActive = currentSelection == selection;
+
+    return InkWell(
+      onTap: () => ref.read(themeNotifierProvider.notifier).setThemeSelection(selection),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: isActive ? FlowColors.primary : FlowColors.slate400),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                  color: isActive ? FlowColors.primary : null,
+                ),
+              ),
+            ),
+            if (isActive)
+              const Icon(LucideIcons.check, size: 16, color: FlowColors.primary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeRow(BuildContext context, WidgetRef ref, String label, TimeOfDay time, Function(TimeOfDay) onChange, {bool useCard = true}) {
+    Widget content = Padding(
+      padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -151,6 +198,25 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+
+    if (!useCard) {
+      return InkWell(
+        onTap: () async {
+          final t = await showTimePicker(context: context, initialTime: time);
+          if (t != null) onChange(t);
+        },
+        child: content,
+      );
+    }
+
+    return FlowCard(
+      padding: 0,
+      onTap: () async {
+        final t = await showTimePicker(context: context, initialTime: time);
+        if (t != null) onChange(t);
+      },
+      child: content,
+    );
   }
 
   Widget _buildSettingsTile({
@@ -159,10 +225,10 @@ class SettingsScreen extends ConsumerWidget {
     Widget? trailing,
     Color? titleColor,
     VoidCallback? onTap,
+    bool useCard = true,
   }) {
-    return FlowCard(
-      padding: 16,
-      onTap: onTap,
+    Widget content = Padding(
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Icon(icon, size: 20, color: titleColor ?? FlowColors.primary),
@@ -179,6 +245,19 @@ class SettingsScreen extends ConsumerWidget {
           if (trailing != null) trailing,
         ],
       ),
+    );
+
+    if (!useCard) {
+      return InkWell(
+        onTap: onTap,
+        child: content,
+      );
+    }
+
+    return FlowCard(
+      padding: 0,
+      onTap: onTap,
+      child: content,
     );
   }
 }
