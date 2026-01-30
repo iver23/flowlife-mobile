@@ -117,6 +117,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 32),
           const Text(
             'PRIVACY & SECURITY',
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 1.2),
@@ -141,7 +142,6 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     }
                   },
-                  activeColor: FlowColors.primary,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 ),
                 if (ref.watch(biometricProvider).isEnabled) ...[
@@ -152,7 +152,6 @@ class SettingsScreen extends ConsumerWidget {
                     subtitle: const Text('Lock app when minimized', style: TextStyle(fontSize: 12)),
                     value: ref.watch(biometricProvider).isAutoLockEnabled,
                     onChanged: (val) => ref.read(biometricProvider.notifier).setAutoLock(val),
-                    activeColor: FlowColors.primary,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   ),
                 ],

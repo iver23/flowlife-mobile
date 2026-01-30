@@ -287,23 +287,24 @@ class ProjectDetailScreen extends ConsumerWidget {
         );
       },
       child: Container(
-        height: 100,
+        height: 110,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey[300]!,
+            color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[200]!,
             width: 2,
-            style: BorderStyle.solid, // Flutter doesn't have dashed border easily without package
           ),
+          color: isDark ? Colors.white.withOpacity(0.02) : Colors.white,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFC),
                 shape: BoxShape.circle,
               ),
               child: const Icon(LucideIcons.plus, size: 20, color: FlowColors.slate500),
@@ -311,9 +312,10 @@ class ProjectDetailScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             const Text(
               'Tap to add a new task',
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
-                color: FlowColors.slate500,
+                fontSize: 13,
+                color: FlowColors.slate400,
                 fontWeight: FontWeight.w500,
               ),
             ),

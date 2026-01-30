@@ -51,6 +51,16 @@ class FlowTheme {
         bodyColor: FlowColors.textLight,
         displayColor: FlowColors.textLight,
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return FlowColors.primary;
+          return FlowColors.slate400;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return FlowColors.primary.withOpacity(0.5);
+          return FlowColors.slate200;
+        }),
+      ),
     );
   }
 
@@ -62,6 +72,16 @@ class FlowTheme {
       textTheme: GoogleFonts.outfitTextTheme().apply(
         bodyColor: FlowColors.textDark,
         displayColor: FlowColors.textDark,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return FlowColors.primary;
+          return FlowColors.slate500;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return FlowColors.primary.withOpacity(0.5);
+          return FlowColors.cardDark;
+        }),
       ),
     );
   }
