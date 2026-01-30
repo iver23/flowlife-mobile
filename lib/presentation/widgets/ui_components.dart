@@ -18,6 +18,9 @@ class FlowColors {
   static const Color textDark = Colors.white;
   static const Color slate500 = Color(0xFF64748B);
   static const Color slate400 = Color(0xFF94A3B8);
+  static const Color slate200 = Color(0xFFE2E8F0);
+  static const Color slate100 = Color(0xFFF1F5F9);
+  static const Color slate50 = Color(0xFFF8FAFC);
 
   static Color parseProjectColor(String? colorStr) {
     if (colorStr == null) return slate500;
@@ -69,12 +72,14 @@ class FlowCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final double padding;
+  final EdgeInsets? margin;
 
   const FlowCard({
     super.key,
     required this.child,
     this.onTap,
     this.padding = 20,
+    this.margin,
   });
 
   @override
@@ -84,6 +89,7 @@ class FlowCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(padding),
+        margin: margin,
         decoration: BoxDecoration(
           color: isDark ? FlowColors.cardDark : FlowColors.cardLight,
           borderRadius: BorderRadius.circular(24),

@@ -14,6 +14,8 @@ import 'presentation/widgets/custom_nav_bar.dart';
 import 'presentation/widgets/multi_action_fab.dart';
 import 'presentation/widgets/project_edit_sheet.dart';
 import 'presentation/widgets/task_edit_sheet.dart';
+import 'presentation/screens/study_screen.dart';
+import 'presentation/widgets/study_edit_sheet.dart';
 import 'presentation/widgets/tag_picker.dart';
 import 'presentation/widgets/project_picker.dart';
 import 'core/confetti_notifier.dart';
@@ -92,17 +94,7 @@ class _MainScreenState extends State<MainScreen> {
     TasksScreen(),
     DashboardScreen(),
     IdeasScreen(),
-    Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(LucideIcons.bookOpen, size: 64, color: FlowColors.slate400),
-          SizedBox(height: 16),
-          Text('Study Mode', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text('Coming Soon', style: TextStyle(color: FlowColors.slate500)),
-        ],
-      ),
-    ),
+    const StudyScreen(),
   ];
 
   @override
@@ -243,9 +235,24 @@ class _MainScreenState extends State<MainScreen> {
           backgroundColor: FlowColors.primary,
           child: const Icon(LucideIcons.plus, color: Colors.white),
         );
+      case 4: // Study
+        return FloatingActionButton(
+          onPressed: () => _showAddStudyAreaSheet(context),
+          backgroundColor: FlowColors.primary,
+          child: const Icon(LucideIcons.plus, color: Colors.white),
+        );
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  void _showAddStudyAreaSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const StudyEditSheet(type: StudyEntryType.area),
+    );
   }
 
   void _showAddProjectSheet(BuildContext context, WidgetRef ref) {
