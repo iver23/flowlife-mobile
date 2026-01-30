@@ -2,20 +2,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
+import 'widget_service.dart';
+import 'task_notifier.dart';
 
 class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
   final FirestoreService _service;
+  final Ref _ref;
 
-  ProjectNotifier(this._service) : super(const AsyncValue.loading()) {
+  ProjectNotifier(this._service, this._ref) : super(const AsyncValue.loading()) {
     _init();
   }
 
   void _init() {
     _service.streamProjects().listen((projects) {
       state = AsyncValue.data(projects);
+      _triggerWidgetUpdate(projects);
     }, onError: (e, st) {
       state = AsyncValue.error(e, st);
     });
+  }
+
+  void _triggerWidgetUpdate(List<ProjectModel> projects) {
+    _ref.read(taskNotifierProvider).when(
+      data: (tasks) => WidgetService.updateWidget(tasks: tasks, projects: projects),
+      loading: () => WidgetService.updateWidget(tasks: [], projects: projects),
+      error: (_, __) => WidgetService.updateWidget(tasks: [], projects: projects),
+    );
   }
 
   Future<void> addProject(ProjectModel project) async {
@@ -43,5 +55,5 @@ class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
 }
 
 final projectNotifierProvider = StateNotifierProvider<ProjectNotifier, AsyncValue<List<ProjectModel>>>((ref) {
-  return ProjectNotifier(ref.watch(firestoreServiceProvider));
+  return ProjectNotifier(ref.watch(firestoreServiceProvider), ref);
 });

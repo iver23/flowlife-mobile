@@ -5,6 +5,8 @@ import 'providers.dart';
 import 'confetti_notifier.dart';
 import 'date_parser.dart';
 import 'notification_service.dart';
+import 'widget_service.dart';
+import 'project_notifier.dart';
 
 class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
   final FirestoreService _service;
@@ -18,9 +20,18 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
     _service.streamTasks().listen((tasks) {
       state = AsyncValue.data(tasks);
       _updateDailyRecap(tasks);
+      _triggerWidgetUpdate(tasks);
     }, onError: (e, st) {
       state = AsyncValue.error(e, st);
     });
+  }
+
+  void _triggerWidgetUpdate(List<TaskModel> tasks) {
+    _ref.read(projectNotifierProvider).when(
+      data: (projects) => WidgetService.updateWidget(tasks: tasks, projects: projects),
+      loading: () => WidgetService.updateWidget(tasks: tasks, projects: []),
+      error: (_, __) => WidgetService.updateWidget(tasks: tasks, projects: []),
+    );
   }
 
   void _updateDailyRecap(List<TaskModel> tasks) {

@@ -29,6 +29,7 @@ import 'package:confetti/confetti.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:home_widget/home_widget.dart';
 import 'core/theme_notifier.dart';
 import 'core/biometric_notifier.dart';
 import 'core/connectivity_notifier.dart';
@@ -85,6 +86,45 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _confettiController = ConfettiController(duration: const Duration(seconds: 1));
+    
+    // Listen for Home Widget clicks
+    HomeWidget.widgetClicked.listen((uri) {
+      if (uri?.scheme == 'flowlife' && uri?.host == 'add_task') {
+        // Delayed to ensure context is ready
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showAddTaskFromWidget();
+        });
+      }
+    });
+
+    // Check if app was launched via Home Widget
+    HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
+      if (uri?.scheme == 'flowlife' && uri?.host == 'add_task') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showAddTaskFromWidget();
+        });
+      }
+    });
+  }
+
+  void _showAddTaskFromWidget() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => TaskEditSheet(
+        task: TaskModel(
+          id: '',
+          title: '',
+          completed: false,
+          subtasks: [],
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+        ),
+        onSave: (task) {
+          ref.read(taskNotifierProvider.notifier).addTask(task.title, projectId: task.projectId);
+        },
+      ),
+    );
   }
 
   @override
