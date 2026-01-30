@@ -6,12 +6,20 @@ import '../../core/study_notifier.dart';
 import '../../data/models/study_models.dart';
 import '../widgets/study_edit_sheet.dart';
 
-class StudyScreen extends ConsumerWidget {
+class StudyScreen extends ConsumerStatefulWidget {
   const StudyScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StudyScreen> createState() => _StudyScreenState();
+}
+
+class _StudyScreenState extends ConsumerState<StudyScreen> {
+  bool _showArchived = false;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(studyNotifierProvider);
+    final filteredAreas = state.areas.where((a) => a.isArchived == _showArchived).toList();
 
     return Scaffold(
       body: CustomScrollView(
@@ -23,16 +31,57 @@ class StudyScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(ref),
-                  const SizedBox(height: 24),
-                  if (state.areas.isEmpty)
+                  const SizedBox(height: 16),
+                  _buildViewToggle(),
+                  const SizedBox(height: 8),
+                  if (filteredAreas.isEmpty)
                     _buildEmptyState(context)
                   else
-                    ...state.areas.map((area) => _buildAreaTile(context, ref, area)),
+                    ...filteredAreas.map((area) => _buildAreaTile(context, ref, area)),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildViewToggle() {
+    return Row(
+      children: [
+        _buildToggleItem("Active", !_showArchived),
+        const SizedBox(width: 8),
+        _buildToggleItem("Archived", _showArchived),
+      ],
+    );
+  }
+
+  Widget _buildToggleItem(String label, bool isActive) {
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _showArchived = label == "Archived"),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive ? FlowColors.primary : FlowColors.slate200.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              color: isActive ? FlowColors.primary : FlowColors.slate500,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -89,65 +138,89 @@ class StudyScreen extends ConsumerWidget {
     final areaSubjects = state.subjects.where((s) => s.areaId == area.id).toList();
     final progress = notifier.getAreaProgress(area.id);
 
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: FlowCard(
+    return Dismissible(
+      key: Key(area.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(top: 24),
-        padding: 0,
-        child: ExpansionTile(
-          key: PageStorageKey(area.id),
-          leading: Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: FlowColors.parseProjectColor(area.color),
-              shape: BoxShape.circle,
-            ),
-          ),
-          title: Text(
-            area.name.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-              color: FlowColors.slate500,
-            ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 4,
-                backgroundColor: FlowColors.slate100,
-                valueColor: AlwaysStoppedAnimation<Color>(FlowColors.parseProjectColor(area.color)),
+        decoration: BoxDecoration(
+          color: area.isArchived ? Colors.green : Colors.amber,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Icon(
+          area.isArchived ? LucideIcons.refreshCcw : LucideIcons.archive,
+          color: Colors.white,
+        ),
+      ),
+      onDismissed: (_) {
+        if (area.isArchived) {
+          notifier.unarchiveArea(area);
+        } else {
+          notifier.archiveArea(area);
+        }
+      },
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: FlowCard(
+          margin: const EdgeInsets.only(top: 24),
+          padding: 0,
+          child: ExpansionTile(
+            key: PageStorageKey(area.id),
+            leading: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: FlowColors.parseProjectColor(area.color),
+                shape: BoxShape.circle,
               ),
             ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
+            title: Text(
+              area.name.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                color: FlowColors.slate500,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 4,
+                  backgroundColor: FlowColors.slate100,
+                  valueColor: AlwaysStoppedAnimation<Color>(FlowColors.parseProjectColor(area.color)),
+                ),
+              ),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: FlowColors.parseProjectColor(area.color), fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                const Icon(LucideIcons.chevronDown, size: 16),
+              ],
+            ),
             children: [
-              Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: FlowColors.parseProjectColor(area.color), fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              const Icon(LucideIcons.chevronDown, size: 16),
+              if (areaSubjects.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('No subjects yet', style: TextStyle(color: FlowColors.slate400, fontSize: 13, fontStyle: FontStyle.italic)),
+                )
+              else
+                ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject)),
+              ListTile(
+                dense: true,
+                leading: const Icon(LucideIcons.plus, size: 18, color: FlowColors.primary),
+                title: const Text('Add Subject', style: TextStyle(color: FlowColors.primary, fontWeight: FontWeight.w600)),
+                onTap: () => _showAddSubject(context, area.id),
+              ),
             ],
           ),
-          children: [
-            if (areaSubjects.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No subjects yet', style: TextStyle(color: FlowColors.slate400, fontSize: 13, fontStyle: FontStyle.italic)),
-              )
-            else
-              ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject)),
-            ListTile(
-              dense: true,
-              leading: const Icon(LucideIcons.plus, size: 18, color: FlowColors.primary),
-              title: const Text('Add Subject', style: TextStyle(color: FlowColors.primary, fontWeight: FontWeight.w600)),
-              onTap: () => _showAddSubject(context, area.id),
-            ),
-          ],
         ),
       ),
     );
@@ -230,14 +303,16 @@ class StudyScreen extends ConsumerWidget {
           const SizedBox(height: 100),
           Icon(LucideIcons.bookOpen, size: 64, color: FlowColors.slate200),
           const SizedBox(height: 16),
-          const Text(
-            'Start your study path',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: FlowColors.slate400),
+          Text(
+            _showArchived ? 'No archived study areas' : 'Start your study path',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: FlowColors.slate400),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Create a subject area to begin',
-            style: TextStyle(color: FlowColors.slate500),
+          Text(
+            _showArchived 
+                ? 'Your archived areas will appear here.' 
+                : 'Create a subject area to begin',
+            style: const TextStyle(color: FlowColors.slate500),
           ),
         ],
       ),

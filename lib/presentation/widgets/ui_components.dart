@@ -119,12 +119,15 @@ class FlowButton extends StatelessWidget {
   final bool isPrimary;
   final bool isFullWidth;
 
+  final IconData? icon;
+
   const FlowButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.isPrimary = true,
     this.isFullWidth = false,
+    this.icon,
   });
 
   @override
@@ -147,9 +150,19 @@ class FlowButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 18),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );

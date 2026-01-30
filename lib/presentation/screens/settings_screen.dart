@@ -5,6 +5,7 @@ import '../../core/auth_notifier.dart';
 import '../../core/theme_notifier.dart';
 import '../widgets/ui_components.dart';
 import 'reports_screen.dart';
+import '../../core/biometric_notifier.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -111,6 +112,48 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     (t) => ref.read(themeNotifierProvider.notifier).setScheduleTimes(endH: t.hour, endM: t.minute),
                     useCard: false,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const Text(
+            'PRIVACY & SECURITY',
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 1.2),
+          ),
+          const SizedBox(height: 16),
+          FlowCard(
+            padding: 0,
+            child: Column(
+              children: [
+                SwitchListTile(
+                  secondary: const Icon(LucideIcons.shieldCheck, color: FlowColors.slate500, size: 20),
+                  title: const Text('Biometric Lock', style: TextStyle(fontSize: 14)),
+                  subtitle: const Text('Require FaceID/Fingerprint', style: TextStyle(fontSize: 12)),
+                  value: ref.watch(biometricProvider).isEnabled,
+                  onChanged: (val) async {
+                    final success = await ref.read(biometricProvider.notifier).toggleBiometric(val);
+                    if (!success && val) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Failed to enable biometric authentication')),
+                        );
+                      }
+                    }
+                  },
+                  activeColor: FlowColors.primary,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                ),
+                if (ref.watch(biometricProvider).isEnabled) ...[
+                  const Divider(height: 1, indent: 52, endIndent: 16),
+                  SwitchListTile(
+                    secondary: const Icon(LucideIcons.lock, color: FlowColors.slate500, size: 20),
+                    title: const Text('Lock on Background', style: TextStyle(fontSize: 14)),
+                    subtitle: const Text('Lock app when minimized', style: TextStyle(fontSize: 12)),
+                    value: ref.watch(biometricProvider).isAutoLockEnabled,
+                    onChanged: (val) => ref.read(biometricProvider.notifier).setAutoLock(val),
+                    activeColor: FlowColors.primary,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   ),
                 ],
               ],

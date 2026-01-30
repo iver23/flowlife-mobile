@@ -73,6 +73,24 @@ class StudyNotifier extends StateNotifier<StudyState> {
     // Cleanup children or keep orphaned for now (MVP simple)
   }
 
+  Future<void> archiveArea(SubjectArea area) async {
+    final newList = state.areas.map((e) {
+      if (e.id == area.id) return e.copyWith(isArchived: true);
+      return e;
+    }).toList();
+    state = state.copyWith(areas: newList);
+    await _repo.saveAreas(newList);
+  }
+
+  Future<void> unarchiveArea(SubjectArea area) async {
+    final newList = state.areas.map((e) {
+      if (e.id == area.id) return e.copyWith(isArchived: false);
+      return e;
+    }).toList();
+    state = state.copyWith(areas: newList);
+    await _repo.saveAreas(newList);
+  }
+
   // --- SUBJECTS ---
   Future<void> addSubject(String areaId, String name) async {
     final subject = Subject(

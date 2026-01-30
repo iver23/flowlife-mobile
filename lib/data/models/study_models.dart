@@ -5,13 +5,29 @@ class SubjectArea {
   final String name;
   final String color;
   final DateTime createdAt;
+  final bool isArchived;
 
   SubjectArea({
     required this.id,
     required this.name,
     required this.color,
     required this.createdAt,
+    this.isArchived = false,
   });
+
+  SubjectArea copyWith({
+    String? name,
+    String? color,
+    bool? isArchived,
+  }) {
+    return SubjectArea(
+      id: id,
+      name: name ?? this.name,
+      color: color ?? this.color,
+      createdAt: createdAt,
+      isArchived: isArchived ?? this.isArchived,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -19,6 +35,7 @@ class SubjectArea {
       'name': name,
       'color': color,
       'createdAt': createdAt.toIso8601String(),
+      'isArchived': isArchived,
     };
   }
 
@@ -28,6 +45,7 @@ class SubjectArea {
       name: map['name'] ?? '',
       color: map['color'] ?? 'duskblue',
       createdAt: DateTime.parse(map['createdAt']),
+      isArchived: map['isArchived'] ?? false,
     );
   }
 

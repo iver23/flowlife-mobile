@@ -30,6 +30,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme_notifier.dart';
+import 'core/biometric_notifier.dart';
+import 'presentation/screens/lock_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,27 +68,39 @@ class MyApp extends ConsumerWidget {
   }
 }
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObserver {
   int _selectedIndex = 2; // Default to Dashboard
   late ConfettiController _confettiController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _confettiController = ConfettiController(duration: const Duration(seconds: 1));
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _confettiController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+      final bioState = ref.read(biometricProvider);
+      if (bioState.isEnabled && bioState.isAutoLockEnabled) {
+        ref.read(biometricProvider.notifier).lock();
+      }
+    }
   }
 
   static const List<Widget> _screens = [
@@ -200,6 +214,7 @@ class _MainScreenState extends State<MainScreen> {
                       ],
                     ),
                   ),
+                  if (ref.watch(biometricProvider).isLocked) const LockScreen(),
                 ],
               ),
             );
