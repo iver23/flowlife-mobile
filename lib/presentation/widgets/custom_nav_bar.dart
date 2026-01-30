@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'ui_components.dart';
@@ -17,44 +18,47 @@ class FlowNavigationBar extends StatelessWidget {
     LucideIcons.listTodo,   // Tasks
     LucideIcons.layers,     // Dashboard
     LucideIcons.bookmark,   // Ideas
-    LucideIcons.settings,   // Study/Settings
+    LucideIcons.settings,   // Settings
   ];
 
   @override
   Widget build(BuildContext context) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? FlowColors.cardDark : Colors.white;
-    final dividerColor = isDark ? FlowColors.slate500 : FlowColors.slate400.withOpacity(0.5);
+    final backgroundColor = isDark ? FlowColors.surfaceDark.withOpacity(0.8) : Colors.white.withOpacity(0.9);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      height: 64,
+    Widget bar = Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+      height: 72,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+          width: 0.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Row(
-        children: List.generate(_icons.length * 2 - 1, (i) {
-          // Odd indices are dividers
-          if (i.isOdd) {
-            return Container(
-              width: 1,
-              height: 28,
-              color: dividerColor,
-            );
-          }
-          final index = i ~/ 2;
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(_icons.length, (index) {
           return Expanded(
             child: _buildNavItem(index, _icons[index]),
           );
         }),
+      ),
+    );
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(32),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: bar,
       ),
     );
   }
@@ -64,12 +68,27 @@ class FlowNavigationBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
-      child: Center(
-        child: Icon(
-          icon,
-          color: isActive ? FlowColors.primary : FlowColors.slate400,
-          size: 24,
-        ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: isActive ? 1.0 : 0.0,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: (isActive) ? FlowColors.primary.withOpacity(0.12) : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Icon(
+            icon,
+            color: isActive ? FlowColors.primary : FlowColors.slate400,
+            size: 24,
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/ui_components.dart';
 import '../../core/study_notifier.dart';
 import '../../data/models/study_models.dart';
+import 'settings_screen.dart';
 import '../widgets/study_edit_sheet.dart';
 
 class StudyScreen extends ConsumerStatefulWidget {
@@ -22,27 +23,77 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     final filteredAreas = state.areas.where((a) => a.isArchived == _showArchived).toList();
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(ref),
-                  const SizedBox(height: 16),
-                  _buildViewToggle(),
-                  const SizedBox(height: 8),
-                  if (filteredAreas.isEmpty)
-                    _buildEmptyState(context)
-                  else
-                    ...filteredAreas.map((area) => _buildAreaTile(context, ref, area)),
-                ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildScreenHeader(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(ref),
+                    const SizedBox(height: 16),
+                    _buildViewToggle(),
+                    const SizedBox(height: 8),
+                    if (filteredAreas.isEmpty)
+                      _buildEmptyState(context)
+                    else
+                      ...filteredAreas.map((area) => _buildAreaTile(context, ref, area)),
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScreenHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Row(
+            children: [
+              Icon(LucideIcons.bookOpen, color: FlowColors.slate500),
+              SizedBox(width: 12),
+              Text(
+                'Study',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Outfit',
+                ),
+              ),
+            ],
           ),
+          _buildActionCircle(LucideIcons.settings, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionCircle(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: FlowColors.surfaceDark.withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: FlowColors.slate500),
       ),
     );
   }

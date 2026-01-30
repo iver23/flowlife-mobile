@@ -3,6 +3,7 @@
     <color name="ic_launcher_background">#355070</color>
     <color name="primary">#355070</color>
     <color name="primary_dark">#1A2A3A</color>
+    <color name="slate_50">#F8FAFC</color>
     <color name="slate_500">#64748B</color>
     <color name="slate_900">#0F172A</color>
 </resources>

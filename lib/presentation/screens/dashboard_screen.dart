@@ -17,52 +17,54 @@ class DashboardScreen extends ConsumerWidget {
     final tasksAsync = ref.watch(tasksProvider);
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 24),
-              tasksAsync.when(
-                data: (tasks) => MomentumHeatmap(tasks: tasks),
-                loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
-                error: (e, _) => Text('Error: $e'),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'PROJECTS',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: FlowColors.slate500,
-                ),
-              ),
-              const SizedBox(height: 16),
-              projectsAsync.when(
-                data: (projects) => _buildProjectGrid(projects, ref),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Error: $e'),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'UPCOMING TASKS',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: FlowColors.slate500,
-                ),
-              ),
-              const SizedBox(height: 16),
-              tasksAsync.when(
-                data: (tasks) => _buildRecentTasks(tasks.where((t) => !t.completed).toList()),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Error: $e'),
-              ),
+      extendBody: true,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.8),
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 32),
+                _buildMainStats(tasksAsync),
+                const SizedBox(height: 32),
+                const Text(
+                  'PROJECTS',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.0,
+                    color: FlowColors.slate400,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                projectsAsync.when(
+                  data: (projects) => _buildProjectGrid(projects, ref),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+                const SizedBox(height: 32),
+                _buildTasksHeader(),
+                const SizedBox(height: 16),
+                tasksAsync.when(
+                  data: (tasks) => _buildRecentTasks(tasks.where((t) => !t.completed).toList()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+                const SizedBox(height: 100), // Space for nav bar
+              ],
+            ),
           ),
         ),
       ),
@@ -76,39 +78,108 @@ class DashboardScreen extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Good Afternoon,',
+            const Text(
+              'Good morning',
               style: TextStyle(
                 fontSize: 14,
-                color: FlowColors.slate500,
+                color: FlowColors.slate400,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const Text(
-              'Flow State',
+            const SizedBox(height: 4),
+            Text(
+              'Welcome back',
               style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Outfit',
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : FlowColors.textLight,
               ),
             ),
           ],
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            );
-          },
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: FlowColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(LucideIcons.user, color: FlowColors.primary),
+        Row(
+          children: [
+            _buildActionCircle(LucideIcons.bell, () {}),
+            const SizedBox(width: 12),
+            _buildActionCircle(LucideIcons.settings, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            }),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCircle(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: FlowColors.surfaceDark.withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: FlowColors.slate500),
+      ),
+    );
+  }
+
+  Widget _buildMainStats(AsyncValue<List<TaskModel>> tasksAsync) {
+    return tasksAsync.when(
+      data: (tasks) {
+        final completed = tasks.where((t) => t.completed).length;
+        final total = tasks.length;
+        final progress = total == 0 ? 0.0 : completed / total;
+
+        return FlowCard(
+          useGlass: true,
+          padding: 24,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Total Progress',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: FlowColors.slate400),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${(progress * 100).toInt()}% Done',
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+              ),
+              const SizedBox(height: 24),
+              MomentumHeatmap(tasks: tasks), // We'll redesign this next
+            ],
+          ),
+        );
+      },
+      loading: () => const FlowCard(child: SizedBox(height: 120, child: Center(child: CircularProgressIndicator()))),
+      error: (e, _) => Text('Error: $e'),
+    );
+  }
+
+  Widget _buildTasksHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'UPCOMING TASKS',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2.0,
+            color: FlowColors.slate400,
+          ),
+        ),
+        Text(
+          'See all',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: FlowColors.primary.withOpacity(0.8),
           ),
         ),
       ],
@@ -118,7 +189,7 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildProjectGrid(List<ProjectModel> projects, WidgetRef ref) {
     if (projects.isEmpty) {
-      return const Text('No projects yet.');
+      return const Text('No projects yet.', style: TextStyle(color: FlowColors.slate400));
     }
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -130,41 +201,41 @@ class DashboardScreen extends ConsumerWidget {
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 1.1,
+            childAspectRatio: 1.0,
           ),
           itemCount: projects.length,
           itemBuilder: (context, index) {
             final project = projects[index];
+            final projectColor = FlowColors.parseProjectColor(project.color);
             return FlowCard(
-              padding: 16,
+              padding: 20,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ProjectDetailScreen(project: project),
-                  ),
+                  MaterialPageRoute(builder: (context) => ProjectDetailScreen(project: project)),
                 );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: _parseColor(project.color).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      color: projectColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    child: Icon(_parseIcon(project.icon), size: 20, color: _parseColor(project.color)),
+                    child: Icon(_parseIcon(project.icon), size: 18, color: projectColor),
                   ),
                   const Spacer(),
                   Text(
                     project.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: -0.2),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  _buildProjectProgress(project.id, ref),
+                  _buildProjectProgress(project.id, ref, projectColor),
                 ],
               ),
             );
@@ -174,30 +245,18 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProjectProgress(String projectId, WidgetRef ref) {
+  Widget _buildProjectProgress(String projectId, WidgetRef ref, Color color) {
     final tasksAsync = ref.watch(tasksProvider);
     return tasksAsync.when(
       data: (tasks) {
         final projectTasks = tasks.where((t) => t.projectId == projectId).toList();
-        if (projectTasks.isEmpty) return const FlowProgressBar(progress: 0);
+        if (projectTasks.isEmpty) return FlowProgressBar(progress: 0, color: color);
         final completed = projectTasks.where((t) => t.completed).length;
-        return FlowProgressBar(progress: completed / projectTasks.length);
+        return FlowProgressBar(progress: completed / projectTasks.length, color: color);
       },
-      loading: () => const FlowProgressBar(progress: 0),
-      error: (_, __) => const FlowProgressBar(progress: 0),
+      loading: () => FlowProgressBar(progress: 0, color: color),
+      error: (_, __) => FlowProgressBar(progress: 0, color: color),
     );
-  }
-
-  Color _parseColor(String colorStr) {
-    switch (colorStr.toLowerCase()) {
-      case 'emerald': return Colors.green;
-      case 'blue': return Colors.blue;
-      case 'violet': return Colors.purple;
-      case 'rose': return Colors.pink;
-      case 'amber': return Colors.amber;
-      case 'cyan': return Colors.cyan;
-      default: return FlowColors.primary;
-    }
   }
 
   IconData _parseIcon(String iconName) {
@@ -224,7 +283,7 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildRecentTasks(List<TaskModel> tasks) {
     if (tasks.isEmpty) {
-      return const Text('All caught up!');
+      return const Text('All caught up!', style: TextStyle(color: FlowColors.slate400));
     }
     return Column(
       children: tasks.take(3).map((task) => Padding(
@@ -233,14 +292,22 @@ class DashboardScreen extends ConsumerWidget {
           padding: 16,
           child: Row(
             children: [
-              Icon(LucideIcons.circle, size: 18, color: FlowColors.slate500),
-              const SizedBox(width: 12),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  color: FlowColors.slate200,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   task.title,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
               ),
+              const Icon(LucideIcons.chevronRight, size: 14, color: FlowColors.slate400),
             ],
           ),
         ),

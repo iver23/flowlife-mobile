@@ -184,38 +184,8 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
               child: Stack(
                 children: [
                   Scaffold(
-                    appBar: AppBar(
-                      title: const Text('FlowLife', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
-                      elevation: 0,
-                      backgroundColor: Colors.transparent,
-                      actions: [
-                        if (!ref.watch(connectivityProvider))
-                          const Padding(
-                            padding: EdgeInsets.only(right: 8.0),
-                            child: Icon(LucideIcons.wifiOff, size: 18, color: Colors.orange),
-                          ),
-                        IconButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchScreen())),
-                          icon: const Icon(LucideIcons.search, size: 20),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen())),
-                          icon: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: FlowColors.primary.withOpacity(0.5), width: 1),
-                            ),
-                            child: const CircleAvatar(
-                              radius: 12,
-                              backgroundColor: FlowColors.primary,
-                              child: Icon(LucideIcons.user, size: 14, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
+                    extendBody: true,
+                    backgroundColor: Colors.transparent,
                     body: Row(
                       children: [
                         if (isWide)

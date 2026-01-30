@@ -1,40 +1,55 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FlowColors {
-  // New Palette
-  static const Color duskBlue = Color(0xFF355070);
-  static const Color dustyLavender = Color(0xFF6D597A);
-  static const Color rosewood = Color(0xFFB56576);
-  static const Color lightCoral = Color(0xFFE56B6F);
-  static const Color lightBronze = Color(0xFFEAAC8B);
-
-  static const Color primary = duskBlue;
-  static const Color primaryDark = Color(0xFF2A425A); // Deepened Dusk Blue
-  static const Color cardLight = Colors.white;
-  static const Color cardDark = Color(0xFF1E1E1E);
-  static const Color surfaceDark = Color(0xFF121212);
-  static const Color textLight = Color(0xFF0F172A);
-  static const Color textDark = Colors.white;
+  // --- New "Calm-Tech" Palette ---
+  
+  // Neutrals (60%)
+  static const Color linen = Color(0xFFFDFCFB); // Warm, airy light background
+  static const Color midnight = Color(0xFF0F172A); // Deep, sophisticated navy base
+  
+  // Secondary / Surfaces (30%)
+  static const Color surfaceLight = Colors.white; 
+  static const Color surfaceDark = Color(0xFF1E293B); // Slightly lighter than midnight for depth
+  
+  // Accents (10%)
+  static const Color indigoAccent = Color(0xFF6366F1); // Primary brand color
+  static const Color blueAccent = Color(0xFF3B82F6); 
+  
+  // Semantic / Constants
+  static const Color primary = indigoAccent;
+  static const Color primaryDark = Color(0xFF4F46E5); // Vibrant Indigo
+  
+  static const Color textLight = Color(0xFF0F172A); // Dark navy for visibility
+  static const Color textDark = Color(0xFFF1F5F9); // Off-white to reduce glare
+  
   static const Color slate500 = Color(0xFF64748B);
   static const Color slate400 = Color(0xFF94A3B8);
   static const Color slate200 = Color(0xFFE2E8F0);
   static const Color slate100 = Color(0xFFF1F5F9);
   static const Color slate50 = Color(0xFFF8FAFC);
 
+  // Legacy Project Colors mapped to new aesthetic
+  static const Color duskBlue = Color(0xFF355070);
+  static const Color dustyLavender = Color(0xFF6D597A);
+  static const Color rosewood = Color(0xFFB56576);
+  static const Color lightCoral = Color(0xFFE56B6F);
+  static const Color lightBronze = Color(0xFFEAAC8B);
+
   static Color parseProjectColor(String? colorStr) {
     if (colorStr == null) return slate500;
     switch (colorStr.toLowerCase()) {
       case 'duskblue':
-      case 'blue': return duskBlue;
+      case 'blue': return blueAccent;
       case 'lavender':
-      case 'violet': return dustyLavender;
+      case 'violet': return const Color(0xFFA855F7); // Purple-500
       case 'rosewood':
-      case 'rose': return rosewood;
+      case 'rose': return const Color(0xFFEC4899); // Pink-500
       case 'coral':
-      case 'red': return lightCoral;
+      case 'red': return const Color(0xFFEF4444); // Red-500
       case 'bronze':
-      case 'amber': return lightBronze;
+      case 'amber': return const Color(0xFFF59E0B); // Amber-500
       case 'emerald': return const Color(0xFF10B981);
       default: return primary;
     }
@@ -46,7 +61,12 @@ class FlowTheme {
     return ThemeData(
       brightness: Brightness.light,
       primaryColor: FlowColors.primary,
-      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: FlowColors.linen,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: FlowColors.primary,
+        surface: FlowColors.surfaceLight,
+        onSurface: FlowColors.textLight,
+      ),
       textTheme: GoogleFonts.outfitTextTheme().apply(
         bodyColor: FlowColors.textLight,
         displayColor: FlowColors.textLight,
@@ -61,6 +81,12 @@ class FlowTheme {
           return FlowColors.slate200;
         }),
       ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(color: FlowColors.textLight, fontSize: 18, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -68,20 +94,32 @@ class FlowTheme {
     return ThemeData(
       brightness: Brightness.dark,
       primaryColor: FlowColors.primaryDark,
-      scaffoldBackgroundColor: FlowColors.surfaceDark,
+      scaffoldBackgroundColor: FlowColors.midnight,
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.dark,
+        seedColor: FlowColors.primaryDark,
+        surface: FlowColors.surfaceDark,
+        onSurface: FlowColors.textDark,
+      ),
       textTheme: GoogleFonts.outfitTextTheme().apply(
         bodyColor: FlowColors.textDark,
         displayColor: FlowColors.textDark,
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return FlowColors.primary;
+          if (states.contains(WidgetState.selected)) return FlowColors.primaryDark;
           return FlowColors.slate500;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return FlowColors.primary.withOpacity(0.5);
-          return FlowColors.cardDark;
+          if (states.contains(WidgetState.selected)) return FlowColors.primaryDark.withOpacity(0.3);
+          return FlowColors.midnight;
         }),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(color: FlowColors.textDark, fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -93,6 +131,7 @@ class FlowCard extends StatelessWidget {
   final VoidCallback? onTap;
   final double padding;
   final EdgeInsets? margin;
+  final bool useGlass;
 
   const FlowCard({
     super.key,
@@ -100,34 +139,50 @@ class FlowCard extends StatelessWidget {
     this.onTap,
     this.padding = 20,
     this.margin,
+    this.useGlass = false,
   });
 
   @override
   Widget build(BuildContext context) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
+    Color surfaceColor = isDark ? FlowColors.surfaceDark : FlowColors.surfaceLight;
+    
+    Widget card = Container(
+      padding: EdgeInsets.all(padding),
+      margin: margin,
+      decoration: BoxDecoration(
+        color: (isDark && useGlass) ? surfaceColor.withOpacity(0.7) : surfaceColor,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+          width: 0.5,
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: const Color(0xFF64748B).withOpacity(0.06),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                )
+              ],
+      ),
+      child: child,
+    );
+
+    if (isDark && useGlass) {
+      card = ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: card,
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(padding),
-        margin: margin,
-        decoration: BoxDecoration(
-          color: isDark ? FlowColors.cardDark : FlowColors.cardLight,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
-          ),
-          boxShadow: isDark
-              ? []
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  )
-                ],
-        ),
-        child: child,
-      ),
+      child: card,
     );
   }
 }

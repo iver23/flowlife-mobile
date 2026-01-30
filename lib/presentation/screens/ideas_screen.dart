@@ -5,6 +5,7 @@ import '../../core/providers.dart';
 import '../../core/idea_notifier.dart';
 import '../../core/project_notifier.dart';
 import '../../core/date_formatter.dart';
+import 'settings_screen.dart';
 import '../widgets/ui_components.dart';
 import '../../data/models/models.dart';
 
@@ -55,22 +56,47 @@ class IdeasScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(24.0),
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(LucideIcons.lightbulb, color: FlowColors.slate500),
-          Text(
-            'Ideas & Thoughts',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Outfit',
-            ),
+          const Row(
+            children: [
+              Icon(LucideIcons.lightbulb, color: FlowColors.slate500),
+              SizedBox(width: 12),
+              Text(
+                'Ideas & Thoughts',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Outfit',
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 24), // Spacer for centering
+          _buildActionCircle(LucideIcons.settings, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionCircle(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: FlowColors.surfaceDark.withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: FlowColors.slate500),
       ),
     );
   }

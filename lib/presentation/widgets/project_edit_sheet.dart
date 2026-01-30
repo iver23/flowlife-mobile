@@ -51,7 +51,7 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
         bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: BoxDecoration(
-        color: isDark ? FlowColors.cardDark : Colors.white,
+        color: isDark ? FlowColors.surfaceDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SingleChildScrollView(

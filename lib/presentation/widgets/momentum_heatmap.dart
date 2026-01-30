@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import '../../data/models/models.dart';
+import 'package:intl/intl.dart';
 import 'ui_components.dart';
+import '../../data/models/models.dart';
 
 class MomentumHeatmap extends StatelessWidget {
   final List<TaskModel> tasks;
@@ -10,96 +10,158 @@ class MomentumHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final heatmapData = _generateHeatmapData();
-
-    return FlowCard(
-      padding: 20,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(LucideIcons.trendingUp, size: 16, color: FlowColors.primary),
-              const SizedBox(width: 8),
-              Text(
-                '30-DAY MOMENTUM',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : FlowColors.textLight,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
+    final now = DateTime.now();
+    final monthName = DateFormat('MMMM yyyy').format(now);
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    // Monday = 1, Sunday = 7. We want Monday as first column (index 0).
+    final startOffset = (firstDayOfMonth.weekday - 1) % 7;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          monthName,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            alignment: WrapAlignment.spaceBetween,
-            children: heatmapData.map((day) => _buildHeatBox(context, day)).toList(),
-          ),
-          const SizedBox(height: 12),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('30 Days Ago', style: TextStyle(fontSize: 10, color: FlowColors.slate500)),
-              Text('Today', style: TextStyle(fontSize: 10, color: FlowColors.slate500)),
-            ],
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        _buildWeekdayHeaders(),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const double spacing = 6.0;
+            final double itemSize = (constraints.maxWidth - (6 * spacing)) / 7;
+            
+            return _buildCalendarGrid(context, daysInMonth, startOffset, itemSize, spacing, now);
+          },
+        ),
+      ],
     );
   }
 
-  Widget _buildHeatBox(BuildContext context, _HeatmapDay day) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-    Color color;
+  Widget _buildWeekdayHeaders() {
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: days.map((d) => Expanded(
+        child: Center(
+          child: Text(
+            d,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: FlowColors.slate400,
+            ),
+          ),
+        ),
+      )).toList(),
+    );
+  }
 
-    if (day.count == 0) {
-      color = isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100]!;
-    } else if (day.count < 3) {
-      color = isDark ? FlowColors.primaryDark.withOpacity(0.3) : FlowColors.primary.withOpacity(0.2);
-    } else if (day.count < 5) {
-      color = isDark ? FlowColors.primaryDark.withOpacity(0.6) : FlowColors.primary.withOpacity(0.5);
+  Widget _buildCalendarGrid(BuildContext context, int daysInMonth, int startOffset, double itemSize, double spacing, DateTime now) {
+    final List<Widget> rows = [];
+    int dayCounter = 1;
+    
+    // Calculate number of rows needed
+    final totalCells = startOffset + daysInMonth;
+    final numRows = (totalCells / 7).ceil();
+    
+    for (int row = 0; row < numRows; row++) {
+      final List<Widget> rowChildren = [];
+      
+      for (int col = 0; col < 7; col++) {
+        final cellIndex = row * 7 + col;
+        
+        if (cellIndex < startOffset || dayCounter > daysInMonth) {
+          // Empty cell
+          rowChildren.add(SizedBox(width: itemSize, height: itemSize));
+        } else {
+          final date = DateTime(now.year, now.month, dayCounter);
+          final count = _getTaskCountForDate(date);
+          rowChildren.add(_buildDayCell(context, date, dayCounter, count, itemSize, now));
+          dayCounter++;
+        }
+      }
+      
+      rows.add(Padding(
+        padding: EdgeInsets.only(bottom: row < numRows - 1 ? spacing : 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: rowChildren,
+        ),
+      ));
+    }
+    
+    return Column(children: rows);
+  }
+
+  Widget _buildDayCell(BuildContext context, DateTime date, int day, int count, double size, DateTime now) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isToday = DateUtils.isSameDay(date, now);
+    final bool isFuture = date.isAfter(now);
+    
+    // Determine color based on count
+    Color cellColor;
+    if (isFuture) {
+      cellColor = isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03);
+    } else if (count == 0) {
+      cellColor = isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05);
+    } else if (count <= 2) {
+      cellColor = FlowColors.primary.withOpacity(0.3);
+    } else if (count <= 4) {
+      cellColor = FlowColors.primary.withOpacity(0.6);
     } else {
-      color = isDark ? FlowColors.primaryDark : FlowColors.primary;
+      cellColor = FlowColors.primary;
     }
 
     return Tooltip(
-      message: '${day.date.day}/${day.date.month}: ${day.count} tasks',
+      message: '${DateFormat('MMM d').format(date)}: ${isFuture ? '-' : '$count'} tasks',
       child: Container(
-        width: 14,
-        height: 14,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(3),
+          color: isToday ? FlowColors.primary : cellColor,
+          borderRadius: BorderRadius.circular(6),
+          border: isToday ? Border.all(color: Colors.white, width: 1.5) : null,
+          boxShadow: isToday ? [
+            BoxShadow(
+              color: FlowColors.primary.withOpacity(0.4),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ] : null,
+        ),
+        child: Center(
+          child: Text(
+            '$day',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+              color: isToday 
+                  ? Colors.white 
+                  : (isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.5)),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  List<_HeatmapDay> _generateHeatmapData() {
-    final List<_HeatmapDay> data = [];
-    final today = DateTime.now();
-    final normalizedToday = DateTime(today.year, today.month, today.day);
-
-    for (int i = 29; i >= 0; i--) {
-      final date = normalizedToday.subtract(Duration(days: i));
-      final count = tasks.where((t) {
-        if (!t.completed || t.completedAt == null) return false;
-        final cDate = DateTime.fromMillisecondsSinceEpoch(t.completedAt!);
-        return cDate.year == date.year && cDate.month == date.month && cDate.day == date.day;
-      }).length;
-      data.add(_HeatmapDay(date: date, count: count));
-    }
-    return data;
+  int _getTaskCountForDate(DateTime date) {
+    return tasks.where((t) {
+      if (!t.completed || t.completedAt == null) return false;
+      final cDate = DateTime.fromMillisecondsSinceEpoch(t.completedAt!);
+      return DateUtils.isSameDay(cDate, date);
+    }).length;
   }
 }
 
-class _HeatmapDay {
+class _ChartDay {
   final DateTime date;
   final int count;
-  _HeatmapDay({required this.date, required this.count});
+  _ChartDay({required this.date, required this.count});
 }

@@ -5,6 +5,7 @@ import '../../core/providers.dart';
 import '../../core/project_notifier.dart';
 import '../../data/models/models.dart';
 import '../widgets/ui_components.dart';
+import 'settings_screen.dart';
 import 'project_detail_screen.dart';
 import '../widgets/project_edit_sheet.dart';
 
@@ -105,22 +106,47 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(24, 24, 24, 8),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(LucideIcons.folder, color: FlowColors.slate500),
-          Text(
-            'Your Projects',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Outfit',
-            ),
+          const Row(
+            children: [
+              Icon(LucideIcons.folder, color: FlowColors.slate500),
+              SizedBox(width: 12),
+              Text(
+                'Your Projects',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Outfit',
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 24),
+          _buildActionCircle(LucideIcons.settings, () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionCircle(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: FlowColors.surfaceDark.withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: FlowColors.slate500),
       ),
     );
   }

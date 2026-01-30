@@ -54,36 +54,31 @@ class TaskCard extends StatelessWidget {
         onTap: onTap,
         padding: 0,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Row(
             children: [
-              // Checkbox / Icon
+              // Circular Indicator
               GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
                   onToggle();
                 },
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 1.0, end: 1.0),
-                  duration: const Duration(milliseconds: 100),
-                  builder: (context, scale, child) => Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: task.completed
-                            ? Colors.green.withOpacity(isDark ? 0.2 : 0.1)
-                            : projectColor.withOpacity(isDark ? 0.2 : 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        task.completed ? LucideIcons.check : LucideIcons.circle,
-                        size: 20,
-                        color: task.completed ? Colors.green : (task.isPinned ? Colors.orange : projectColor),
-                      ),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: task.completed
+                        ? FlowColors.primary
+                        : Colors.transparent,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: task.completed ? FlowColors.primary : FlowColors.slate200,
+                      width: 2,
                     ),
                   ),
+                  child: task.completed
+                      ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
+                      : null,
                 ),
               ),
               const SizedBox(width: 16),
@@ -92,103 +87,57 @@ class TaskCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            task.title,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              decoration: task.completed ? TextDecoration.lineThrough : null,
-                              color: task.completed
-                                  ? FlowColors.slate500
-                                  : (isDark ? Colors.white : FlowColors.textLight),
-                            ),
-                          ),
-                        ),
-                        if (task.isPinned && !task.completed) ...[
-                          const Icon(LucideIcons.pin, size: 14, color: Colors.orange),
-                          const SizedBox(width: 8),
-                        ],
-                        if (!task.completed) ...[
-                          const SizedBox(width: 8),
-                          FlowBadge(
-                            label: projectTitle,
-                            color: projectColor,
-                          ),
-                        ],
-                      ],
+                    Text(
+                      task.title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        decoration: task.completed ? TextDecoration.lineThrough : null,
+                        color: task.completed
+                            ? FlowColors.slate400
+                            : (isDark ? Colors.white : FlowColors.textLight),
+                      ),
                     ),
-                    if (task.description != null && !task.completed) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        task.description!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: FlowColors.slate500,
-                        ),
-                      ),
-                    ],
-                    if (task.customTags.isNotEmpty && !task.completed) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: task.customTags.map((t) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: FlowColors.slate400.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            t,
-                            style: const TextStyle(fontSize: 9, color: FlowColors.slate500, fontWeight: FontWeight.bold),
-                          ),
-                        )).toList(),
-                      ),
-                    ],
                     if (task.dueDate != null || task.subtasks.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
                           if (task.dueDate != null) ...[
-                            Icon(LucideIcons.calendar, size: 10, color: DateFormatter.isOverdue(task.dueDate!, task.completed) ? Colors.red : FlowColors.slate500),
+                            Icon(LucideIcons.calendar, size: 12, color: DateFormatter.isOverdue(task.dueDate!, task.completed) ? Colors.red.withOpacity(0.8) : FlowColors.slate400),
                             const SizedBox(width: 4),
                             Text(
                               DateFormatter.format(task.dueDate!),
                               style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: DateFormatter.isOverdue(task.dueDate!, task.completed) ? Colors.red : FlowColors.slate500,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: DateFormatter.isOverdue(task.dueDate!, task.completed) ? Colors.red.withOpacity(0.8) : FlowColors.slate400,
                               ),
                             ),
                             const SizedBox(width: 12),
                           ],
                           if (task.subtasks.isNotEmpty) ...[
-                            const Icon(LucideIcons.checkSquare, size: 10, color: FlowColors.slate500),
+                            const Icon(LucideIcons.checkSquare, size: 12, color: FlowColors.slate400),
                             const SizedBox(width: 4),
                             Text(
                               '${task.subtasks.where((s) => s.completed).length}/${task.subtasks.length}',
                               style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: FlowColors.slate500,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: FlowColors.slate400,
                               ),
                             ),
                           ],
+                          const Spacer(),
+                          FlowBadge(
+                            label: projectTitle,
+                            color: projectColor,
+                          ),
                         ],
                       ),
                     ],
                   ],
                 ),
               ),
-              if (task.energyLevel != null && !task.completed) ...[
-                const SizedBox(width: 8),
-                _buildEnergyIndicator(task.energyLevel!),
-              ],
             ],
           ),
         ),

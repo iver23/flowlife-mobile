@@ -93,7 +93,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Theme.of(context).brightness == Brightness.dark 
-                    ? FlowColors.cardDark 
+                    ? FlowColors.surfaceDark 
                     : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: FlowColors.slate400.withOpacity(0.2)),

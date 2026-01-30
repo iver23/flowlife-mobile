@@ -164,7 +164,7 @@ class InboxScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         height: 56,
         decoration: BoxDecoration(
-          color: isDark ? FlowColors.cardDark : Colors.white,
+          color: isDark ? FlowColors.surfaceDark : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isDark ? [] : [
             BoxShadow(

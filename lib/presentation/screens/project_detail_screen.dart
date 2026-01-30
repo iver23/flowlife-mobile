@@ -20,241 +20,200 @@ class ProjectDetailScreen extends ConsumerWidget {
     final taskNotifier = ref.read(taskNotifierProvider.notifier);
 
     return Scaffold(
-      body: SafeArea(
-        child: tasksAsync.when(
-          data: (tasks) {
-            final projectTasks = tasks.where((t) => t.projectId == project.id).toList();
-            
-            // Sort: Pinned first, then by order/createdAt
-            projectTasks.sort((a, b) {
-              if (a.isPinned && !b.isPinned) return -1;
-              if (!a.isPinned && b.isPinned) return 1;
-              
-              if (a.order != null && b.order != null) {
-                return a.order!.compareTo(b.order!);
-              }
-              return b.createdAt.compareTo(a.createdAt);
-            });
+      extendBody: true,
+      body: tasksAsync.when(
+        data: (tasks) {
+          final projectTasks = tasks.where((t) => t.projectId == project.id).toList();
+          
+          projectTasks.sort((a, b) {
+            if (a.isPinned && !b.isPinned) return -1;
+            if (!a.isPinned && b.isPinned) return 1;
+            if (a.order != null && b.order != null) return a.order!.compareTo(b.order!);
+            return b.createdAt.compareTo(a.createdAt);
+          });
 
-            final completedCount = projectTasks.where((t) => t.completed).length;
-            final progress = projectTasks.isEmpty ? 0.0 : completedCount / projectTasks.length;
+          final completedCount = projectTasks.where((t) => t.completed).length;
+          final progress = projectTasks.isEmpty ? 0.0 : completedCount / projectTasks.length;
 
-            return CustomScrollView(
-              slivers: [
-                _buildSliverAppBar(context, ref),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            if (constraints.maxWidth > 600) {
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(child: _buildProgressCard(context, progress, completedCount, projectTasks.length)),
-                                  const SizedBox(width: 24),
-                                  Expanded(child: ProjectAnalytics(tasks: projectTasks)),
-                                ],
-                              );
-                            }
-                            return Column(
-                              children: [
-                                _buildProgressCard(context, progress, completedCount, projectTasks.length),
-                                const SizedBox(height: 16),
-                                ProjectAnalytics(tasks: projectTasks),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 32),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'TASKS',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                                color: FlowColors.slate500,
-                              ),
+          return CustomScrollView(
+            slivers: [
+              _buildSliverAppBar(context, ref),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: Column(
+                    children: [
+                      _buildProgressCard(context, progress, completedCount, projectTasks.length),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'TASKS',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 2.0,
+                              color: FlowColors.slate400,
                             ),
-                            FlowBadge(
-                              label: 'ACTIVE',
-                              color: FlowColors.primary,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverReorderableList(
-                  itemCount: projectTasks.length,
-                  onReorder: (oldIndex, newIndex) {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    final item = projectTasks.removeAt(oldIndex);
-                    projectTasks.insert(newIndex, item);
-                    taskNotifier.reorderTasks(projectTasks);
-                  },
-                  itemBuilder: (context, index) {
-                    final task = projectTasks[index];
-                    return ReorderableDelayedDragStartListener(
-                      key: ValueKey(task.id),
-                      index: index,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-                        child: TaskCard(
-                          task: task,
-                          projectTitle: project.title,
-                          projectIcon: project.icon,
-                          projectColor: FlowColors.parseProjectColor(project.color),
-                          onToggle: () => taskNotifier.toggleTask(task),
-                          onDelete: () => taskNotifier.deleteTask(task.id),
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => TaskEditSheet(
-                                task: task,
-                                onSave: (updatedTask) => taskNotifier.updateTask(updatedTask),
-                              ),
-                            );
-                          },
-                        ),
+                          ),
+                          FlowBadge(
+                            label: 'IN PROGRESS',
+                            color: FlowColors.parseProjectColor(project.color),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 24),
-                        _buildAddTaskButton(context, ref),
-                        const SizedBox(height: 100),
-                      ],
-                    ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
-        ),
+              ),
+              SliverReorderableList(
+                itemCount: projectTasks.length,
+                onReorder: (oldIndex, newIndex) {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  final item = projectTasks.removeAt(oldIndex);
+                  projectTasks.insert(newIndex, item);
+                  taskNotifier.reorderTasks(projectTasks);
+                },
+                itemBuilder: (context, index) {
+                  final task = projectTasks[index];
+                  return ReorderableDelayedDragStartListener(
+                    key: ValueKey(task.id),
+                    index: index,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: TaskCard(
+                        task: task,
+                        projectTitle: project.title,
+                        projectIcon: project.icon,
+                        projectColor: FlowColors.parseProjectColor(project.color),
+                        onToggle: () => taskNotifier.toggleTask(task),
+                        onDelete: () => taskNotifier.deleteTask(task.id),
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => TaskEditSheet(
+                              task: task,
+                              onSave: (updatedTask) => taskNotifier.updateTask(updatedTask),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      _buildAddTaskButton(context, ref),
+                      const SizedBox(height: 120),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
   Widget _buildSliverAppBar(BuildContext context, WidgetRef ref) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return SliverAppBar(
       expandedHeight: 0,
       floating: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(LucideIcons.chevronLeft, color: FlowColors.primary),
-        onPressed: () => Navigator.pop(context),
+      leading: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: _buildActionCircle(LucideIcons.chevronLeft, () => Navigator.pop(context)),
       ),
       title: Text(
         project.title,
-        style: const TextStyle(
-          color: FlowColors.textLight, // Theme will handle this via outfit
-          fontWeight: FontWeight.bold,
+        style: TextStyle(
+          color: isDark ? Colors.white : FlowColors.textLight,
+          fontWeight: FontWeight.w700,
           fontSize: 18,
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(LucideIcons.trash2, color: Colors.red, size: 20),
-          onPressed: () => _confirmDelete(context, ref),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref), color: Colors.red.withOpacity(0.8)),
         ),
       ],
       centerTitle: true,
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Project?'),
-        content: const Text('This will delete the project and all its tasks. This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () {
-              ref.read(projectNotifierProvider.notifier).deleteProject(project.id);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Go back to dashboard
-            },
-            child: const Text('DELETE', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+  Widget _buildActionCircle(IconData icon, VoidCallback onTap, {Color? color}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: FlowColors.surfaceDark.withOpacity(0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: color ?? FlowColors.slate500),
       ),
     );
   }
 
   Widget _buildProgressCard(BuildContext context, double progress, int completed, int total) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final projectColor = FlowColors.parseProjectColor(project.color);
+    
     return FlowCard(
-      padding: 32,
-      child: Column(
+      useGlass: true,
+      padding: 24,
+      child: Row(
         children: [
           Stack(
             alignment: Alignment.center,
             children: [
               SizedBox(
-                width: 140,
-                height: 140,
+                width: 80,
+                height: 80,
                 child: CircularProgressIndicator(
                   value: progress,
-                  strokeWidth: 10,
-                  backgroundColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isDark ? FlowColors.primaryDark : FlowColors.primary
-                  ),
+                  strokeWidth: 8,
+                  strokeCap: StrokeCap.round,
+                  backgroundColor: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+                  valueColor: AlwaysStoppedAnimation<Color>(projectColor),
                 ),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${(progress * 100).toInt()}%',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'COMPLETE',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: FlowColors.primary,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ],
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          Text(
-            '$completed of $total tasks completed',
-            style: const TextStyle(
-              fontSize: 14,
-              color: FlowColors.slate500,
-              fontWeight: FontWeight.w500,
+          const SizedBox(width: 24),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$completed / $total Tasks',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Current project progress',
+                  style: TextStyle(fontSize: 12, color: FlowColors.slate400, fontWeight: FontWeight.w500),
+                ),
+              ],
             ),
           ),
         ],
@@ -287,36 +246,35 @@ class ProjectDetailScreen extends ConsumerWidget {
         );
       },
       child: Container(
-        height: 110,
+        height: 100,
         padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[200]!,
-            width: 2,
+            color: isDark ? Colors.white.withOpacity(0.08) : FlowColors.slate200,
+            width: 1,
           ),
           color: isDark ? Colors.white.withOpacity(0.02) : Colors.white,
         ),
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFC),
+                color: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate50,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(LucideIcons.plus, size: 20, color: FlowColors.slate500),
+              child: const Icon(LucideIcons.plus, size: 20, color: FlowColors.slate400),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(width: 16),
             const Text(
-              'Tap to add a new task',
-              textAlign: TextAlign.center,
+              'Add a new task',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 color: FlowColors.slate400,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -325,4 +283,27 @@ class ProjectDetailScreen extends ConsumerWidget {
     );
   }
 
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Project?'),
+        content: const Text('This will delete the project and all its tasks. This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(projectNotifierProvider.notifier).deleteProject(project.id);
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Go back to dashboard
+            },
+            child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 }
