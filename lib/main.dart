@@ -31,6 +31,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme_notifier.dart';
 import 'core/biometric_notifier.dart';
+import 'core/connectivity_notifier.dart';
 import 'presentation/screens/lock_screen.dart';
 
 void main() async {
@@ -148,6 +149,11 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
                       elevation: 0,
                       backgroundColor: Colors.transparent,
                       actions: [
+                        if (!ref.watch(connectivityProvider))
+                          const Padding(
+                            padding: EdgeInsets.only(right: 8.0),
+                            child: Icon(LucideIcons.wifiOff, size: 18, color: Colors.orange),
+                          ),
                         IconButton(
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchScreen())),
                           icon: const Icon(LucideIcons.search, size: 20),
