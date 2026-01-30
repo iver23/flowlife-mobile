@@ -137,7 +137,6 @@ class _MainScreenState extends State<MainScreen> {
               child: Stack(
                 children: [
                   Scaffold(
-                    extendBody: true,
                     appBar: AppBar(
                       title: const Text('FlowLife', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
                       elevation: 0,
