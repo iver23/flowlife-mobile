@@ -189,6 +189,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
+                    floatingActionButton: _buildFAB(context, ref),
                     bottomNavigationBar: isWide ? null : FlowNavigationBar(
                       currentIndex: _selectedIndex,
                       onTap: (index) => setState(() => _selectedIndex = index),
@@ -219,19 +220,19 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildFAB(BuildContext context, WidgetRef ref) {
     switch (_selectedIndex) {
-      case 0: // Dashboard
+      case 2: // Dashboard
         return MultiActionFAB(
           onAddProject: () => _showAddProjectSheet(context, ref),
           onAddTask: () => _showAddTaskSheet(context, ref),
           onAddIdea: () => _showAddIdeaSheet(context, ref),
         );
-      case 1: // Projects
+      case 0: // Projects
         return FloatingActionButton(
           onPressed: () => _showAddProjectSheet(context, ref),
           backgroundColor: FlowColors.primary,
           child: const Icon(LucideIcons.plus, color: Colors.white),
         );
-      case 2: // Tasks
+      case 1: // Tasks
         return FloatingActionButton(
           onPressed: () => _showAddTaskSheet(context, ref),
           backgroundColor: FlowColors.primary,
