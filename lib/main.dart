@@ -121,7 +121,7 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
           createdAt: DateTime.now().millisecondsSinceEpoch,
         ),
         onSave: (task) {
-          ref.read(taskNotifierProvider.notifier).addTask(task.title, projectId: task.projectId);
+          ref.read(taskNotifierProvider.notifier).addTask(task);
         },
       ),
     );
@@ -310,10 +310,7 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
           subtasks: [],
           createdAt: DateTime.now().millisecondsSinceEpoch,
         ),
-        onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(
-          task.title, 
-          projectId: task.projectId,
-        ),
+        onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(task),
       ),
     );
   }

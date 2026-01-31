@@ -181,7 +181,13 @@ class InboxScreen extends ConsumerWidget {
                 controller: controller,
                 onSubmitted: (value) {
                   if (value.isNotEmpty) {
-                    notifier.addTask(value);
+                    notifier.addTask(TaskModel(
+                      id: '',
+                      title: value,
+                      completed: false,
+                      subtasks: [],
+                      createdAt: DateTime.now().millisecondsSinceEpoch,
+                    ));
                     controller.clear();
                   }
                 },
@@ -195,7 +201,13 @@ class InboxScreen extends ConsumerWidget {
             IconButton(
               onPressed: () {
                 if (controller.text.isNotEmpty) {
-                  notifier.addTask(controller.text);
+                  notifier.addTask(TaskModel(
+                    id: '',
+                    title: controller.text,
+                    completed: false,
+                    subtasks: [],
+                    createdAt: DateTime.now().millisecondsSinceEpoch,
+                  ));
                   controller.clear();
                 }
               },

@@ -9,6 +9,8 @@ import '../widgets/ui_components.dart';
 import 'settings_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_edit_sheet.dart';
+import '../../core/tag_notifier.dart';
+import '../../data/models/tag_model.dart';
 
 class TasksScreen extends ConsumerWidget {
   const TasksScreen({super.key});
@@ -24,10 +26,21 @@ class TasksScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context),
+            _buildTagFilters(context, ref),
             Expanded(
               child: tasksAsync.when(
                 data: (tasks) {
-                  final activeTasks = tasks.where((t) => !t.completed).toList();
+                  final selectedTag = ref.watch(selectedTagFilterProvider);
+                  final selectedProjectId = ref.watch(selectedProjectFilterProvider);
+                  var activeTasks = tasks.where((t) => !t.completed).toList();
+
+                  if (selectedTag != null) {
+                    activeTasks = activeTasks.where((t) => t.customTags.contains(selectedTag)).toList();
+                  }
+                  
+                  if (selectedProjectId != null) {
+                    activeTasks = activeTasks.where((t) => t.projectId == selectedProjectId).toList();
+                  }
                   
                   // Sort: Pinned first, then by creation date (newest first)
                   activeTasks.sort((a, b) {
@@ -56,6 +69,9 @@ class TasksScreen extends ConsumerWidget {
                           final project = task.projectId != null 
                               ? projects.firstWhere((p) => p.id == task.projectId, orElse: () => _defaultProject())
                               : _defaultProject();
+                          
+                          final tags = ref.watch(tagNotifierProvider).value ?? [];
+                          final tagColors = <String, Color>{for (var t in tags) t.name: FlowColors.parseProjectColor(t.color)};
 
                           return Padding(
                             key: ValueKey(task.id),
@@ -65,6 +81,7 @@ class TasksScreen extends ConsumerWidget {
                               projectTitle: project.title,
                               projectIcon: project.icon,
                               projectColor: FlowColors.parseProjectColor(project.color),
+                              tagColors: tagColors,
                               onToggle: () => taskNotifier.toggleTask(task),
                               onDelete: () => taskNotifier.deleteTask(task.id),
                               onTap: () {
@@ -174,4 +191,177 @@ class TasksScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildTagFilters(BuildContext context, WidgetRef ref) {
+    final tagsAsync = ref.watch(tagNotifierProvider);
+    final projectsAsync = ref.watch(projectNotifierProvider);
+    final selectedTag = ref.watch(selectedTagFilterProvider);
+    final selectedProjectId = ref.watch(selectedProjectFilterProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Project Filters
+        projectsAsync.when(
+          data: (projects) {
+            if (projects.isEmpty) return const SizedBox.shrink();
+            return Container(
+              height: 44,
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                itemCount: projects.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        avatar: const Icon(LucideIcons.layers, size: 14),
+                        label: const Text('All Projects'),
+                        selected: selectedProjectId == null,
+                        onSelected: (selected) {
+                          ref.read(selectedProjectFilterProvider.notifier).state = null;
+                        },
+                        selectedColor: FlowColors.primary.withOpacity(0.1),
+                        checkmarkColor: FlowColors.primary,
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          color: selectedProjectId == null ? FlowColors.primary : FlowColors.slate500,
+                          fontWeight: selectedProjectId == null ? FontWeight.bold : FontWeight.normal,
+                        ),
+                        backgroundColor: Colors.transparent,
+                        shape: StadiumBorder(side: BorderSide(
+                          color: selectedProjectId == null ? FlowColors.primary : FlowColors.slate400.withOpacity(0.2),
+                        )),
+                      ),
+                    );
+                  }
+
+                  final project = projects[index - 1];
+                  final isSelected = selectedProjectId == project.id;
+                  final projectColor = FlowColors.parseProjectColor(project.color);
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      avatar: Icon(_parseIcon(project.icon), size: 14, color: isSelected ? projectColor : FlowColors.slate500),
+                      label: Text(project.title),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        ref.read(selectedProjectFilterProvider.notifier).state = selected ? project.id : null;
+                      },
+                      selectedColor: projectColor.withOpacity(0.1),
+                      checkmarkColor: projectColor,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: isSelected ? projectColor : FlowColors.slate500,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      shape: StadiumBorder(side: BorderSide(
+                        color: isSelected ? projectColor : FlowColors.slate400.withOpacity(0.2),
+                      )),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+        // Tag Filters
+        tagsAsync.when(
+          data: (tags) {
+            if (tags.isEmpty) return const SizedBox.shrink();
+            return Container(
+              height: 44,
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                itemCount: tags.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        avatar: const Icon(LucideIcons.tag, size: 14),
+                        label: const Text('All Tags'),
+                        selected: selectedTag == null,
+                        onSelected: (selected) {
+                          ref.read(selectedTagFilterProvider.notifier).state = null;
+                        },
+                        selectedColor: FlowColors.primary.withOpacity(0.1),
+                        checkmarkColor: FlowColors.primary,
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          color: selectedTag == null ? FlowColors.primary : FlowColors.slate500,
+                          fontWeight: selectedTag == null ? FontWeight.bold : FontWeight.normal,
+                        ),
+                        backgroundColor: Colors.transparent,
+                        shape: StadiumBorder(side: BorderSide(
+                          color: selectedTag == null ? FlowColors.primary : FlowColors.slate400.withOpacity(0.2),
+                        )),
+                      ),
+                    );
+                  }
+
+                  final tag = tags[index - 1];
+                  final isSelected = selectedTag == tag.name;
+                  final tagColor = FlowColors.parseProjectColor(tag.color);
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(tag.name),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        ref.read(selectedTagFilterProvider.notifier).state = selected ? tag.name : null;
+                      },
+                      selectedColor: tagColor.withOpacity(0.1),
+                      checkmarkColor: tagColor,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: isSelected ? tagColor : FlowColors.slate500,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      shape: StadiumBorder(side: BorderSide(
+                        color: isSelected ? tagColor : FlowColors.slate400.withOpacity(0.2),
+                      )),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  IconData _parseIcon(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'work': return LucideIcons.briefcase;
+      case 'home': return LucideIcons.home;
+      case 'favorite': return LucideIcons.heart;
+      case 'bolt': return LucideIcons.zap;
+      case 'menu_book': return LucideIcons.book;
+      case 'coffee': return LucideIcons.coffee;
+      case 'public': return LucideIcons.globe;
+      case 'anchor': return LucideIcons.anchor;
+      case 'fitness_center': return LucideIcons.dumbbell;
+      case 'shopping_cart': return LucideIcons.shoppingCart;
+      case 'flight': return LucideIcons.plane;
+      case 'music_note': return LucideIcons.music;
+      case 'pets': return LucideIcons.dog;
+      case 'spa': return LucideIcons.flower;
+      case 'code': return LucideIcons.code;
+      case 'savings': return LucideIcons.banknote;
+      default: return LucideIcons.folder;
+    }
+  }
 }

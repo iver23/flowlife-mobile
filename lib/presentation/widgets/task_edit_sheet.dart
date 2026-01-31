@@ -23,6 +23,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   late List<String> _selectedCustomTags;
   late bool _isPinned;
   late List<Subtask> _subtasks;
+  late RecurrenceType _recurrence;
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     _selectedProjectId = widget.task.projectId;
     _selectedCustomTags = List.from(widget.task.customTags);
     _isPinned = widget.task.isPinned;
+    _recurrence = widget.task.recurrence;
   }
 
   @override
@@ -130,6 +132,26 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
             const SizedBox(height: 12),
             ..._subtasks.map((st) => _buildSubtaskItem(st)),
             _buildAddSubtaskField(),
+            const SizedBox(height: 32),
+            const Text(
+              'REPEAT',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500),
+            ),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildRecurrenceChip(RecurrenceType.NONE, 'None'),
+                  const SizedBox(width: 8),
+                  _buildRecurrenceChip(RecurrenceType.DAILY, 'Daily'),
+                  const SizedBox(width: 8),
+                  _buildRecurrenceChip(RecurrenceType.WEEKLY, 'Weekly'),
+                  const SizedBox(width: 8),
+                  _buildRecurrenceChip(RecurrenceType.MONTHLY, 'Monthly'),
+                ],
+              ),
+            ),
             const SizedBox(height: 40),
             FlowButton(
               label: 'SAVE CHANGES',
@@ -139,7 +161,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   title: _titleController.text,
                   description: _descController.text,
                   dueDate: widget.task.dueDate,
-                  recurrence: widget.task.recurrence,
+                  recurrence: _recurrence,
                   completed: widget.task.completed,
                   completedAt: widget.task.completedAt,
                   energyLevel: _energyLevel,
@@ -244,6 +266,31 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
         hintStyle: TextStyle(fontSize: 14, color: FlowColors.slate500),
         icon: Icon(LucideIcons.plus, size: 18, color: FlowColors.slate500),
         border: InputBorder.none,
+      ),
+    );
+  }
+
+  Widget _buildRecurrenceChip(RecurrenceType type, String label) {
+    bool isSelected = _recurrence == type;
+    return GestureDetector(
+      onTap: () => setState(() => _recurrence = type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? FlowColors.primary : FlowColors.slate500.withOpacity(0.2),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? FlowColors.primary : FlowColors.slate500,
+          ),
+        ),
       ),
     );
   }

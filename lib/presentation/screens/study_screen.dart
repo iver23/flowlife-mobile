@@ -263,11 +263,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
                   child: Text('No subjects yet', style: TextStyle(color: FlowColors.slate400, fontSize: 13, fontStyle: FontStyle.italic)),
                 )
               else
-                ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject)),
+                ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject, FlowColors.parseProjectColor(area.color))),
               ListTile(
                 dense: true,
-                leading: const Icon(LucideIcons.plus, size: 18, color: FlowColors.primary),
-                title: const Text('Add Subject', style: TextStyle(color: FlowColors.primary, fontWeight: FontWeight.w600)),
+                leading: Icon(LucideIcons.plus, size: 18, color: FlowColors.parseProjectColor(area.color)),
+                title: Text('Add Subject', style: TextStyle(color: FlowColors.parseProjectColor(area.color), fontWeight: FontWeight.w600)),
                 onTap: () => _showAddSubject(context, area.id),
               ),
             ],
@@ -277,7 +277,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     );
   }
 
-  Widget _buildSubjectTile(BuildContext context, WidgetRef ref, Subject subject) {
+  Widget _buildSubjectTile(BuildContext context, WidgetRef ref, Subject subject, Color areaColor) {
     final state = ref.watch(studyNotifierProvider);
     final notifier = ref.read(studyNotifierProvider.notifier);
     final lessons = state.lessons.where((l) => l.subjectId == subject.id).toList();
@@ -302,14 +302,14 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
                 value: progress,
                 minHeight: 4,
                 backgroundColor: FlowColors.slate100,
-                valueColor: const AlwaysStoppedAnimation<Color>(FlowColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(areaColor),
               ),
             ),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${(progress * 100).toInt()}%', style: const TextStyle(fontSize: 12, color: FlowColors.primary, fontWeight: FontWeight.bold)),
+              Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: areaColor, fontWeight: FontWeight.bold)),
               const SizedBox(width: 8),
               const Icon(LucideIcons.chevronDown, size: 16),
             ],
@@ -320,7 +320,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
               leading: Checkbox(
                 value: lesson.isCompleted,
                 onChanged: (_) => notifier.toggleLesson(lesson.id),
-                activeColor: FlowColors.primary,
+                activeColor: areaColor,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               ),
               title: Text(
@@ -337,8 +337,8 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
             )),
             ListTile(
               dense: true,
-              leading: const Icon(LucideIcons.plus, size: 18, color: FlowColors.primary),
-              title: const Text('Add Lesson', style: TextStyle(color: FlowColors.primary, fontWeight: FontWeight.w600)),
+              leading: Icon(LucideIcons.plus, size: 18, color: areaColor),
+              title: Text('Add Lesson', style: TextStyle(color: areaColor, fontWeight: FontWeight.w600)),
               onTap: () => _showAddLesson(context, subject.id),
             ),
           ],

@@ -24,3 +24,6 @@ final ideasProvider = StreamProvider<List<IdeaModel>>((ref) {
   final service = ref.watch(firestoreServiceProvider);
   return service.streamIdeas();
 });
+
+final selectedTagFilterProvider = StateProvider<String?>((ref) => null);
+final selectedProjectFilterProvider = StateProvider<String?>((ref) => null);

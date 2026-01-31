@@ -8,6 +8,8 @@ import '../../data/models/models.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_edit_sheet.dart';
+import '../../core/tag_notifier.dart';
+import '../../data/models/tag_model.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -50,14 +52,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             data: tasksAsync,
                             query: _query,
                             filter: (task) => task.title.toLowerCase().contains(_query.toLowerCase()) || 
-                                           (task.description ?? '').toLowerCase().contains(_query.toLowerCase()),
+                                           (task.description ?? '').toLowerCase().contains(_query.toLowerCase()) ||
+                                           task.customTags.any((t) => t.toLowerCase().contains(_query.toLowerCase())),
                             builder: (task, projects) => _buildTaskResult(task, projects),
                           ),
                           _buildSection<IdeaModel>(
                             title: 'IDEAS',
                             data: ideasAsync,
                             query: _query,
-                            filter: (idea) => idea.content.toLowerCase().contains(_query.toLowerCase()),
+                            filter: (idea) => idea.content.toLowerCase().contains(_query.toLowerCase()) ||
+                                           idea.customTags.any((t) => t.toLowerCase().contains(_query.toLowerCase())),
                             builder: (idea, _) => _buildIdeaResult(idea),
                           ),
                           _buildSection<ProjectModel>(
@@ -171,11 +175,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ? allProjects.firstWhere((p) => p.id == task.projectId, orElse: () => _defaultProject())
             : _defaultProject();
         
+        final tags = ref.read(tagNotifierProvider).value ?? [];
+        final tagColors = <String, Color>{for (var t in tags) t.name: FlowColors.parseProjectColor(t.color)};
+        
         return TaskCard(
           task: task,
           projectTitle: project.title,
           projectIcon: project.icon,
           projectColor: FlowColors.parseProjectColor(project.color),
+          tagColors: tagColors,
           onToggle: () => ref.read(taskNotifierProvider.notifier).toggleTask(task),
           onDelete: () => ref.read(taskNotifierProvider.notifier).deleteTask(task.id),
           onTap: () {
@@ -210,7 +218,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 4,
-              children: idea.customTags.map((t) => FlowBadge(label: t, color: FlowColors.slate500)).toList(),
+              children: idea.customTags.map((t) {
+                final tags = ref.read(tagNotifierProvider).value ?? [];
+                final tagColor = tags.firstWhere((tag) => tag.name == t, orElse: () => TagModel(id: '', name: '', color: 'slate500')).color;
+                return FlowBadge(label: t, color: FlowColors.parseProjectColor(tagColor));
+              }).toList(),
             ),
           ],
         ],

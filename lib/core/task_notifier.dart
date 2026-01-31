@@ -138,19 +138,24 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
     await _service.updateTasksOrder(tasks);
   }
 
-  Future<void> addTask(String title, {String? projectId}) async {
-    final parsed = DateParser.parse(title);
+  Future<void> addTask(TaskModel task) async {
+    final parsed = DateParser.parse(task.title);
     final cleanTitle = parsed['cleanText'] as String;
-    final dueDate = parsed['date'] as DateTime?;
+    final dueDate = parsed['date'] as DateTime? ?? task.dueDate;
 
     final newTask = TaskModel(
       id: '', // Will be assigned by Firestore
       title: cleanTitle,
-      completed: false,
-      subtasks: [],
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      projectId: projectId,
+      description: task.description,
+      projectId: task.projectId,
       dueDate: dueDate,
+      recurrence: task.recurrence,
+      completed: false,
+      energyLevel: task.energyLevel,
+      subtasks: task.subtasks,
+      customTags: task.customTags,
+      isPinned: task.isPinned,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
       order: 0, // Simplified order for new tasks
     );
     await _service.addTask(newTask);

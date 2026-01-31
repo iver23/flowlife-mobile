@@ -238,10 +238,7 @@ class ProjectDetailScreen extends ConsumerWidget {
               createdAt: DateTime.now().millisecondsSinceEpoch,
               projectId: project.id,
             ),
-            onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(
-              task.title, 
-              projectId: task.projectId,
-            ),
+            onSave: (task) => ref.read(taskNotifierProvider.notifier).addTask(task),
           ),
         );
       },

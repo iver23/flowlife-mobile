@@ -6,8 +6,9 @@ class FlowColors {
   // --- New "Calm-Tech" Palette ---
   
   // Neutrals (60%)
-  static const Color linen = Color(0xFFFDFCFB); // Warm, airy light background
-  static const Color midnight = Color(0xFF0F172A); // Deep, sophisticated navy base
+  static const Color linen = Color(0xFFFDFCFB); 
+  static const Color paper = Color(0xFFF8F4EA); // Calm, organic background
+  static const Color midnight = Color(0xFF0F172A); 
   
   // Secondary / Surfaces (30%)
   static const Color surfaceLight = Colors.white; 
@@ -61,7 +62,7 @@ class FlowTheme {
     return ThemeData(
       brightness: Brightness.light,
       primaryColor: FlowColors.primary,
-      scaffoldBackgroundColor: FlowColors.linen,
+      scaffoldBackgroundColor: FlowColors.paper,
       colorScheme: ColorScheme.fromSeed(
         seedColor: FlowColors.primary,
         surface: FlowColors.surfaceLight,
@@ -154,7 +155,7 @@ class FlowCard extends StatelessWidget {
         color: (isDark && useGlass) ? surfaceColor.withOpacity(0.7) : surfaceColor,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.03),
           width: 0.5,
         ),
         boxShadow: isDark

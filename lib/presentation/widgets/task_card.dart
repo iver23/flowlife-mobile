@@ -13,6 +13,7 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onDelete;
   final VoidCallback onTap;
+  final Map<String, Color> tagColors;
 
   const TaskCard({
     super.key,
@@ -23,6 +24,7 @@ class TaskCard extends StatelessWidget {
     required this.onToggle,
     required this.onDelete,
     required this.onTap,
+    this.tagColors = const {},
   });
 
   @override
@@ -98,6 +100,17 @@ class TaskCard extends StatelessWidget {
                             : (isDark ? Colors.white : FlowColors.textLight),
                       ),
                     ),
+                    if (task.customTags.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: task.customTags.map((tag) => FlowBadge(
+                          label: tag, 
+                          color: tagColors[tag] ?? FlowColors.slate500,
+                        )).toList(),
+                      ),
+                    ],
                     if (task.dueDate != null || task.subtasks.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Row(
