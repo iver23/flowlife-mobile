@@ -150,7 +150,7 @@ class DashboardScreen extends ConsumerWidget {
                 '${(progress * 100).toInt()}% Done',
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               MomentumHeatmap(tasks: tasks), // We'll redesign this next
             ],
           ),

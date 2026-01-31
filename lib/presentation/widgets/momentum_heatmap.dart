@@ -25,12 +25,10 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
     final startOffset = (firstDayOfMonth.weekday - 1) % 7;
     
-    final completionPercentage = _calculateMonthlyCompletion(now);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(monthName, completionPercentage),
+        _buildHeader(monthName),
         AnimatedCrossFade(
           firstChild: _buildCollapsedView(context, now),
           secondChild: _buildExpandedView(context, daysInMonth, startOffset, now),
@@ -42,7 +40,7 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
     );
   }
 
-  Widget _buildHeader(String monthName, int percentage) {
+  Widget _buildHeader(String monthName) {
     return GestureDetector(
       onTap: () => setState(() => _isExpanded = !_isExpanded),
       behavior: HitTestBehavior.opaque,
@@ -51,48 +49,18 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  monthName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                if (!_isExpanded)
-                  Text(
-                    '$percentage% completion',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: FlowColors.slate400,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-              ],
+            Text(
+              monthName,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
             ),
-            Row(
-              children: [
-                if (_isExpanded)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: Text(
-                      '$percentage%',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: FlowColors.primary,
-                      ),
-                    ),
-                  ),
-                Icon(
-                  _isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                  size: 20,
-                  color: FlowColors.slate400,
-                ),
-              ],
+            Icon(
+              _isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+              size: 20,
+              color: FlowColors.slate400,
             ),
           ],
         ),
@@ -253,20 +221,6 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
         ),
       ),
     );
-  }
-
-  int _calculateMonthlyCompletion(DateTime now) {
-    if (widget.tasks.isEmpty) return 0;
-    
-    final tasksThisMonth = widget.tasks.where((t) {
-      final date = DateTime.fromMillisecondsSinceEpoch(t.createdAt);
-      return date.year == now.year && date.month == now.month;
-    }).toList();
-    
-    if (tasksThisMonth.isEmpty) return 0;
-    
-    final completed = tasksThisMonth.where((t) => t.completed).length;
-    return ((completed / tasksThisMonth.length) * 100).round();
   }
 
   int _getTaskCountForDate(DateTime date) {
