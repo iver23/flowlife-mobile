@@ -14,6 +14,9 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onTap;
   final Map<String, Color> tagColors;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final VoidCallback? onSelectionToggle;
 
   const TaskCard({
     super.key,
@@ -25,6 +28,9 @@ class TaskCard extends StatelessWidget {
     required this.onDelete,
     required this.onTap,
     this.tagColors = const {},
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.onSelectionToggle,
   });
 
   @override
@@ -59,26 +65,33 @@ class TaskCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Row(
             children: [
-              // Circular Indicator
+              // Circular Indicator or Checkbox
               GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  onToggle();
+                  if (isSelectionMode) {
+                    onSelectionToggle?.call();
+                  } else {
+                    onToggle();
+                  }
                 },
                 child: Container(
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: task.completed
-                        ? FlowColors.primary
-                        : Colors.transparent,
-                    shape: BoxShape.circle,
+                    color: isSelectionMode
+                        ? (isSelected ? FlowColors.primary : Colors.transparent)
+                        : (task.completed ? FlowColors.primary : Colors.transparent),
+                    shape: isSelectionMode ? BoxShape.rectangle : BoxShape.circle,
+                    borderRadius: isSelectionMode ? BorderRadius.circular(8) : null,
                     border: Border.all(
-                      color: task.completed ? FlowColors.primary : FlowColors.slate200,
+                      color: isSelectionMode
+                          ? (isSelected ? FlowColors.primary : FlowColors.slate200)
+                          : (task.completed ? FlowColors.primary : FlowColors.slate200),
                       width: 2,
                     ),
                   ),
-                  child: task.completed
+                  child: (isSelectionMode ? isSelected : task.completed)
                       ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
                       : null,
                 ),

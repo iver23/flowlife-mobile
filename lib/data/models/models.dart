@@ -125,6 +125,39 @@ class TaskModel {
       order: map['order'],
     );
   }
+
+  TaskModel copyWith({
+    String? title,
+    String? description,
+    String? projectId,
+    DateTime? dueDate,
+    RecurrenceType? recurrence,
+    bool? completed,
+    int? completedAt,
+    EnergyLevel? energyLevel,
+    List<Subtask>? subtasks,
+    List<String>? customTags,
+    bool? isPinned,
+    int? createdAt,
+    int? order,
+  }) {
+    return TaskModel(
+      id: id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      projectId: projectId ?? this.projectId,
+      dueDate: dueDate ?? this.dueDate,
+      recurrence: recurrence ?? this.recurrence,
+      completed: completed ?? this.completed,
+      completedAt: completedAt ?? this.completedAt,
+      energyLevel: energyLevel ?? this.energyLevel,
+      subtasks: subtasks ?? this.subtasks,
+      customTags: customTags ?? this.customTags,
+      isPinned: isPinned ?? this.isPinned,
+      createdAt: createdAt ?? this.createdAt,
+      order: order ?? this.order,
+    );
+  }
 }
 
 class ProjectModel {
@@ -222,6 +255,21 @@ class IdeaModel {
       customTags: List<String>.from(map['customTags'] ?? []),
       projectId: map['projectId'],
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
+  IdeaModel copyWith({
+    String? content,
+    List<String>? customTags,
+    String? projectId,
+    int? createdAt,
+  }) {
+    return IdeaModel(
+      id: id,
+      content: content ?? this.content,
+      customTags: customTags ?? this.customTags,
+      projectId: projectId ?? this.projectId,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

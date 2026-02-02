@@ -41,36 +41,25 @@ class ThemeState {
   }
 }
 
-class ThemeNotifier extends StateNotifier<ThemeState> {
+class ThemeNotifier extends Notifier<ThemeState> {
   static const _keySelection = 'theme_selection_str';
   static const _keyStartHour = 'theme_start_hour';
   static const _keyStartMinute = 'theme_start_minute';
   static const _keyEndHour = 'theme_end_hour';
   static const _keyEndMinute = 'theme_end_minute';
 
-  final SharedPreferences _prefs;
+  SharedPreferences get _prefs => ref.watch(sharedPreferencesProvider);
   Timer? _scheduleTimer;
 
-  ThemeNotifier(this._prefs)
-      : super(ThemeState(selection: ThemeSelection.system, mode: ThemeMode.system)) {
-    _loadTheme();
-    _startTimer();
-  }
-
-  void _startTimer() {
-    _scheduleTimer?.cancel();
-    _scheduleTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      checkSchedule();
-    });
-  }
-
   @override
-  void dispose() {
-    _scheduleTimer?.cancel();
-    super.dispose();
-  }
+  ThemeState build() {
+    // Start timer and ensure disposal
+    _startTimer();
+    ref.onDispose(() {
+      _scheduleTimer?.cancel();
+    });
 
-  void _loadTheme() {
+    // Load initial state
     final selectionStr = _prefs.getString(_keySelection);
     final startHour = _prefs.getInt(_keyStartHour) ?? 22;
     final startMinute = _prefs.getInt(_keyStartMinute) ?? 0;
@@ -87,7 +76,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
 
     ThemeMode mode = _calculateMode(selection, startHour, startMinute, endHour, endMinute);
 
-    state = ThemeState(
+    return ThemeState(
       selection: selection,
       mode: mode,
       startHour: startHour,
@@ -95,6 +84,13 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
       endHour: endHour,
       endMinute: endMinute,
     );
+  }
+
+  void _startTimer() {
+    _scheduleTimer?.cancel();
+    _scheduleTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      checkSchedule();
+    });
   }
 
   ThemeMode _calculateMode(ThemeSelection selection, int sh, int sm, int eh, int em) {
@@ -179,7 +175,6 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError();
 });
 
-final themeNotifierProvider = StateNotifierProvider<ThemeNotifier, ThemeState>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return ThemeNotifier(prefs);
+final themeNotifierProvider = NotifierProvider<ThemeNotifier, ThemeState>(() {
+  return ThemeNotifier();
 });

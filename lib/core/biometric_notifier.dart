@@ -9,11 +9,11 @@ class BiometricState {
   final bool isLocked;
   final bool canCheckBiometrics;
 
-  BiometricState({
-    required this.isEnabled,
-    required this.isAutoLockEnabled,
-    required this.isLocked,
-    required this.canCheckBiometrics,
+  const BiometricState({
+    this.isEnabled = false,
+    this.isAutoLockEnabled = false,
+    this.isLocked = false,
+    this.canCheckBiometrics = false,
   });
 
   BiometricState copyWith({
@@ -31,48 +31,51 @@ class BiometricState {
   }
 }
 
-class BiometricNotifier extends StateNotifier<BiometricState> {
+class BiometricNotifier extends Notifier<BiometricState> {
   final LocalAuthentication _auth = LocalAuthentication();
-  static const _prefKeyEnabled = 'biometric_enabled';
-  static const _prefKeyAutoLock = 'biometric_autolock';
+  static const _prefKeyEnabled = 'biometricEnabled';
+  static const _prefKeyAutoLock = 'biometricAutoLock';
 
-  BiometricNotifier() : super(BiometricState(
-    isEnabled: false,
-    isAutoLockEnabled: true,
-    isLocked: false,
-    canCheckBiometrics: false,
-  )) {
+  @override
+  BiometricState build() {
     _init();
+    return const BiometricState();
   }
 
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
-    final isEnabled = prefs.getBool(_prefKeyEnabled) ?? false;
-    final isAutoLock = prefs.getBool(_prefKeyAutoLock) ?? true;
-    final canCheck = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
+    final enabled = prefs.getBool(_prefKeyEnabled) ?? false;
+    final autoLock = prefs.getBool(_prefKeyAutoLock) ?? false;
+    final canCheck = await _auth.canCheckBiometrics;
 
     state = state.copyWith(
-      isEnabled: isEnabled,
-      isAutoLockEnabled: isAutoLock,
-      isLocked: isEnabled, // Start locked if enabled
+      isEnabled: enabled,
+      isAutoLockEnabled: autoLock,
       canCheckBiometrics: canCheck,
+      isLocked: enabled && autoLock,
     );
+  }
+
+  Future<void> setEnabled(bool enable) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefKeyEnabled, enable);
+    state = state.copyWith(isEnabled: enable);
+    if (!enable) {
+      state = state.copyWith(isLocked: false);
+    }
   }
 
   Future<bool> toggleBiometric(bool enable) async {
     if (enable) {
-      final success = await authenticate();
-      if (success) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool(_prefKeyEnabled, true);
-        state = state.copyWith(isEnabled: true, isLocked: false);
+      // Must authenticate first before enabling
+      final authenticated = await authenticate();
+      if (authenticated) {
+        await setEnabled(true);
         return true;
       }
       return false;
     } else {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_prefKeyEnabled, false);
-      state = state.copyWith(isEnabled: false, isLocked: false);
+      await setEnabled(false);
       return true;
     }
   }
@@ -85,12 +88,11 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
 
   Future<bool> authenticate() async {
     try {
+      // local_auth 3.x: AuthenticationOptions replaced with direct parameters
       final isAuthenticated = await _auth.authenticate(
         localizedReason: 'Please authenticate to unlock FlowLife',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: false, // Fallback to PIN/Pattern if biometric fails
-        ),
+        // stickyAuth -> persistAcrossBackgrounding in v3.0.0
+        // biometricOnly is removed in v3.0.0; use default behavior
       );
       if (isAuthenticated) {
         state = state.copyWith(isLocked: false);
@@ -108,11 +110,14 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
     }
   }
 
-  void unlock() {
-    state = state.copyWith(isLocked: false);
+  void checkAutoLock() {
+    if (state.isEnabled && state.isAutoLockEnabled) {
+      state = state.copyWith(isLocked: true);
+    }
   }
 }
 
-final biometricProvider = StateNotifierProvider<BiometricNotifier, BiometricState>((ref) {
+final biometricProvider =
+    NotifierProvider<BiometricNotifier, BiometricState>(() {
   return BiometricNotifier();
 });

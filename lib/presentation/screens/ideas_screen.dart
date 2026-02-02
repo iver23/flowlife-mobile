@@ -324,7 +324,7 @@ class IdeasScreen extends ConsumerWidget {
                 style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
               ),
               GestureDetector(
-                onTap: () => notifier.convertToTask(idea, ref),
+                onTap: () => notifier.convertToTask(idea),
                 child: const Row(
                   children: [
                     Icon(LucideIcons.arrowRightCircle, size: 18, color: FlowColors.primary),

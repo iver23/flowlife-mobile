@@ -2,12 +2,17 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ConnectivityNotifier extends StateNotifier<bool> {
+class ConnectivityNotifier extends Notifier<bool> {
   final Connectivity _connectivity = Connectivity();
   StreamSubscription? _subscription;
 
-  ConnectivityNotifier() : super(true) {
+  @override
+  bool build() {
     _init();
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+    return true; // Default to online until check completes
   }
 
   Future<void> _init() async {
@@ -18,17 +23,10 @@ class ConnectivityNotifier extends StateNotifier<bool> {
   }
 
   void _updateState(List<ConnectivityResult> results) {
-    // We consider it "online" if there's any connection other than none
     state = !results.contains(ConnectivityResult.none);
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
   }
 }
 
-final connectivityProvider = StateNotifierProvider<ConnectivityNotifier, bool>((ref) {
+final connectivityProvider = NotifierProvider<ConnectivityNotifier, bool>(() {
   return ConnectivityNotifier();
 });

@@ -173,4 +173,30 @@ class FirestoreService {
     }
     await batch.commit();
   }
+
+  Future<void> deleteMultipleTasks(List<String> taskIds) async {
+    final batch = _db.batch();
+    for (final id in taskIds) {
+      final ref = _db
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(id);
+      batch.delete(ref);
+    }
+    await batch.commit();
+  }
+
+  Future<void> updateMultipleTasks(List<TaskModel> tasks) async {
+    final batch = _db.batch();
+    for (final task in tasks) {
+      final ref = _db
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(task.id);
+      batch.update(ref, task.toMap());
+    }
+    await batch.commit();
+  }
 }

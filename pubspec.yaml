@@ -37,20 +37,20 @@ dependencies:
   firebase_core: ^4.4.0
   firebase_auth: ^6.1.4
   cloud_firestore: ^6.1.2
-  google_sign_in: ^6.2.1
+  google_sign_in: ^7.2.0
   fl_chart: ^1.1.1
   confetti: ^0.8.0
-  flutter_riverpod: ^2.5.1
+  flutter_riverpod: ^3.2.0
   intl: ^0.20.2
   google_fonts: ^8.0.0
   lucide_icons: ^0.257.0
-  flutter_local_notifications: ^18.0.0
-  timezone: ^0.10.0
+  flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.1
   shared_preferences: ^2.2.2
   uuid: ^4.2.0
-  local_auth: ^2.3.0
-  connectivity_plus: ^6.0.3
-  home_widget: ^0.7.0
+  local_auth: ^3.0.0
+  connectivity_plus: ^7.0.0
+  home_widget: ^0.9.0
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +62,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
   android: "launcher_icon"

@@ -1,21 +1,23 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/tag_model.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
 
-class TagNotifier extends StateNotifier<AsyncValue<List<TagModel>>> {
-  final FirestoreService _service;
+class TagNotifier extends AsyncNotifier<List<TagModel>> {
+  FirestoreService get _service => ref.read(firestoreServiceProvider);
 
-  TagNotifier(this._service) : super(const AsyncValue.loading()) {
-    _init();
-  }
-
-  void _init() {
-    _service.streamTags().listen((tags) {
-      state = AsyncValue.data(tags);
+  @override
+  FutureOr<List<TagModel>> build() async {
+    final stream = _service.streamTags();
+    
+    stream.listen((tags) {
+      state = AsyncData(tags);
     }, onError: (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncError(e, st);
     });
+
+    return stream.first;
   }
 
   Future<void> addTag(String name, String color) async {
@@ -32,6 +34,6 @@ class TagNotifier extends StateNotifier<AsyncValue<List<TagModel>>> {
   }
 }
 
-final tagNotifierProvider = StateNotifierProvider<TagNotifier, AsyncValue<List<TagModel>>>((ref) {
-  return TagNotifier(ref.watch(firestoreServiceProvider));
+final tagNotifierProvider = AsyncNotifierProvider<TagNotifier, List<TagModel>>(() {
+  return TagNotifier();
 });

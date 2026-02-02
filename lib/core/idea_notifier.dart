@@ -1,21 +1,23 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
 
-class IdeaNotifier extends StateNotifier<AsyncValue<List<IdeaModel>>> {
-  final FirestoreService _service;
+class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
+  FirestoreService get _service => ref.watch(firestoreServiceProvider);
 
-  IdeaNotifier(this._service) : super(const AsyncValue.loading()) {
-    _init();
-  }
-
-  void _init() {
-    _service.streamIdeas().listen((ideas) {
-      state = AsyncValue.data(ideas);
+  @override
+  FutureOr<List<IdeaModel>> build() async {
+    final stream = _service.streamIdeas();
+    
+    stream.listen((ideas) {
+      state = AsyncData(ideas);
     }, onError: (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncError(e, st);
     });
+
+    return stream.first;
   }
 
   Future<void> addIdea(String content, {String? projectId, List<String> customTags = const []}) async {
@@ -33,7 +35,7 @@ class IdeaNotifier extends StateNotifier<AsyncValue<List<IdeaModel>>> {
     await _service.deleteIdea(id);
   }
 
-  Future<void> convertToTask(IdeaModel idea, WidgetRef ref) async {
+  Future<void> convertToTask(IdeaModel idea) async {
     // Create the task
     final newTask = TaskModel(
       id: '',
@@ -52,6 +54,6 @@ class IdeaNotifier extends StateNotifier<AsyncValue<List<IdeaModel>>> {
   }
 }
 
-final ideaNotifierProvider = StateNotifierProvider<IdeaNotifier, AsyncValue<List<IdeaModel>>>((ref) {
-  return IdeaNotifier(ref.watch(firestoreServiceProvider));
+final ideaNotifierProvider = AsyncNotifierProvider<IdeaNotifier, List<IdeaModel>>(() {
+  return IdeaNotifier();
 });

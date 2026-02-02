@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
@@ -8,26 +9,29 @@ import 'notification_service.dart';
 import 'widget_service.dart';
 import 'project_notifier.dart';
 
-class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
-  final FirestoreService _service;
-  final Ref _ref;
+class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
+  FirestoreService get _service => ref.watch(firestoreServiceProvider);
 
-  TaskNotifier(this._service, this._ref) : super(const AsyncValue.loading()) {
-    _init();
-  }
-
-  void _init() {
-    _service.streamTasks().listen((tasks) {
-      state = AsyncValue.data(tasks);
+  @override
+  FutureOr<List<TaskModel>> build() async {
+    // Initial data from stream
+    final stream = _service.streamTasks();
+    
+    // Listen for updates and push into state
+    stream.listen((tasks) {
+      state = AsyncData(tasks);
       _updateDailyRecap(tasks);
       _triggerWidgetUpdate(tasks);
     }, onError: (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncError(e, st);
     });
+
+    // Return first snapshot or empty list if loading
+    return stream.first;
   }
 
   void _triggerWidgetUpdate(List<TaskModel> tasks) {
-    _ref.read(projectNotifierProvider).when(
+    ref.read(projectNotifierProvider).when(
       data: (projects) => WidgetService.updateWidget(tasks: tasks, projects: projects),
       loading: () => WidgetService.updateWidget(tasks: tasks, projects: []),
       error: (_, __) => WidgetService.updateWidget(tasks: tasks, projects: []),
@@ -69,7 +73,7 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
   Future<void> toggleTask(TaskModel task) async {
     final newCompleted = !task.completed;
     if (newCompleted) {
-      _ref.read(confettiProvider.notifier).trigger();
+      ref.read(confettiProvider.notifier).trigger();
     }
 
     final updatedTask = TaskModel(
@@ -160,8 +164,83 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<TaskModel>>> {
     );
     await _service.addTask(newTask);
   }
+
+  Future<void> deleteMultipleTasks(List<String> ids) async {
+    await _service.deleteMultipleTasks(ids);
+  }
+
+  Future<void> completeMultipleTasks(List<String> ids) async {
+    final tasks = state.value ?? [];
+    final updatedTasks = <TaskModel>[];
+    final newTasksToAdd = <TaskModel>[];
+
+    for (final id in ids) {
+      final task = tasks.firstWhere((t) => t.id == id);
+      if (task.completed) continue;
+
+      updatedTasks.add(TaskModel(
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        projectId: task.projectId,
+        dueDate: task.dueDate,
+        recurrence: task.recurrence,
+        completed: true,
+        completedAt: DateTime.now().millisecondsSinceEpoch,
+        energyLevel: task.energyLevel,
+        subtasks: task.subtasks,
+        createdAt: task.createdAt,
+        order: task.order,
+      ));
+
+      // Recurrence logic
+      if (task.recurrence != RecurrenceType.NONE && task.dueDate != null) {
+        final nextDueDate = _calculateNextDueDate(task.dueDate!, task.recurrence);
+        newTasksToAdd.add(TaskModel(
+          id: '',
+          title: task.title,
+          description: task.description,
+          projectId: task.projectId,
+          dueDate: nextDueDate,
+          recurrence: task.recurrence,
+          completed: false,
+          subtasks: task.subtasks.map((st) => Subtask(
+            id: DateTime.now().millisecondsSinceEpoch.toString() + st.id, 
+            title: st.title, 
+            completed: false,
+          )).toList(),
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+          energyLevel: task.energyLevel,
+          order: task.order,
+        ));
+      }
+    }
+
+    if (updatedTasks.isNotEmpty) {
+      await _service.updateMultipleTasks(updatedTasks);
+      ref.read(confettiProvider.notifier).trigger();
+    }
+
+    for (final newTask in newTasksToAdd) {
+      await _service.addTask(newTask);
+    }
+  }
+
+  Future<void> moveTasksToProject(List<String> ids, String? projectId) async {
+    final tasks = state.value ?? [];
+    final updatedTasks = <TaskModel>[];
+
+    for (final id in ids) {
+      final task = tasks.firstWhere((t) => t.id == id);
+      updatedTasks.add(task.copyWith(projectId: projectId));
+    }
+
+    if (updatedTasks.isNotEmpty) {
+      await _service.updateMultipleTasks(updatedTasks);
+    }
+  }
 }
 
-final taskNotifierProvider = StateNotifierProvider<TaskNotifier, AsyncValue<List<TaskModel>>>((ref) {
-  return TaskNotifier(ref.watch(firestoreServiceProvider), ref);
+final taskNotifierProvider = AsyncNotifierProvider<TaskNotifier, List<TaskModel>>(() {
+  return TaskNotifier();
 });

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
@@ -5,25 +6,25 @@ import 'providers.dart';
 import 'widget_service.dart';
 import 'task_notifier.dart';
 
-class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
-  final FirestoreService _service;
-  final Ref _ref;
+class ProjectNotifier extends AsyncNotifier<List<ProjectModel>> {
+  FirestoreService get _service => ref.watch(firestoreServiceProvider);
 
-  ProjectNotifier(this._service, this._ref) : super(const AsyncValue.loading()) {
-    _init();
-  }
-
-  void _init() {
-    _service.streamProjects().listen((projects) {
-      state = AsyncValue.data(projects);
+  @override
+  FutureOr<List<ProjectModel>> build() async {
+    final stream = _service.streamProjects();
+    
+    stream.listen((projects) {
+      state = AsyncData(projects);
       _triggerWidgetUpdate(projects);
     }, onError: (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncError(e, st);
     });
+
+    return stream.first;
   }
 
   void _triggerWidgetUpdate(List<ProjectModel> projects) {
-    _ref.read(taskNotifierProvider).when(
+    ref.read(taskNotifierProvider).when(
       data: (tasks) => WidgetService.updateWidget(tasks: tasks, projects: projects),
       loading: () => WidgetService.updateWidget(tasks: [], projects: projects),
       error: (_, __) => WidgetService.updateWidget(tasks: [], projects: projects),
@@ -39,9 +40,6 @@ class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
   }
 
   Future<void> deleteProject(String projectId) async {
-    // Note: In a real app, you might want to delete associated tasks too
-    // or keep them as unassigned. Firestore doesn't delete sub-collections automatically.
-    // For now, mirroring the likely web behavior of just deleting the project doc.
     await _service.deleteProject(projectId);
   }
 
@@ -54,6 +52,6 @@ class ProjectNotifier extends StateNotifier<AsyncValue<List<ProjectModel>>> {
   }
 }
 
-final projectNotifierProvider = StateNotifierProvider<ProjectNotifier, AsyncValue<List<ProjectModel>>>((ref) {
-  return ProjectNotifier(ref.watch(firestoreServiceProvider), ref);
+final projectNotifierProvider = AsyncNotifierProvider<ProjectNotifier, List<ProjectModel>>(() {
+  return ProjectNotifier();
 });

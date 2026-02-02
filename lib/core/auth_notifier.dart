@@ -3,60 +3,75 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthNotifier extends StateNotifier<User?> {
+class AuthNotifier extends Notifier<User?> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  AuthNotifier() : super(null) {
+  @override
+  User? build() {
     _init();
+    return _auth.currentUser;
   }
 
   void _init() async {
-    // 1. Listen to Firebase Auth changes
+    // google_sign_in 7.x: Initialize the singleton instance first
+    await GoogleSignIn.instance.initialize();
+    
+    // Set up auth state listening
     _auth.authStateChanges().listen((user) async {
       state = user;
       
-      // If no firebase user, try silent google sign in to recover session if possible
+      // If no firebase user, try lightweight (silent) authentication
       if (user == null) {
         try {
-          final silentUser = await _googleSignIn.signInSilently();
-          if (silentUser != null) {
-            final auth = await silentUser.authentication;
-            final credential = GoogleAuthProvider.credential(
-              accessToken: auth.accessToken,
-              idToken: auth.idToken,
-            );
-            await _auth.signInWithCredential(credential);
+          // Try lightweight/silent authentication
+          final result = await GoogleSignIn.instance.attemptLightweightAuthentication();
+          if (result != null) {
+            // User is authenticated, get authorization for Firebase
+            final authorization = await result.authorizationClient.authorizationForScopes(['email']);
+            if (authorization != null) {
+              final credential = GoogleAuthProvider.credential(
+                accessToken: authorization.accessToken,
+              );
+              await _auth.signInWithCredential(credential);
+            }
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('Silent sign-in failed: $e');
+        }
       }
     });
   }
 
   Future<void> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
+      // google_sign_in 7.x: Use authenticate() for interactive sign-in
+      if (GoogleSignIn.instance.supportsAuthenticate()) {
+        final result = await GoogleSignIn.instance.authenticate();
+        if (result == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+        // Get authorization with access token
+        final authorization = await result.authorizationClient.authorizeScopes(['email']);
+        if (authorization == null) return;
 
-      await _auth.signInWithCredential(credential);
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: authorization.accessToken,
+        );
+
+        await _auth.signInWithCredential(credential);
+      }
     } catch (e) {
-      // Handle error
+      debugPrint('Google sign-in error: $e');
     }
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.disconnect(); // This forces account picker next time
-    await _googleSignIn.signOut();
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {}
     await _auth.signOut();
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, User?>((ref) {
+final authProvider = NotifierProvider<AuthNotifier, User?>(() {
   return AuthNotifier();
 });

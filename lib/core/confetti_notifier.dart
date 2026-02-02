@@ -9,14 +9,17 @@ class ConfettiRequest {
   ConfettiRequest({required this.type, required this.timestamp});
 }
 
-class ConfettiNotifier extends StateNotifier<ConfettiRequest?> {
-  ConfettiNotifier() : super(null);
+class ConfettiNotifier extends Notifier<ConfettiRequest?> {
+  @override
+  ConfettiRequest? build() {
+    return null;
+  }
 
   void trigger({ConfettiType type = ConfettiType.standard}) {
     state = ConfettiRequest(type: type, timestamp: DateTime.now());
   }
 }
 
-final confettiProvider = StateNotifierProvider<ConfettiNotifier, ConfettiRequest?>((ref) {
+final confettiProvider = NotifierProvider<ConfettiNotifier, ConfettiRequest?>(() {
   return ConfettiNotifier();
 });

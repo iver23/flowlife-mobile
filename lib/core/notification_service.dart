@@ -14,17 +14,21 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notifications.initialize(settings);
+    // flutter_local_notifications 20.x: all positional params are now named
+    await _notifications.initialize(
+      settings: settings,
+    );
     tz.initializeTimeZones();
   }
 
   static Future<void> scheduleNotification(int id, String title, String body, DateTime scheduledDate) async {
+    // flutter_local_notifications 20.x: zonedSchedule uses named parameters
     await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      const NotificationDetails(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'flow_channel',
           'FlowLife Notifications',
@@ -33,7 +37,6 @@ class NotificationService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
@@ -45,12 +48,13 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
+    // flutter_local_notifications 20.x: zonedSchedule uses named parameters
     await _notifications.zonedSchedule(
-      999, // Constant ID for daily recap
-      'Good Morning!',
-      'You have $taskCount tasks to focus on today.',
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      const NotificationDetails(
+      id: 999, // Constant ID for daily recap
+      title: 'Good Morning!',
+      body: 'You have $taskCount tasks to focus on today.',
+      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'recap_channel',
           'Daily Recap',
@@ -58,7 +62,6 @@ class NotificationService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );

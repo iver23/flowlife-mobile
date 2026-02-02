@@ -9,8 +9,10 @@ import '../widgets/ui_components.dart';
 import 'settings_screen.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_edit_sheet.dart';
+import 'package:flutter/services.dart';
 import '../../core/tag_notifier.dart';
 import '../../data/models/tag_model.dart';
+import '../../core/bulk_selection_provider.dart';
 
 class TasksScreen extends ConsumerWidget {
   const TasksScreen({super.key});
@@ -20,15 +22,19 @@ class TasksScreen extends ConsumerWidget {
     final tasksAsync = ref.watch(taskNotifierProvider);
     final projectsAsync = ref.watch(projectNotifierProvider);
     final taskNotifier = ref.read(taskNotifierProvider.notifier);
+    final selectionState = ref.watch(bulkSelectionProvider);
+    final selectionNotifier = ref.read(bulkSelectionProvider.notifier);
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context),
+            _buildHeader(context, ref),
             _buildTagFilters(context, ref),
             Expanded(
-              child: tasksAsync.when(
+              child: Stack(
+                children: [
+                  tasksAsync.when(
                 data: (tasks) {
                   final selectedTag = ref.watch(selectedTagFilterProvider);
                   final selectedProjectId = ref.watch(selectedProjectFilterProvider);
@@ -82,18 +88,25 @@ class TasksScreen extends ConsumerWidget {
                               projectIcon: project.icon,
                               projectColor: FlowColors.parseProjectColor(project.color),
                               tagColors: tagColors,
-                              onToggle: () => taskNotifier.toggleTask(task),
-                              onDelete: () => taskNotifier.deleteTask(task.id),
+                              isSelectionMode: selectionState.isSelectionMode,
+                              isSelected: selectionState.selectedTaskIds.contains(task.id),
+                                onSelectionToggle: () => selectionNotifier.selectTask(task.id),
+                                onToggle: () => taskNotifier.toggleTask(task),
+                                onDelete: () => taskNotifier.deleteTask(task.id),
                               onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) => TaskEditSheet(
-                                    task: task,
-                                    onSave: (updatedTask) => taskNotifier.updateTask(updatedTask),
-                                  ),
-                                );
+                                if (selectionState.isSelectionMode) {
+                                  selectionNotifier.selectTask(task.id);
+                                } else {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => TaskEditSheet(
+                                      task: task,
+                                      onSave: (updatedTask) => taskNotifier.updateTask(updatedTask),
+                                    ),
+                                  );
+                                }
                               },
                             ),
                           );
@@ -107,26 +120,38 @@ class TasksScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Error: $e')),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ],
+    ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+    final selectionState = ref.watch(bulkSelectionProvider);
+    final selectionNotifier = ref.read(bulkSelectionProvider.notifier);
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(LucideIcons.checkSquare, color: FlowColors.slate500),
-              SizedBox(width: 12),
+              Icon(
+                selectionState.isSelectionMode 
+                  ? LucideIcons.checkCircle2 
+                  : LucideIcons.checkSquare, 
+                color: selectionState.isSelectionMode ? FlowColors.primary : FlowColors.slate500
+              ),
+              const SizedBox(width: 12),
               Text(
-                'Active Tasks',
-                style: TextStyle(
+                selectionState.isSelectionMode 
+                  ? '${selectionState.selectedTaskIds.length} Selected' 
+                  : 'Active Tasks',
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Outfit',
@@ -134,12 +159,33 @@ class TasksScreen extends ConsumerWidget {
               ),
             ],
           ),
-          _buildActionCircle(LucideIcons.settings, () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            );
-          }),
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  selectionNotifier.toggleSelectionMode();
+                },
+                child: Text(
+                  selectionState.isSelectionMode ? 'CANCEL' : 'SELECT',
+                  style: TextStyle(
+                    color: selectionState.isSelectionMode ? Colors.red : FlowColors.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              if (!selectionState.isSelectionMode) ...[
+                const SizedBox(width: 8),
+                _buildActionCircle(LucideIcons.settings, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                }),
+              ],
+            ],
+          ),
         ],
       ),
     );
@@ -340,6 +386,152 @@ class TasksScreen extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
       ],
+    );
+  }
+
+  Widget _buildBulkActionBar(BuildContext context, WidgetRef ref, List<String> selectedIds) {
+    final taskNotifier = ref.read(taskNotifierProvider.notifier);
+    final selectionNotifier = ref.read(bulkSelectionProvider.notifier);
+
+    return Positioned(
+      bottom: 40,
+      left: 24,
+      right: 24,
+      child: FlowCard(
+        useGlass: true,
+        padding: 12,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildBulkAction(
+              LucideIcons.checkCircle2, 
+              'Complete', 
+              Colors.green, 
+              () {
+                taskNotifier.completeMultipleTasks(selectedIds);
+                selectionNotifier.toggleSelectionMode();
+              }
+            ),
+            _buildBulkAction(
+              LucideIcons.folderInput, 
+              'Move', 
+              Colors.blue, 
+              () => _showBatchMovePicker(context, ref, selectedIds)
+            ),
+            _buildBulkAction(
+              LucideIcons.trash2, 
+              'Delete', 
+              Colors.red, 
+              () => _confirmBatchDelete(context, ref, selectedIds)
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBulkAction(IconData icon, String label, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmBatchDelete(BuildContext context, WidgetRef ref, List<String> selectedIds) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete ${selectedIds.length} tasks?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(taskNotifierProvider.notifier).deleteMultipleTasks(selectedIds);
+              ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
+              Navigator.pop(context);
+            },
+            child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBatchMovePicker(BuildContext context, WidgetRef ref, List<String> selectedIds) {
+    final projectsAsync = ref.watch(projectNotifierProvider);
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FlowCard(
+        margin: const EdgeInsets.all(16),
+        padding: 24,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Move to Project',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            projectsAsync.when(
+              data: (projects) => Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(LucideIcons.inbox, color: FlowColors.slate400),
+                    title: const Text('Inbox'),
+                    onTap: () {
+                      ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, null);
+                      ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ...projects.map((p) => ListTile(
+                    leading: Icon(
+                      _parseIcon(p.icon), 
+                      color: FlowColors.parseProjectColor(p.color)
+                    ),
+                    title: Text(p.title),
+                    onTap: () {
+                      ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, p.id);
+                      ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
+                      Navigator.pop(context);
+                    },
+                  )),
+                ],
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Text('Error loading projects'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

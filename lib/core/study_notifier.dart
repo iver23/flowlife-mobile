@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../data/study_repository.dart';
@@ -32,12 +33,14 @@ class StudyState {
   }
 }
 
-class StudyNotifier extends StateNotifier<StudyState> {
-  final StudyRepository _repo;
+class StudyNotifier extends Notifier<StudyState> {
+  StudyRepository get _repo => ref.watch(studyRepositoryProvider);
   final _uuid = Uuid();
 
-  StudyNotifier(this._repo) : super(StudyState()) {
+  @override
+  StudyState build() {
     _loadData();
+    return StudyState();
   }
 
   Future<void> _loadData() async {
@@ -70,7 +73,6 @@ class StudyNotifier extends StateNotifier<StudyState> {
     final newList = state.areas.where((e) => e.id != id).toList();
     state = state.copyWith(areas: newList);
     await _repo.saveAreas(newList);
-    // Cleanup children or keep orphaned for now (MVP simple)
   }
 
   Future<void> archiveArea(SubjectArea area) async {
@@ -172,7 +174,6 @@ final studyRepositoryProvider = Provider<StudyRepository>((ref) {
   return StudyRepository(prefs);
 });
 
-final studyNotifierProvider = StateNotifierProvider<StudyNotifier, StudyState>((ref) {
-  final repo = ref.watch(studyRepositoryProvider);
-  return StudyNotifier(repo);
+final studyNotifierProvider = NotifierProvider<StudyNotifier, StudyState>(() {
+  return StudyNotifier();
 });
