@@ -97,6 +97,11 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
       }
     });
 
+    // Check for project nudges
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(taskNotifierProvider.notifier).checkProjectNudges();
+    });
+
     // Check if app was launched via Home Widget
     HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
       if (uri?.scheme == 'flowlife' && uri?.host == 'add_task') {

@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/providers.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/momentum_heatmap.dart';
+import '../widgets/habit_streak_card.dart';
 import '../../data/models/models.dart';
 import 'project_detail_screen.dart';
 import 'settings_screen.dart';
@@ -38,6 +39,8 @@ class DashboardScreen extends ConsumerWidget {
                 _buildHeader(context),
                 const SizedBox(height: 32),
                 _buildMainStats(tasksAsync),
+                const SizedBox(height: 24),
+                const HabitStreakCard(),
                 const SizedBox(height: 32),
                 const Text(
                   'PROJECTS',

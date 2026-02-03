@@ -1,6 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../data/models/models.dart';
+import 'package:flutter/material.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
@@ -48,9 +50,8 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    // flutter_local_notifications 20.x: zonedSchedule uses named parameters
     await _notifications.zonedSchedule(
-      id: 999, // Constant ID for daily recap
+      id: 999,
       title: 'Good Morning!',
       body: 'You have $taskCount tasks to focus on today.',
       scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
@@ -65,6 +66,59 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
+  }
+
+  static Future<void> scheduleTaskReminder(TaskModel task) async {
+    if (!task.reminderEnabled || task.reminderTime == null) return;
+    
+    final reminderDate = DateTime.fromMillisecondsSinceEpoch(task.reminderTime!);
+    if (reminderDate.isBefore(DateTime.now())) return;
+
+    await _notifications.zonedSchedule(
+      id: task.id.hashCode,
+      title: 'Task Reminder',
+      body: task.title,
+      scheduledDate: tz.TZDateTime.from(reminderDate, tz.local),
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'task_reminders',
+          'Task Reminders',
+          importance: Importance.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  static Future<void> scheduleProjectNudge(ProjectModel project, int daysSinceVisit) async {
+    await _notifications.show(
+      project.id.hashCode + 1,
+      'Project Nudge',
+      'You haven\'t visited "${project.title}" in $daysSinceVisit days. Want to check in?',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'project_nudges',
+          'Project Nudges',
+          importance: Importance.defaultImportance,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+    );
+  }
+
+  static bool isQuietHours(TimeOfDay start, TimeOfDay end) {
+    final now = TimeOfDay.now();
+    final nowMin = now.hour * 60 + now.minute;
+    final startMin = start.hour * 60 + start.minute;
+    final endMin = end.hour * 60 + end.minute;
+
+    if (startMin <= endMin) {
+      return nowMin >= startMin && nowMin <= endMin;
+    } else {
+      // Overnight (e.g., 22:00 to 07:00)
+      return nowMin >= startMin || nowMin <= endMin;
+    }
   }
 
   static Future<void> cancelAll() async {

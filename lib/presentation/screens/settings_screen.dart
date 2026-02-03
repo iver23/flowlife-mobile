@@ -6,7 +6,9 @@ import '../../core/theme_notifier.dart';
 import '../widgets/ui_components.dart';
 import 'reports_screen.dart';
 import 'tag_management_screen.dart';
+import 'habits_screen.dart';
 import '../../core/biometric_notifier.dart';
+import '../../core/reminder_settings_notifier.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -165,12 +167,8 @@ class SettingsScreen extends ConsumerWidget {
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 1.2),
           ),
           const SizedBox(height: 16),
-          _buildSettingsTile(
-            icon: LucideIcons.bell,
-            title: 'Notifications',
-            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
-          ),
-          const SizedBox(height: 12),
+          _buildNotificationSettings(context, ref),
+          const SizedBox(height: 24),
           _buildSettingsTile(
             icon: LucideIcons.barChart2,
             title: 'Insights & Reports',
@@ -182,6 +180,14 @@ class SettingsScreen extends ConsumerWidget {
             icon: LucideIcons.tag,
             title: 'Manage Tags',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TagManagementScreen())),
+            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+            useCard: false,
+          ),
+          const Divider(height: 1, indent: 52, endIndent: 16),
+          _buildSettingsTile(
+            icon: LucideIcons.repeat,
+            title: 'Habits',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HabitsScreen())),
             trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
             useCard: false,
           ),
@@ -309,6 +315,100 @@ class SettingsScreen extends ConsumerWidget {
       padding: 0,
       onTap: onTap,
       child: content,
+    );
+  }
+
+  Widget _buildNotificationSettings(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(reminderSettingsProvider);
+    final notifier = ref.read(reminderSettingsProvider.notifier);
+
+    return FlowCard(
+      padding: 0,
+      child: Column(
+        children: [
+          SwitchListTile(
+            secondary: const Icon(LucideIcons.bell, color: FlowColors.slate500, size: 20),
+            title: const Text('Smart Reminders', style: TextStyle(fontSize: 14)),
+            subtitle: const Text('Gentle task reminders', style: TextStyle(fontSize: 12)),
+            value: settings.smartRemindersEnabled,
+            onChanged: (val) => notifier.toggleSmartReminders(val),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          ),
+          const Divider(height: 1, indent: 52, endIndent: 16),
+          SwitchListTile(
+            secondary: const Icon(LucideIcons.sunrise, color: FlowColors.slate500, size: 20),
+            title: const Text('Morning Briefing', style: TextStyle(fontSize: 14)),
+            subtitle: const Text('Today\'s priorities at 8 AM', style: TextStyle(fontSize: 12)),
+            value: settings.morningBriefingEnabled,
+            onChanged: (val) => notifier.toggleMorningBriefing(val),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          ),
+          const Divider(height: 1, indent: 52, endIndent: 16),
+          SwitchListTile(
+            secondary: const Icon(LucideIcons.compass, color: FlowColors.slate500, size: 20),
+            title: const Text('Project Nudges', style: TextStyle(fontSize: 14)),
+            subtitle: const Text('Inactive project reminders', style: TextStyle(fontSize: 12)),
+            value: settings.projectNudgesEnabled,
+            onChanged: (val) => notifier.toggleProjectNudges(val),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          ),
+          const Divider(height: 1, indent: 52, endIndent: 16),
+          _buildTimeRangeRow(context, ref, settings, notifier),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeRangeRow(BuildContext context, WidgetRef ref, ReminderSettings settings, ReminderSettingsNotifier notifier) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(LucideIcons.moon, size: 20, color: FlowColors.slate500),
+              SizedBox(width: 16),
+              Text('Quiet Hours', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildTimeLabel(context, 'Start', settings.quietHoursStart, () async {
+                final t = await showTimePicker(context: context, initialTime: settings.quietHoursStart);
+                if (t != null) notifier.setQuietHours(t, settings.quietHoursEnd);
+              }),
+              const Icon(LucideIcons.arrowRight, size: 16, color: FlowColors.slate400),
+              _buildTimeLabel(context, 'End', settings.quietHoursEnd, () async {
+                final t = await showTimePicker(context: context, initialTime: settings.quietHoursEnd);
+                if (t != null) notifier.setQuietHours(settings.quietHoursStart, t);
+              }),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeLabel(BuildContext context, String label, TimeOfDay time, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: FlowColors.primary.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Text(label, style: const TextStyle(fontSize: 10, color: FlowColors.slate500)),
+            Text(time.format(context), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: FlowColors.primary)),
+          ],
+        ),
+      ),
     );
   }
 }

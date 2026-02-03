@@ -60,6 +60,8 @@ class TaskModel {
   final bool isPinned;
   final int createdAt;
   final int? order;
+  final bool reminderEnabled;
+  final int? reminderTime; // epoch milliseconds
 
   TaskModel({
     required this.id,
@@ -76,6 +78,8 @@ class TaskModel {
     this.isPinned = false,
     required this.createdAt,
     this.order,
+    this.reminderEnabled = false,
+    this.reminderTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -94,6 +98,8 @@ class TaskModel {
       'isPinned': isPinned,
       'createdAt': createdAt,
       'order': order,
+      'reminderEnabled': reminderEnabled,
+      'reminderTime': reminderTime,
     };
   }
 
@@ -123,6 +129,8 @@ class TaskModel {
       isPinned: map['isPinned'] ?? false,
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
       order: map['order'],
+      reminderEnabled: map['reminderEnabled'] ?? false,
+      reminderTime: map['reminderTime'],
     );
   }
 
@@ -140,6 +148,8 @@ class TaskModel {
     bool? isPinned,
     int? createdAt,
     int? order,
+    bool? reminderEnabled,
+    int? reminderTime,
   }) {
     return TaskModel(
       id: id,
@@ -156,6 +166,8 @@ class TaskModel {
       isPinned: isPinned ?? this.isPinned,
       createdAt: createdAt ?? this.createdAt,
       order: order ?? this.order,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      reminderTime: reminderTime ?? this.reminderTime,
     );
   }
 }
@@ -168,6 +180,7 @@ class ProjectModel {
   final Importance weight;
   final String? description;
   final bool isArchived;
+  final int? lastVisitedAt;
 
   ProjectModel({
     required this.id,
@@ -177,6 +190,7 @@ class ProjectModel {
     required this.weight,
     this.description,
     this.isArchived = false,
+    this.lastVisitedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -188,6 +202,7 @@ class ProjectModel {
       'weight': weight.value,
       'description': description,
       'isArchived': isArchived,
+      'lastVisitedAt': lastVisitedAt,
     };
   }
 
@@ -200,6 +215,7 @@ class ProjectModel {
       weight: Importance.fromValue(map['weight'] ?? 1),
       description: map['description'],
       isArchived: map['isArchived'] ?? false,
+      lastVisitedAt: map['lastVisitedAt'],
     );
   }
 
@@ -210,6 +226,7 @@ class ProjectModel {
     Importance? weight,
     String? description,
     bool? isArchived,
+    int? lastVisitedAt,
   }) {
     return ProjectModel(
       id: id,
@@ -219,6 +236,7 @@ class ProjectModel {
       weight: weight ?? this.weight,
       description: description ?? this.description,
       isArchived: isArchived ?? this.isArchived,
+      lastVisitedAt: lastVisitedAt ?? this.lastVisitedAt,
     );
   }
 }

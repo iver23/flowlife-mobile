@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
 import '../models/tag_model.dart';
+import '../models/habit_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -198,5 +199,57 @@ class FirestoreService {
       batch.update(ref, task.toMap());
     }
     await batch.commit();
+  }
+
+  // --- Habits ---
+  Stream<List<HabitModel>> streamHabits() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => HabitModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Future<void> addHabit(HabitModel habit) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .add(habit.toMap());
+  }
+
+  Future<void> updateHabit(HabitModel habit) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .doc(habit.id)
+        .update(habit.toMap());
+  }
+
+  Future<void> completeHabitToday(String habitId, List<int> currentDates) async {
+    final todayEpochDay = DateTime.now().difference(DateTime(1970, 1, 1)).inDays;
+    if (currentDates.contains(todayEpochDay)) return; // Already completed
+    
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .doc(habitId)
+        .update({'completedDates': [...currentDates, todayEpochDay]});
+  }
+
+  Future<void> deleteHabit(String habitId) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .doc(habitId)
+        .delete();
   }
 }

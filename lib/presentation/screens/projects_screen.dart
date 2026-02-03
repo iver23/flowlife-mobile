@@ -176,6 +176,9 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
       },
       child: FlowCard(
         onTap: () {
+          ref.read(projectNotifierProvider.notifier).updateProject(
+            project.copyWith(lastVisitedAt: DateTime.now().millisecondsSinceEpoch),
+          );
           Navigator.push(
             context,
             MaterialPageRoute(

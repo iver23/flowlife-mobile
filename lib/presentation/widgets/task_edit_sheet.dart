@@ -24,6 +24,8 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   late bool _isPinned;
   late List<Subtask> _subtasks;
   late RecurrenceType _recurrence;
+  late bool _reminderEnabled;
+  late DateTime? _reminderTime;
 
   @override
   void initState() {
@@ -36,6 +38,8 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     _selectedCustomTags = List.from(widget.task.customTags);
     _isPinned = widget.task.isPinned;
     _recurrence = widget.task.recurrence;
+    _reminderEnabled = widget.task.reminderEnabled;
+    _reminderTime = widget.task.reminderTime != null ? DateTime.fromMillisecondsSinceEpoch(widget.task.reminderTime!) : null;
   }
 
   @override
@@ -152,6 +156,14 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                 ],
               ),
             ),
+            const SizedBox(height: 32),
+            const Text(
+              'REMINDER',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500),
+            ),
+            const SizedBox(height: 12),
+            _buildReminderToggle(),
+            if (_reminderEnabled) _buildReminderTimePicker(context),
             const SizedBox(height: 40),
             FlowButton(
               label: 'SAVE CHANGES',
@@ -171,6 +183,8 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   subtasks: _subtasks,
                   createdAt: widget.task.createdAt,
                   order: widget.task.order,
+                  reminderEnabled: _reminderEnabled,
+                  reminderTime: _reminderTime?.millisecondsSinceEpoch,
                 );
                 widget.onSave(updatedTask);
                 Navigator.pop(context);
@@ -289,6 +303,63 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: isSelected ? FlowColors.primary : FlowColors.slate500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReminderToggle() {
+    return SwitchListTile(
+      title: const Text('Enable Reminder', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      secondary: Icon(LucideIcons.bell, color: _reminderEnabled ? FlowColors.primary : FlowColors.slate400, size: 20),
+      value: _reminderEnabled,
+      onChanged: (val) => setState(() => _reminderEnabled = val),
+      contentPadding: EdgeInsets.zero,
+      activeColor: FlowColors.primary,
+    );
+  }
+
+  Widget _buildReminderTimePicker(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: InkWell(
+        onTap: () async {
+          final now = DateTime.now();
+          final date = await showDatePicker(
+            context: context,
+            initialDate: _reminderTime ?? now,
+            firstDate: now,
+            lastDate: now.add(const Duration(days: 365)),
+          );
+          if (date != null) {
+            final time = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.fromDateTime(_reminderTime ?? now),
+            );
+            if (time != null) {
+              setState(() {
+                _reminderTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+              });
+            }
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: FlowColors.primary.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: FlowColors.primary.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
+              const Icon(LucideIcons.calendarDays, size: 16, color: FlowColors.primary),
+              const SizedBox(width: 12),
+              Text(
+                _reminderTime == null ? 'Set reminder time' : '${_reminderTime!.year}-${_reminderTime!.month}-${_reminderTime!.day} ${_reminderTime!.hour.toString().padLeft(2, '0')}:${_reminderTime!.minute.toString().padLeft(2, '0')}',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: FlowColors.primary),
+              ),
+            ],
           ),
         ),
       ),

@@ -51,22 +51,8 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
   }
 
   void _scheduleTaskNotification(TaskModel task) {
-    if (task.dueDate != null && !task.completed) {
-      final scheduledDate = DateTime(
-        task.dueDate!.year,
-        task.dueDate!.month,
-        task.dueDate!.day,
-        9, // 9 AM
-      );
-      
-      if (scheduledDate.isAfter(DateTime.now())) {
-        NotificationService.scheduleNotification(
-          task.id.hashCode,
-          'Task Reminder',
-          '${task.title} is due today!',
-          scheduledDate,
-        );
-      }
+    if (!task.completed && task.reminderEnabled && task.reminderTime != null) {
+      NotificationService.scheduleTaskReminder(task);
     }
   }
 
@@ -237,6 +223,28 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
 
     if (updatedTasks.isNotEmpty) {
       await _service.updateMultipleTasks(updatedTasks);
+    }
+  }
+
+  Future<void> checkProjectNudges() async {
+    final projects = await ref.read(projectNotifierProvider.future);
+    final settings = ref.read(reminderSettingsProvider);
+    
+    if (!settings.projectNudgesEnabled) return;
+    if (NotificationService.isQuietHours(settings.quietHoursStart, settings.quietHoursEnd)) return;
+
+    final now = DateTime.now();
+    for (final project in projects) {
+      if (project.isArchived) continue;
+      
+      final lastVisited = project.lastVisitedAt != null 
+          ? DateTime.fromMillisecondsSinceEpoch(project.lastVisitedAt!) 
+          : DateTime.fromMillisecondsSinceEpoch(project.id.hashCode); // Fallback for old projects
+      
+      final diff = now.difference(lastVisited).inDays;
+      if (diff >= 3) { // Nudge every 3 days of silence
+        NotificationService.scheduleProjectNudge(project, diff);
+      }
     }
   }
 }
