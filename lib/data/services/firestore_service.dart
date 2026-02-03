@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
-import '../models/tag_model.dart';
 import '../models/habit_model.dart';
+import '../models/tag_model.dart';
+import '../models/achievement_model.dart';
+import '../models/widget_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -244,12 +246,72 @@ class FirestoreService {
         .update({'completedDates': [...currentDates, todayEpochDay]});
   }
 
-  Future<void> deleteHabit(String habitId) {
+  Future<void> deleteHabit(String habitId) async {
+    return _db.collection('users').doc(userId).collection('habits').doc(habitId).delete();
+  }
+
+  Stream<List<AchievementModel>> streamAchievements() {
+    if (userId == null) return Stream.value([]);
     return _db
         .collection('users')
         .doc(userId)
-        .collection('habits')
-        .doc(habitId)
-        .delete();
+        .collection('achievements')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AchievementModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Future<void> unlockAchievement(String achievementId) async {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('achievements')
+        .doc(achievementId)
+        .update({
+          'isUnlocked': true,
+          'unlockedAt': DateTime.now().millisecondsSinceEpoch,
+        });
+  }
+
+  Future<void> initializeAchievements(List<AchievementModel> initialAchievements) async {
+    final batch = _db.batch();
+    for (final achievement in initialAchievements) {
+      final docRef = _db.collection('users').doc(userId).collection('achievements').doc(achievement.id);
+      batch.set(docRef, achievement.toMap(), SetOptions(merge: true));
+    }
+    return batch.commit();
+  }
+
+  // --- Dashboard Widgets ---
+  Stream<List<DashboardWidgetModel>> streamDashboardWidgets() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('dashboard_widgets')
+        .orderBy('order')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => DashboardWidgetModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Future<void> updateWidget(DashboardWidgetModel widget) {
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('dashboard_widgets')
+        .doc(widget.id)
+        .update(widget.toMap());
+  }
+
+  Future<void> initializeWidgets(List<DashboardWidgetModel> initialWidgets) async {
+    final batch = _db.batch();
+    for (final widget in initialWidgets) {
+      final docRef = _db.collection('users').doc(userId).collection('dashboard_widgets').doc(widget.id);
+      batch.set(docRef, widget.toMap(), SetOptions(merge: true));
+    }
+    return batch.commit();
   }
 }

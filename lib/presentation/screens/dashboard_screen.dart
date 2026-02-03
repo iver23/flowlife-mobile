@@ -6,8 +6,13 @@ import '../widgets/ui_components.dart';
 import '../widgets/momentum_heatmap.dart';
 import '../widgets/habit_streak_card.dart';
 import '../../data/models/models.dart';
+import '../../data/models/achievement_model.dart';
+import '../../core/achievement_notifier.dart';
 import 'project_detail_screen.dart';
 import 'settings_screen.dart';
+import '../../core/dashboard_widget_notifier.dart';
+import '../widgets/dashboard_widget_settings_sheet.dart';
+import '../../data/models/widget_model.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -36,32 +41,12 @@ class DashboardScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context),
+                _buildHeader(context, ref),
                 const SizedBox(height: 32),
-                _buildMainStats(tasksAsync),
-                const SizedBox(height: 24),
-                const HabitStreakCard(),
-                const SizedBox(height: 32),
-                const Text(
-                  'PROJECTS',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2.0,
-                    color: FlowColors.slate400,
+                ref.watch(dashboardWidgetProvider).when(
+                  data: (widgets) => Column(
+                    children: widgets.where((w) => w.isEnabled).map((w) => _buildWidget(context, ref, w, projectsAsync, tasksAsync)).toList(),
                   ),
-                ),
-                const SizedBox(height: 16),
-                projectsAsync.when(
-                  data: (projects) => _buildProjectGrid(projects, ref),
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
-                ),
-                const SizedBox(height: 32),
-                _buildTasksHeader(),
-                const SizedBox(height: 16),
-                tasksAsync.when(
-                  data: (tasks) => _buildRecentTasks(tasks.where((t) => !t.completed).toList()),
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Text('Error: $e'),
                 ),
@@ -74,7 +59,117 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildWidget(BuildContext context, WidgetRef ref, DashboardWidgetModel widget, AsyncValue<List<ProjectModel>> projects, AsyncValue<List<TaskModel>> tasks) {
+    switch (widget.type) {
+      case WidgetType.stats:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: _buildMainStats(tasks),
+        );
+      case WidgetType.habits:
+        return const Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: HabitStreakCard(),
+        );
+      case WidgetType.projects:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'PROJECTS',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+            ),
+            const SizedBox(height: 16),
+            projects.when(
+              data: (data) => _buildProjectGrid(data, ref),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error: $e'),
+            ),
+            const SizedBox(height: 32),
+          ],
+        );
+      case WidgetType.tasks:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTasksHeader(),
+            const SizedBox(height: 16),
+            tasks.when(
+              data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList()),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error: $e'),
+            ),
+            const SizedBox(height: 32),
+          ],
+        );
+      case WidgetType.ideas:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'RECENT IDEAS',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+            ),
+            const SizedBox(height: 16),
+            ref.watch(ideasProvider).when(
+              data: (data) => _buildRecentIdeas(data),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error: $e'),
+            ),
+            const SizedBox(height: 32),
+          ],
+        );
+      case WidgetType.achievements:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'LATEST ACHIEVEMENTS',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+            ),
+            const SizedBox(height: 16),
+            ref.watch(achievementProvider).when(
+              data: (data) => _buildRecentAchievements(data),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error: $e'),
+            ),
+            const SizedBox(height: 32),
+          ],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildRecentIdeas(List<IdeaModel> ideas) {
+    if (ideas.isEmpty) return const Text('No ideas yet.', style: TextStyle(color: FlowColors.slate400));
+    return Column(
+      children: ideas.take(2).map((idea) => Padding(
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: FlowCard(
+          padding: 16,
+          child: Text(idea.content, maxLines: 2, overflow: TextOverflow.ellipsis),
+        ),
+      )).toList(),
+    );
+  }
+
+  Widget _buildRecentAchievements(List<AchievementModel> achievements) {
+    final unlocked = achievements.where((a) => a.isUnlocked).toList();
+    if (unlocked.isEmpty) return const Text('Keep going to unlock achievements!', style: TextStyle(color: FlowColors.slate400));
+    return Row(
+      children: unlocked.take(4).map<Widget>((a) => Padding(
+        padding: const EdgeInsets.only(right: 12.0),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: FlowColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+          child: const Icon(LucideIcons.trophy, size: 16, color: FlowColors.primary),
+        ),
+      )).toList(),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -102,7 +197,14 @@ class DashboardScreen extends ConsumerWidget {
         ),
         Row(
           children: [
-            _buildActionCircle(LucideIcons.bell, () {}),
+            _buildActionCircle(LucideIcons.layout, () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) => const DashboardWidgetSettingsSheet(),
+              );
+            }),
             const SizedBox(width: 12),
             _buildActionCircle(LucideIcons.settings, () {
               Navigator.push(

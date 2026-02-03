@@ -7,6 +7,7 @@ import '../widgets/ui_components.dart';
 import 'reports_screen.dart';
 import 'tag_management_screen.dart';
 import 'habits_screen.dart';
+import 'achievements_screen.dart';
 import '../../core/biometric_notifier.dart';
 import '../../core/reminder_settings_notifier.dart';
 
@@ -188,6 +189,14 @@ class SettingsScreen extends ConsumerWidget {
             icon: LucideIcons.repeat,
             title: 'Habits',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HabitsScreen())),
+            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+            useCard: false,
+          ),
+          const Divider(height: 1, indent: 52, endIndent: 16),
+          _buildSettingsTile(
+            icon: LucideIcons.trophy,
+            title: 'Achievements',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AchievementsScreen())),
             trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
             useCard: false,
           ),
