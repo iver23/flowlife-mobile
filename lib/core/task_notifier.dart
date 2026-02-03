@@ -8,6 +8,7 @@ import 'date_parser.dart';
 import 'notification_service.dart';
 import 'widget_service.dart';
 import 'project_notifier.dart';
+import 'reminder_settings_notifier.dart';
 
 class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);

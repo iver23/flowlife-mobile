@@ -1,7 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import '../data/models/models.dart';
+import '../data/models/models.dart' hide Importance;
 import 'package:flutter/material.dart';
 
 class NotificationService {
@@ -93,10 +93,10 @@ class NotificationService {
 
   static Future<void> scheduleProjectNudge(ProjectModel project, int daysSinceVisit) async {
     await _notifications.show(
-      project.id.hashCode + 1,
-      'Project Nudge',
-      'You haven\'t visited "${project.title}" in $daysSinceVisit days. Want to check in?',
-      const NotificationDetails(
+      id: project.id.hashCode + 1,
+      title: 'Project Nudge',
+      body: 'You haven\'t visited "${project.title}" in $daysSinceVisit days. Want to check in?',
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'project_nudges',
           'Project Nudges',
