@@ -95,7 +95,7 @@ class DashboardScreen extends ConsumerWidget {
             _buildTasksHeader(),
             const SizedBox(height: 16),
             tasks.when(
-              data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList()),
+              data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList(), projects.value ?? []),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text('Error: $e'),
             ),
@@ -312,7 +312,9 @@ class DashboardScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final project = projects[index];
             final projectColor = FlowColors.parseProjectColor(project.color);
+            final isDark = Theme.of(context).brightness == Brightness.dark;
             return FlowCard(
+              backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
               padding: 20,
               onTap: () {
                 Navigator.push(
@@ -386,37 +388,57 @@ class DashboardScreen extends ConsumerWidget {
     }
   }
 
-  Widget _buildRecentTasks(List<TaskModel> tasks) {
+  Widget _buildRecentTasks(List<TaskModel> tasks, List<ProjectModel> projects) {
     if (tasks.isEmpty) {
       return const Text('All caught up!', style: TextStyle(color: FlowColors.slate400));
     }
     return Column(
-      children: tasks.take(3).map((task) => Padding(
-        padding: const EdgeInsets.only(bottom: 12.0),
-        child: FlowCard(
-          padding: 16,
-          child: Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: FlowColors.slate200,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  task.title,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
-              ),
-              const Icon(LucideIcons.chevronRight, size: 14, color: FlowColors.slate400),
-            ],
+      children: tasks.take(3).map((task) {
+        final project = projects.firstWhere(
+          (p) => p.id == task.projectId,
+          orElse: () => ProjectModel(
+            id: 'temp',
+            title: 'Inbox',
+            color: 'slate',
+            icon: 'inbox',
+            weight: Importance.low,
           ),
-        ),
-      )).toList(),
+        );
+        final projectColor = FlowColors.parseProjectColor(project.color);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Builder(
+            builder: (context) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              return FlowCard(
+                backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
+                padding: 16,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: projectColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        task.title,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      ),
+                    ),
+                    const Icon(LucideIcons.chevronRight, size: 14, color: FlowColors.slate400),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      }).toList(),
     );
   }
 }

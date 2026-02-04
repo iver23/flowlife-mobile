@@ -55,6 +55,10 @@ class FlowColors {
       default: return primary;
     }
   }
+
+  static Color getSubtleProjectColor(Color color, bool isDark) {
+    return color.withOpacity(isDark ? 0.15 : 0.12);
+  }
 }
 
 class FlowTheme {
@@ -133,6 +137,7 @@ class FlowCard extends StatelessWidget {
   final double padding;
   final EdgeInsets? margin;
   final bool useGlass;
+  final Color? backgroundColor;
 
   const FlowCard({
     super.key,
@@ -141,18 +146,19 @@ class FlowCard extends StatelessWidget {
     this.padding = 20,
     this.margin,
     this.useGlass = false,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
-    Color surfaceColor = isDark ? FlowColors.surfaceDark : FlowColors.surfaceLight;
+    Color surfaceColor = backgroundColor ?? (isDark ? FlowColors.surfaceDark : FlowColors.surfaceLight);
     
     Widget card = Container(
       padding: EdgeInsets.all(padding),
       margin: margin,
       decoration: BoxDecoration(
-        color: (isDark && useGlass) ? surfaceColor.withOpacity(0.7) : surfaceColor,
+        color: (isDark && useGlass && backgroundColor == null) ? surfaceColor.withOpacity(0.7) : surfaceColor,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.03),

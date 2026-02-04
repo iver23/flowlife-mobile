@@ -59,6 +59,7 @@ class TaskCard extends StatelessWidget {
         }
       },
       child: FlowCard(
+        backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
         onTap: onTap,
         padding: 0,
         child: Padding(

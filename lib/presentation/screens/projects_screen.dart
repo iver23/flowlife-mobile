@@ -175,6 +175,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
         }
       },
       child: FlowCard(
+        backgroundColor: FlowColors.getSubtleProjectColor(_parseColor(project.color), Theme.of(context).brightness == Brightness.dark),
         onTap: () {
           ref.read(projectNotifierProvider.notifier).updateProject(
             project.copyWith(lastVisitedAt: DateTime.now().millisecondsSinceEpoch),
