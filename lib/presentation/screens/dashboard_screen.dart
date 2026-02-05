@@ -13,12 +13,24 @@ import 'settings_screen.dart';
 import '../../core/dashboard_widget_notifier.dart';
 import '../widgets/dashboard_widget_settings_sheet.dart';
 import '../../data/models/widget_model.dart';
+import '../../core/quote_service.dart';
+import '../widgets/task_edit_sheet.dart';
+import '../widgets/task_detail_sheet.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _isProjectsExpanded = false;
+  bool _isHabitsExpanded = true;
+  bool _isTasksExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectsProvider);
     final tasksAsync = ref.watch(tasksProvider);
 
@@ -64,60 +76,150 @@ class DashboardScreen extends ConsumerWidget {
       case WidgetType.stats:
         return Padding(
           padding: const EdgeInsets.only(bottom: 24.0),
-          child: _buildMainStats(tasks),
+          child: _buildQuoteCard(tasks),
         );
       case WidgetType.habits:
-        return const Padding(
+        return Padding(
           padding: const EdgeInsets.only(bottom: 24.0),
-          child: HabitStreakCard(),
+          child: HabitStreakCard(
+            isExpanded: _isHabitsExpanded,
+            onToggle: () => setState(() => _isHabitsExpanded = !_isHabitsExpanded),
+            onSettingsTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+            },
+          ),
         );
       case WidgetType.projects:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'PROJECTS',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: FlowCard(
+            padding: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'PROJECTS',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+                    ),
+                    projects.when(
+                      data: (data) => Text(
+                        '${data.length} active',
+                        style: const TextStyle(fontSize: 12, color: FlowColors.slate400),
+                      ),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                projects.when(
+                  data: (data) => _buildProjectListCompact(data),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            projects.when(
-              data: (data) => _buildProjectGrid(data, ref),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e'),
-            ),
-            const SizedBox(height: 32),
-          ],
+          ),
         );
       case WidgetType.tasks:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTasksHeader(),
-            const SizedBox(height: 16),
-            tasks.when(
-              data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList(), projects.value ?? []),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e'),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: FlowCard(
+            padding: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => _isTasksExpanded = !_isTasksExpanded),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'UPCOMING TASKS',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            _isTasksExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                            size: 14,
+                            color: FlowColors.slate400,
+                          ),
+                        ],
+                      ),
+                      tasks.when(
+                        data: (data) {
+                          final activeTasks = data.where((t) => !t.completed).toList();
+                          final totalToday = data.length;
+                          final completedToday = data.where((t) => t.completed).length;
+                          return Text(
+                            '$completedToday/$totalToday',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: FlowColors.slate500),
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                tasks.when(
+                  data: (data) {
+                    final total = data.isEmpty ? 0 : data.length;
+                    final completed = data.where((t) => t.completed).length;
+                    final progress = total == 0 ? 0.0 : completed / total;
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
+                        valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
+                        minHeight: 6,
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+                if (_isTasksExpanded) ...[
+                  const SizedBox(height: 16),
+                  tasks.when(
+                    data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList(), projects.value ?? []),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('Error: $e'),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 32),
-          ],
+          ),
         );
       case WidgetType.ideas:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'RECENT IDEAS',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: FlowCard(
+            padding: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'RECENT IDEAS',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+                ),
+                const SizedBox(height: 16),
+                ref.watch(ideasProvider).when(
+                  data: (data) => _buildRecentIdeas(data),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            ref.watch(ideasProvider).when(
-              data: (data) => _buildRecentIdeas(data),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e'),
-            ),
-            const SizedBox(height: 32),
-          ],
+          ),
         );
       case WidgetType.achievements:
         return Column(
@@ -176,9 +278,9 @@ class DashboardScreen extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Good morning',
-              style: TextStyle(
+            Text(
+              _getGreeting(),
+              style: const TextStyle(
                 fontSize: 14,
                 color: FlowColors.slate400,
                 fontWeight: FontWeight.w500,
@@ -233,30 +335,85 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMainStats(AsyncValue<List<TaskModel>> tasksAsync) {
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  Widget _buildQuoteCard(AsyncValue<List<TaskModel>> tasksAsync) {
+    final quote = ref.watch(quoteProvider);
+
     return tasksAsync.when(
       data: (tasks) {
-        final completed = tasks.where((t) => t.completed).length;
-        final total = tasks.length;
-        final progress = total == 0 ? 0.0 : completed / total;
-
         return FlowCard(
           useGlass: true,
           padding: 24,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Total Progress',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: FlowColors.slate400),
+              // Quote Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '"',
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.amber.shade600,
+                      height: 0.8,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(quoteProvider.notifier).refresh();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade600.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.refreshCw,
+                        size: 16,
+                        color: Colors.amber.shade600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                '${(progress * 100).toInt()}% Done',
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  quote.text,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
-              MomentumHeatmap(tasks: tasks), // We'll redesign this next
+              if (quote.author.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    quote.author,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+              // Heatmap Section
+              MomentumHeatmap(tasks: tasks),
             ],
           ),
         );
@@ -388,12 +545,109 @@ class DashboardScreen extends ConsumerWidget {
     }
   }
 
+  Widget _buildProjectListCompact(List<ProjectModel> projectsList) {
+    if (projectsList.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: projectsList.map((project) {
+        final projectColor = FlowColors.parseProjectColor(project.color);
+        
+        // Calculate real progress
+        final tasks = ref.watch(tasksProvider).value ?? [];
+        final projectTasks = tasks.where((t) => t.projectId == project.id).toList();
+        final completedTasks = projectTasks.where((t) => t.completed).length;
+        final progress = projectTasks.isEmpty ? 0.0 : completedTasks / projectTasks.length;
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProjectDetailScreen(project: project)),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: projectColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      _getIconData(project.icon),
+                      size: 16,
+                      color: projectColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    project.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 3,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: FlowColors.slate100,
+                      valueColor: AlwaysStoppedAnimation<Color>(projectColor),
+                      minHeight: 6,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 35,
+                  child: Text(
+                    '${(progress * 100).toInt()}%',
+                    textAlign: TextAlign.end,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: FlowColors.slate500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  IconData _getIconData(String iconName) {
+    // Simple mapping for demonstration
+    switch (iconName.toLowerCase()) {
+      case 'anchor': return LucideIcons.anchor;
+      case 'box': return LucideIcons.box;
+      case 'heart': return LucideIcons.heart;
+      case 'code': return LucideIcons.code;
+      case 'shoppingcart': return LucideIcons.shoppingCart;
+      default: return LucideIcons.layout;
+    }
+  }
+
   Widget _buildRecentTasks(List<TaskModel> tasks, List<ProjectModel> projects) {
     if (tasks.isEmpty) {
       return const Text('All caught up!', style: TextStyle(color: FlowColors.slate400));
     }
     return Column(
-      children: tasks.take(3).map((task) {
+      children: tasks.map((task) {
         final project = projects.firstWhere(
           (p) => p.id == task.projectId,
           orElse: () => ProjectModel(
@@ -411,28 +665,38 @@ class DashboardScreen extends ConsumerWidget {
           child: Builder(
             builder: (context) {
               final isDark = Theme.of(context).brightness == Brightness.dark;
-              return FlowCard(
-                backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
-                padding: 16,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: projectColor,
-                        shape: BoxShape.circle,
+              return GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => TaskDetailSheet(task: task),
+                  );
+                },
+                child: FlowCard(
+                  backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
+                  padding: 16,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: projectColor,
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        task.title,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          task.title,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
                       ),
-                    ),
-                    const Icon(LucideIcons.chevronRight, size: 14, color: FlowColors.slate400),
-                  ],
+                      const Icon(LucideIcons.chevronRight, size: 14, color: FlowColors.slate400),
+                    ],
+                  ),
                 ),
               );
             },

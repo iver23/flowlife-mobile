@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/services/firestore_service.dart';
 import '../data/models/models.dart';
+import 'quote_service.dart';
 
 import 'auth_notifier.dart';
 
@@ -48,4 +49,27 @@ final selectedTagFilterProvider = NotifierProvider<SelectedTagFilterNotifier, St
 
 final selectedProjectFilterProvider = NotifierProvider<SelectedProjectFilterNotifier, String?>(() {
   return SelectedProjectFilterNotifier();
+});
+
+class QuoteNotifier extends Notifier<Quote> {
+  final _service = QuoteService();
+
+  @override
+  Quote build() {
+    _init();
+    return _service.todaysQuote ?? Quote.loading;
+  }
+
+  Future<void> _init() async {
+    await _service.loadQuotes();
+    state = _service.getRandomQuote();
+  }
+
+  void refresh() {
+    state = _service.forceNewQuote();
+  }
+}
+
+final quoteProvider = NotifierProvider<QuoteNotifier, Quote>(() {
+  return QuoteNotifier();
 });

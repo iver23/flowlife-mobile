@@ -6,7 +6,16 @@ import '../../data/models/habit_model.dart';
 import 'ui_components.dart';
 
 class HabitStreakCard extends ConsumerWidget {
-  const HabitStreakCard({super.key});
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final VoidCallback onSettingsTap;
+
+  const HabitStreakCard({
+    super.key,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.onSettingsTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,44 +28,78 @@ class HabitStreakCard extends ConsumerWidget {
           return const SizedBox.shrink();
         }
 
+        final completedCount = habits.where((h) => h.isCompletedToday).length;
+
         return FlowCard(
           padding: 20,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'HABITS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2.0,
-                      color: FlowColors.slate400,
+              GestureDetector(
+                onTap: onToggle,
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          'HABITS',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2.0,
+                            color: FlowColors.slate400,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                          size: 14,
+                          color: FlowColors.slate400,
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    '${habits.where((h) => h.isCompletedToday).length}/${habits.length} today',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? FlowColors.slate400 : FlowColors.slate500,
+                    Row(
+                      children: [
+                        Text(
+                          '$completedCount/${habits.length}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? FlowColors.slate400 : FlowColors.slate500,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: onSettingsTap,
+                          child: Icon(
+                            LucideIcons.settings,
+                            size: 16,
+                            color: FlowColors.slate400,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              ...habits.take(3).map((habit) => _buildHabitRow(context, ref, habit, isDark)),
-              if (habits.length > 3)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Center(
-                    child: Text(
-                      '+${habits.length - 3} more habits',
-                      style: TextStyle(fontSize: 12, color: FlowColors.slate400),
-                    ),
-                  ),
+                  ],
                 ),
+              ),
+              const SizedBox(height: 12),
+              // Progress bar (always visible)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: habits.isEmpty ? 0.0 : completedCount / habits.length,
+                  backgroundColor: isDark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
+                  valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
+                  minHeight: 6,
+                ),
+              ),
+              // Expanded: show all habits
+              if (isExpanded) ...[
+                const SizedBox(height: 16),
+                ...habits.map((habit) => _buildHabitRow(context, ref, habit, isDark)),
+              ],
             ],
           ),
         );

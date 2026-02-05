@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import '../../core/tag_notifier.dart';
 import '../../data/models/tag_model.dart';
 import '../../core/bulk_selection_provider.dart';
+import '../widgets/task_detail_sheet.dart';
 
 class TasksScreen extends ConsumerWidget {
   const TasksScreen({super.key});
@@ -101,10 +102,7 @@ class TasksScreen extends ConsumerWidget {
                                     context: context,
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
-                                    builder: (context) => TaskEditSheet(
-                                      task: task,
-                                      onSave: (updatedTask) => taskNotifier.updateTask(updatedTask),
-                                    ),
+                                    builder: (context) => TaskDetailSheet(task: task),
                                   );
                                 }
                               },

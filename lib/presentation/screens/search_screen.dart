@@ -10,6 +10,7 @@ import '../widgets/task_card.dart';
 import '../widgets/task_edit_sheet.dart';
 import '../../core/tag_notifier.dart';
 import '../../data/models/tag_model.dart';
+import '../widgets/task_detail_sheet.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -191,10 +192,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
-              builder: (context) => TaskEditSheet(
-                task: task,
-                onSave: (updatedTask) => ref.read(taskNotifierProvider.notifier).updateTask(updatedTask),
-              ),
+                builder: (context) => TaskDetailSheet(task: task),
             );
           },
         );

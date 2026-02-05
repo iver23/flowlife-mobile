@@ -200,6 +200,7 @@ class FlowButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isPrimary;
   final bool isFullWidth;
+  final Color? backgroundColor;
 
   final IconData? icon;
 
@@ -209,6 +210,7 @@ class FlowButton extends StatelessWidget {
     required this.onPressed,
     this.isPrimary = true,
     this.isFullWidth = false,
+    this.backgroundColor,
     this.icon,
   });
 
@@ -220,9 +222,9 @@ class FlowButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
+          backgroundColor: backgroundColor ?? (isPrimary
               ? (isDark ? FlowColors.primaryDark : FlowColors.primary)
-              : (isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F5F9)),
+              : (isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F5F9))),
           foregroundColor: isPrimary
               ? Colors.white
               : (isDark ? Colors.white70 : const Color(0xFF334155)),

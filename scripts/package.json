@@ -1,0 +1,15 @@
+{
+  "name": "flowlife-quotes-uploader",
+  "version": "1.0.0",
+  "description": "Upload quotes from CSV to Firestore",
+  "main": "upload_quotes.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  },
+  "scripts": {
+    "start": "node upload_quotes.js"
+  },
+  "overrides": {
+    "fast-xml-parser": "^4.4.1"
+  }
+}
