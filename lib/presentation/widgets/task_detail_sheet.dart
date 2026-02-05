@@ -124,12 +124,11 @@ class TaskDetailSheet extends ConsumerWidget {
                   label: 'DUE DATE',
                   value: DateFormat('MMM d, yyyy').format(task.dueDate!),
                 ),
-              if (task.energyLevel != null)
-                _DetailTile(
-                  icon: _getEnergyIcon(task.energyLevel!),
-                  label: 'ENERGY',
-                  value: task.energyLevel!.name,
-                ),
+              _DetailTile(
+                icon: _getUrgencyIcon(task.urgencyLevel),
+                label: 'URGENCY',
+                value: task.urgencyLevel.name,
+              ),
               if (task.recurrence != RecurrenceType.NONE)
                 _DetailTile(
                   icon: LucideIcons.repeat,
@@ -238,11 +237,13 @@ class TaskDetailSheet extends ConsumerWidget {
     }
   }
 
-  IconData _getEnergyIcon(EnergyLevel level) {
+  IconData _getUrgencyIcon(UrgencyLevel level) {
     switch (level) {
-      case EnergyLevel.LOW: return LucideIcons.coffee;
-      case EnergyLevel.MEDIUM: return LucideIcons.smile;
-      case EnergyLevel.HIGH: return LucideIcons.zap;
+      case UrgencyLevel.planning: return LucideIcons.calendar;
+      case UrgencyLevel.low: return LucideIcons.clock;
+      case UrgencyLevel.moderate: return LucideIcons.alertCircle;
+      case UrgencyLevel.urgent: return LucideIcons.alertTriangle;
+      case UrgencyLevel.critical: return LucideIcons.flame;
     }
   }
 }

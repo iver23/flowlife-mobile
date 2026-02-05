@@ -73,7 +73,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
       recurrence: task.recurrence,
       completed: !task.completed,
       completedAt: !task.completed ? DateTime.now().millisecondsSinceEpoch : null,
-      energyLevel: task.energyLevel,
+      urgencyLevel: task.urgencyLevel,
       subtasks: task.subtasks,
       createdAt: task.createdAt,
       order: task.order,
@@ -99,7 +99,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
           completed: false,
         )).toList(),
         createdAt: DateTime.now().millisecondsSinceEpoch,
-        energyLevel: task.energyLevel,
+        urgencyLevel: task.urgencyLevel,
         order: task.order,
       );
       await _service.addTask(nextTask);
@@ -143,7 +143,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
       dueDate: dueDate,
       recurrence: task.recurrence,
       completed: false,
-      energyLevel: task.energyLevel,
+      urgencyLevel: task.urgencyLevel,
       subtasks: task.subtasks,
       customTags: task.customTags,
       isPinned: task.isPinned,
@@ -175,7 +175,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
         recurrence: task.recurrence,
         completed: true,
         completedAt: DateTime.now().millisecondsSinceEpoch,
-        energyLevel: task.energyLevel,
+        urgencyLevel: task.urgencyLevel,
         subtasks: task.subtasks,
         createdAt: task.createdAt,
         order: task.order,
@@ -198,7 +198,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
             completed: false,
           )).toList(),
           createdAt: DateTime.now().millisecondsSinceEpoch,
-          energyLevel: task.energyLevel,
+          urgencyLevel: task.urgencyLevel,
           order: task.order,
         ));
       }

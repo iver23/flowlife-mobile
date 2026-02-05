@@ -18,7 +18,7 @@ class TaskEditSheet extends StatefulWidget {
 class _TaskEditSheetState extends State<TaskEditSheet> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
-  late EnergyLevel? _energyLevel;
+  late UrgencyLevel _urgencyLevel;
   late String? _selectedProjectId;
   late List<String> _selectedCustomTags;
   late bool _isPinned;
@@ -32,7 +32,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
     _descController = TextEditingController(text: widget.task.description);
-    _energyLevel = widget.task.energyLevel;
+    _urgencyLevel = widget.task.urgencyLevel;
     _subtasks = List.from(widget.task.subtasks);
     _selectedProjectId = widget.task.projectId;
     _selectedCustomTags = List.from(widget.task.customTags);
@@ -105,18 +105,25 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
             ),
             const SizedBox(height: 24),
             const Text(
-              'ENERGY LEVEL',
+              'URGENCY',
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildEnergyChip(EnergyLevel.LOW, LucideIcons.coffee, 'Low'),
-                const SizedBox(width: 8),
-                _buildEnergyChip(EnergyLevel.MEDIUM, LucideIcons.smile, 'Med'),
-                const SizedBox(width: 8),
-                _buildEnergyChip(EnergyLevel.HIGH, LucideIcons.zap, 'High'),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildUrgencyChip(UrgencyLevel.planning, LucideIcons.calendar, 'Planning'),
+                  const SizedBox(width: 8),
+                  _buildUrgencyChip(UrgencyLevel.low, LucideIcons.clock, 'Low'),
+                  const SizedBox(width: 8),
+                  _buildUrgencyChip(UrgencyLevel.moderate, LucideIcons.alertCircle, 'Moderate'),
+                  const SizedBox(width: 8),
+                  _buildUrgencyChip(UrgencyLevel.urgent, LucideIcons.alertTriangle, 'Urgent'),
+                  const SizedBox(width: 8),
+                  _buildUrgencyChip(UrgencyLevel.critical, LucideIcons.flame, 'Critical'),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             ProjectPicker(
@@ -176,7 +183,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   recurrence: _recurrence,
                   completed: widget.task.completed,
                   completedAt: widget.task.completedAt,
-                  energyLevel: _energyLevel,
+                  urgencyLevel: _urgencyLevel,
                   projectId: _selectedProjectId,
                   customTags: _selectedCustomTags,
                   isPinned: _isPinned,
@@ -197,10 +204,10 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     );
   }
 
-  Widget _buildEnergyChip(EnergyLevel level, IconData icon, String label) {
-    bool isSelected = _energyLevel == level;
+  Widget _buildUrgencyChip(UrgencyLevel level, IconData icon, String label) {
+    bool isSelected = _urgencyLevel == level;
     return GestureDetector(
-      onTap: () => setState(() => _energyLevel = level),
+      onTap: () => setState(() => _urgencyLevel = level),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(

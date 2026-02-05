@@ -15,7 +15,23 @@ enum Importance {
 
 enum RecurrenceType { NONE, DAILY, WEEKLY, MONTHLY }
 
-enum EnergyLevel { HIGH, MEDIUM, LOW }
+enum UrgencyLevel {
+  planning(1),
+  low(2),
+  moderate(3),
+  urgent(4),
+  critical(5);
+
+  final int value;
+  const UrgencyLevel(this.value);
+
+  static UrgencyLevel fromValue(int value) {
+    return UrgencyLevel.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => UrgencyLevel.planning,
+    );
+  }
+}
 
 class Subtask {
   final String id;
@@ -54,7 +70,7 @@ class TaskModel {
   final RecurrenceType recurrence;
   final bool completed;
   final int? completedAt;
-  final EnergyLevel? energyLevel;
+  final UrgencyLevel urgencyLevel;
   final List<Subtask> subtasks;
   final List<String> customTags;
   final bool isPinned;
@@ -72,7 +88,7 @@ class TaskModel {
     this.recurrence = RecurrenceType.NONE,
     required this.completed,
     this.completedAt,
-    this.energyLevel,
+    this.urgencyLevel = UrgencyLevel.planning,
     required this.subtasks,
     this.customTags = const [],
     this.isPinned = false,
@@ -92,7 +108,7 @@ class TaskModel {
       'recurrence': recurrence.name.toUpperCase(),
       'completed': completed,
       'completedAt': completedAt,
-      'energyLevel': energyLevel?.name.toUpperCase(),
+      'urgencyLevel': urgencyLevel.value,
       'subtasks': subtasks.map((x) => x.toMap()).toList(),
       'customTags': customTags,
       'isPinned': isPinned,
@@ -116,12 +132,9 @@ class TaskModel {
       ),
       completed: map['completed'] ?? false,
       completedAt: map['completedAt'],
-      energyLevel: map['energyLevel'] != null
-          ? EnergyLevel.values.firstWhere(
-              (e) => e.name == map['energyLevel'],
-              orElse: () => EnergyLevel.MEDIUM,
-            )
-          : null,
+      urgencyLevel: map['urgencyLevel'] != null
+          ? UrgencyLevel.fromValue(map['urgencyLevel'])
+          : _migrateFromEnergy(map['energyLevel']),
       subtasks: (map['subtasks'] as List? ?? [])
           .map((x) => Subtask.fromMap(x as Map<String, dynamic>))
           .toList(),
@@ -142,7 +155,7 @@ class TaskModel {
     RecurrenceType? recurrence,
     bool? completed,
     int? completedAt,
-    EnergyLevel? energyLevel,
+    UrgencyLevel? urgencyLevel,
     List<Subtask>? subtasks,
     List<String>? customTags,
     bool? isPinned,
@@ -160,7 +173,7 @@ class TaskModel {
       recurrence: recurrence ?? this.recurrence,
       completed: completed ?? this.completed,
       completedAt: completedAt ?? this.completedAt,
-      energyLevel: energyLevel ?? this.energyLevel,
+      urgencyLevel: urgencyLevel ?? this.urgencyLevel,
       subtasks: subtasks ?? this.subtasks,
       customTags: customTags ?? this.customTags,
       isPinned: isPinned ?? this.isPinned,
@@ -169,6 +182,20 @@ class TaskModel {
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderTime: reminderTime ?? this.reminderTime,
     );
+  }
+
+  static UrgencyLevel _migrateFromEnergy(String? energy) {
+    if (energy == null) return UrgencyLevel.planning;
+    switch (energy.toUpperCase()) {
+      case 'HIGH':
+        return UrgencyLevel.urgent;
+      case 'MEDIUM':
+        return UrgencyLevel.moderate;
+      case 'LOW':
+        return UrgencyLevel.low;
+      default:
+        return UrgencyLevel.planning;
+    }
   }
 }
 

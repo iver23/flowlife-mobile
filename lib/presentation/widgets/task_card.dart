@@ -173,23 +173,15 @@ class TaskCard extends StatelessWidget {
   }
 
 
-  Widget _buildEnergyIndicator(EnergyLevel level) {
-    Color color;
-    IconData icon;
-    switch (level) {
-      case EnergyLevel.LOW:
-        color = FlowColors.slate400;
-        icon = LucideIcons.coffee;
-        break;
-      case EnergyLevel.MEDIUM:
-        color = Colors.blue;
-        icon = LucideIcons.smile;
-        break;
-      case EnergyLevel.HIGH:
-        color = Colors.amber;
-        icon = LucideIcons.zap;
-        break;
-    }
+  Widget _buildUrgencyIndicator(UrgencyLevel level) {
+    final config = {
+      UrgencyLevel.planning: (FlowColors.slate400, LucideIcons.calendar),
+      UrgencyLevel.low: (Colors.blue, LucideIcons.clock),
+      UrgencyLevel.moderate: (Colors.amber, LucideIcons.alertCircle),
+      UrgencyLevel.urgent: (Colors.orange, LucideIcons.alertTriangle),
+      UrgencyLevel.critical: (Colors.red, LucideIcons.flame),
+    }[level]!;
+    final (color, icon) = config;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(

@@ -12,8 +12,8 @@ class ProjectAnalytics extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
     
-    final energyCounts = _calculateEnergyCounts();
-    final total = energyCounts.values.fold(0, (sum, val) => sum + val);
+    final urgencyCounts = _calculateUrgencyCounts();
+    final total = urgencyCounts.values.fold(0, (sum, val) => sum + val);
 
     return FlowCard(
       padding: 24,
@@ -40,7 +40,7 @@ class ProjectAnalytics extends StatelessWidget {
                   PieChartData(
                     sectionsSpace: 4,
                     centerSpaceRadius: 40,
-                    sections: _buildSections(energyCounts, total, isDark),
+                    sections: _buildSections(urgencyCounts, total, isDark),
                   ),
                 ),
               ),
@@ -49,11 +49,15 @@ class ProjectAnalytics extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    _buildLegendItem('High', energyCounts[EnergyLevel.HIGH] ?? 0, Colors.amber),
+                    _buildLegendItem('Critical', urgencyCounts[UrgencyLevel.critical] ?? 0, Colors.red),
                     const SizedBox(height: 8),
-                    _buildLegendItem('Medium', energyCounts[EnergyLevel.MEDIUM] ?? 0, Colors.blue),
+                    _buildLegendItem('Urgent', urgencyCounts[UrgencyLevel.urgent] ?? 0, Colors.orange),
                     const SizedBox(height: 8),
-                    _buildLegendItem('Low', energyCounts[EnergyLevel.LOW] ?? 0, FlowColors.slate400),
+                    _buildLegendItem('Moderate', urgencyCounts[UrgencyLevel.moderate] ?? 0, Colors.amber),
+                    const SizedBox(height: 8),
+                    _buildLegendItem('Low', urgencyCounts[UrgencyLevel.low] ?? 0, Colors.blue),
+                    const SizedBox(height: 8),
+                    _buildLegendItem('Planning', urgencyCounts[UrgencyLevel.planning] ?? 0, FlowColors.slate400),
                   ],
                 ),
               ),
@@ -64,22 +68,22 @@ class ProjectAnalytics extends StatelessWidget {
     );
   }
 
-  Map<EnergyLevel, int> _calculateEnergyCounts() {
-    final Map<EnergyLevel, int> counts = {
-      EnergyLevel.HIGH: 0,
-      EnergyLevel.MEDIUM: 0,
-      EnergyLevel.LOW: 0,
+  Map<UrgencyLevel, int> _calculateUrgencyCounts() {
+    final Map<UrgencyLevel, int> counts = {
+      UrgencyLevel.critical: 0,
+      UrgencyLevel.urgent: 0,
+      UrgencyLevel.moderate: 0,
+      UrgencyLevel.low: 0,
+      UrgencyLevel.planning: 0,
     };
 
     for (var task in tasks) {
-      if (task.energyLevel != null) {
-        counts[task.energyLevel!] = (counts[task.energyLevel!] ?? 0) + 1;
-      }
+      counts[task.urgencyLevel] = (counts[task.urgencyLevel] ?? 0) + 1;
     }
     return counts;
   }
 
-  List<PieChartSectionData> _buildSections(Map<EnergyLevel, int> counts, int total, bool isDark) {
+  List<PieChartSectionData> _buildSections(Map<UrgencyLevel, int> counts, int total, bool isDark) {
     if (total == 0) {
       return [
         PieChartSectionData(
@@ -93,20 +97,32 @@ class ProjectAnalytics extends StatelessWidget {
 
     return [
       PieChartSectionData(
+        color: Colors.red,
+        value: (counts[UrgencyLevel.critical] ?? 0).toDouble(),
+        radius: 12,
+        showTitle: false,
+      ),
+      PieChartSectionData(
+        color: Colors.orange,
+        value: (counts[UrgencyLevel.urgent] ?? 0).toDouble(),
+        radius: 12,
+        showTitle: false,
+      ),
+      PieChartSectionData(
         color: Colors.amber,
-        value: (counts[EnergyLevel.HIGH] ?? 0).toDouble(),
+        value: (counts[UrgencyLevel.moderate] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
       PieChartSectionData(
         color: Colors.blue,
-        value: (counts[EnergyLevel.MEDIUM] ?? 0).toDouble(),
+        value: (counts[UrgencyLevel.low] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
       PieChartSectionData(
         color: FlowColors.slate400,
-        value: (counts[EnergyLevel.LOW] ?? 0).toDouble(),
+        value: (counts[UrgencyLevel.planning] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
