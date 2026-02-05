@@ -107,6 +107,8 @@ class TasksScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Error: $e')),
               ),
+              if (selectionState.isSelectionMode && selectionState.selectedTaskIds.isNotEmpty)
+                _buildBulkActionBar(context, ref, selectionState.selectedTaskIds.toList()),
             ],
           ),
         ),
@@ -403,49 +405,57 @@ class TasksScreen extends ConsumerWidget {
     
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => FlowCard(
-        margin: const EdgeInsets.all(16),
-        padding: 24,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Move to Project',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            projectsAsync.when(
-              data: (projects) => Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(LucideIcons.inbox, color: FlowColors.slate400),
-                    title: const Text('Inbox'),
-                    onTap: () {
-                      ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, null);
-                      ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ...projects.map((p) => ListTile(
-                    leading: Icon(
-                      _parseIcon(p.icon), 
-                      color: FlowColors.parseProjectColor(p.color)
-                    ),
-                    title: Text(p.title),
-                    onTap: () {
-                      ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, p.id);
-                      ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
-                      Navigator.pop(context);
-                    },
-                  )),
-                ],
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: 0,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Move to Project',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('Error loading projects'),
-            ),
-          ],
+              const SizedBox(height: 16),
+              projectsAsync.when(
+                data: (projects) => Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(LucideIcons.inbox, color: FlowColors.slate400),
+                          title: const Text('Inbox'),
+                          onTap: () {
+                            ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, null);
+                            ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ...projects.map((p) => ListTile(
+                          leading: Icon(
+                            _parseIcon(p.icon), 
+                            color: FlowColors.parseProjectColor(p.color)
+                          ),
+                          title: Text(p.title),
+                          onTap: () {
+                            ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, p.id);
+                            ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
+                            Navigator.pop(context);
+                          },
+                        )),
+                      ],
+                    ),
+                  ),
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => const Text('Error loading projects'),
+              ),
+            ],
+          ),
         ),
       ),
     );
