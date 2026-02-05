@@ -49,15 +49,15 @@ class ProjectAnalytics extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    _buildLegendItem('Critical', urgencyCounts[UrgencyLevel.critical] ?? 0, Colors.red),
+                    _buildLegendItem('Critical', urgencyCounts[UrgencyLevel.critical] ?? 0, Color(UrgencyLevel.critical.colorValue)),
                     const SizedBox(height: 8),
-                    _buildLegendItem('Urgent', urgencyCounts[UrgencyLevel.urgent] ?? 0, Colors.orange),
+                    _buildLegendItem('Urgent', urgencyCounts[UrgencyLevel.urgent] ?? 0, Color(UrgencyLevel.urgent.colorValue)),
                     const SizedBox(height: 8),
-                    _buildLegendItem('Moderate', urgencyCounts[UrgencyLevel.moderate] ?? 0, Colors.amber),
+                    _buildLegendItem('Moderate', urgencyCounts[UrgencyLevel.moderate] ?? 0, Color(UrgencyLevel.moderate.colorValue)),
                     const SizedBox(height: 8),
-                    _buildLegendItem('Low', urgencyCounts[UrgencyLevel.low] ?? 0, Colors.blue),
+                    _buildLegendItem('Low', urgencyCounts[UrgencyLevel.low] ?? 0, Color(UrgencyLevel.low.colorValue)),
                     const SizedBox(height: 8),
-                    _buildLegendItem('Planning', urgencyCounts[UrgencyLevel.planning] ?? 0, FlowColors.slate400),
+                    _buildLegendItem('Planning', urgencyCounts[UrgencyLevel.planning] ?? 0, Color(UrgencyLevel.planning.colorValue)),
                   ],
                 ),
               ),
@@ -97,31 +97,31 @@ class ProjectAnalytics extends StatelessWidget {
 
     return [
       PieChartSectionData(
-        color: Colors.red,
+        color: Color(UrgencyLevel.critical.colorValue),
         value: (counts[UrgencyLevel.critical] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
       PieChartSectionData(
-        color: Colors.orange,
+        color: Color(UrgencyLevel.urgent.colorValue),
         value: (counts[UrgencyLevel.urgent] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
       PieChartSectionData(
-        color: Colors.amber,
+        color: Color(UrgencyLevel.moderate.colorValue),
         value: (counts[UrgencyLevel.moderate] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
       PieChartSectionData(
-        color: Colors.blue,
+        color: Color(UrgencyLevel.low.colorValue),
         value: (counts[UrgencyLevel.low] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,
       ),
       PieChartSectionData(
-        color: FlowColors.slate400,
+        color: Color(UrgencyLevel.planning.colorValue),
         value: (counts[UrgencyLevel.planning] ?? 0).toDouble(),
         radius: 12,
         showTitle: false,

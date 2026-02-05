@@ -16,7 +16,6 @@ import 'presentation/widgets/project_edit_sheet.dart';
 import 'presentation/widgets/task_edit_sheet.dart';
 import 'presentation/screens/study_screen.dart';
 import 'presentation/widgets/study_edit_sheet.dart';
-import 'presentation/widgets/tag_picker.dart';
 import 'presentation/widgets/project_picker.dart';
 import 'core/confetti_notifier.dart';
 import 'core/auth_notifier.dart';
@@ -323,7 +322,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
   void _showAddIdeaSheet(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     String? selectedProjectId;
-    List<String> selectedCustomTags = [];
 
     showDialog(
       context: context,
@@ -345,11 +343,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
                   selectedProjectId: selectedProjectId,
                   onSelected: (id) => setDialogState(() => selectedProjectId = id),
                 ),
-                const SizedBox(height: 24),
-                TagPicker(
-                  selectedTagNames: selectedCustomTags,
-                  onSelected: (tags) => setDialogState(() => selectedCustomTags = tags),
-                ),
               ],
             ),
           ),
@@ -361,7 +354,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
                   ref.read(ideaNotifierProvider.notifier).addIdea(
                     controller.text,
                     projectId: selectedProjectId,
-                    customTags: selectedCustomTags,
                   );
                   Navigator.pop(context);
                 }

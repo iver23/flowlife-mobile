@@ -145,7 +145,6 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
       completed: false,
       urgencyLevel: task.urgencyLevel,
       subtasks: task.subtasks,
-      customTags: task.customTags,
       isPinned: task.isPinned,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       order: 0, // Simplified order for new tasks

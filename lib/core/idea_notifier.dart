@@ -20,12 +20,11 @@ class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
     return stream.first;
   }
 
-  Future<void> addIdea(String content, {String? projectId, List<String> customTags = const []}) async {
+  Future<void> addIdea(String content, {String? projectId}) async {
     final newIdea = IdeaModel(
       id: '',
       content: content,
       projectId: projectId,
-      customTags: customTags,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     await _service.addIdea(newIdea);
@@ -41,7 +40,6 @@ class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
       id: '',
       title: idea.content,
       projectId: idea.projectId, // Carry over the project
-      customTags: idea.customTags, // Carry over custom tags
       completed: false,
       subtasks: [],
       createdAt: DateTime.now().millisecondsSinceEpoch,

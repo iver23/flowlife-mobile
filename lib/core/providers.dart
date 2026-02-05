@@ -27,14 +27,6 @@ final ideasProvider = StreamProvider<List<IdeaModel>>((ref) {
 });
 
 // Riverpod 3.x: StateProvider moved to Notifier pattern
-class SelectedTagFilterNotifier extends Notifier<String?> {
-  @override
-  String? build() => null;
-  
-  void setTag(String? tag) => state = tag;
-  void clear() => state = null;
-}
-
 class SelectedProjectFilterNotifier extends Notifier<String?> {
   @override
   String? build() => null;
@@ -43,9 +35,6 @@ class SelectedProjectFilterNotifier extends Notifier<String?> {
   void clear() => state = null;
 }
 
-final selectedTagFilterProvider = NotifierProvider<SelectedTagFilterNotifier, String?>(() {
-  return SelectedTagFilterNotifier();
-});
 
 final selectedProjectFilterProvider = NotifierProvider<SelectedProjectFilterNotifier, String?>(() {
   return SelectedProjectFilterNotifier();

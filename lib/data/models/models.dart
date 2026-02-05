@@ -25,6 +25,22 @@ enum UrgencyLevel {
   final int value;
   const UrgencyLevel(this.value);
 
+  String get label => {
+    UrgencyLevel.planning: 'Planning',
+    UrgencyLevel.low: 'Low',
+    UrgencyLevel.moderate: 'Moderate',
+    UrgencyLevel.urgent: 'Urgent',
+    UrgencyLevel.critical: 'Critical',
+  }[this]!;
+
+  int get colorValue => {
+    UrgencyLevel.planning: 0xFF64748B, // Slate
+    UrgencyLevel.low: 0xFF14B8A6,      // Teal
+    UrgencyLevel.moderate: 0xFFF59E0B, // Amber
+    UrgencyLevel.urgent: 0xFFF97316,   // Orange
+    UrgencyLevel.critical: 0xFFE11D48, // Rose
+  }[this]!;
+
   static UrgencyLevel fromValue(int value) {
     return UrgencyLevel.values.firstWhere(
       (e) => e.value == value,
@@ -72,7 +88,6 @@ class TaskModel {
   final int? completedAt;
   final UrgencyLevel urgencyLevel;
   final List<Subtask> subtasks;
-  final List<String> customTags;
   final bool isPinned;
   final int createdAt;
   final int? order;
@@ -90,7 +105,6 @@ class TaskModel {
     this.completedAt,
     this.urgencyLevel = UrgencyLevel.planning,
     required this.subtasks,
-    this.customTags = const [],
     this.isPinned = false,
     required this.createdAt,
     this.order,
@@ -110,7 +124,6 @@ class TaskModel {
       'completedAt': completedAt,
       'urgencyLevel': urgencyLevel.value,
       'subtasks': subtasks.map((x) => x.toMap()).toList(),
-      'customTags': customTags,
       'isPinned': isPinned,
       'createdAt': createdAt,
       'order': order,
@@ -138,7 +151,6 @@ class TaskModel {
       subtasks: (map['subtasks'] as List? ?? [])
           .map((x) => Subtask.fromMap(x as Map<String, dynamic>))
           .toList(),
-      customTags: List<String>.from(map['customTags'] ?? []),
       isPinned: map['isPinned'] ?? false,
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
       order: map['order'],
@@ -157,7 +169,6 @@ class TaskModel {
     int? completedAt,
     UrgencyLevel? urgencyLevel,
     List<Subtask>? subtasks,
-    List<String>? customTags,
     bool? isPinned,
     int? createdAt,
     int? order,
@@ -175,7 +186,6 @@ class TaskModel {
       completedAt: completedAt ?? this.completedAt,
       urgencyLevel: urgencyLevel ?? this.urgencyLevel,
       subtasks: subtasks ?? this.subtasks,
-      customTags: customTags ?? this.customTags,
       isPinned: isPinned ?? this.isPinned,
       createdAt: createdAt ?? this.createdAt,
       order: order ?? this.order,
@@ -271,14 +281,12 @@ class ProjectModel {
 class IdeaModel {
   final String id;
   final String content;
-  final List<String> customTags;
   final String? projectId;
   final int createdAt;
 
   IdeaModel({
     required this.id,
     required this.content,
-    this.customTags = const [],
     this.projectId,
     required this.createdAt,
   });
@@ -287,7 +295,6 @@ class IdeaModel {
     return {
       'id': id,
       'content': content,
-      'customTags': customTags,
       'projectId': projectId,
       'createdAt': createdAt,
     };
@@ -297,7 +304,6 @@ class IdeaModel {
     return IdeaModel(
       id: docId,
       content: map['content'] ?? '',
-      customTags: List<String>.from(map['customTags'] ?? []),
       projectId: map['projectId'],
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
     );
@@ -305,14 +311,12 @@ class IdeaModel {
 
   IdeaModel copyWith({
     String? content,
-    List<String>? customTags,
     String? projectId,
     int? createdAt,
   }) {
     return IdeaModel(
       id: id,
       content: content ?? this.content,
-      customTags: customTags ?? this.customTags,
       projectId: projectId ?? this.projectId,
       createdAt: createdAt ?? this.createdAt,
     );

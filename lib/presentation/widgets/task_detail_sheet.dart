@@ -127,7 +127,8 @@ class TaskDetailSheet extends ConsumerWidget {
               _DetailTile(
                 icon: _getUrgencyIcon(task.urgencyLevel),
                 label: 'URGENCY',
-                value: task.urgencyLevel.name,
+                value: task.urgencyLevel.label,
+                valueColor: Color(task.urgencyLevel.colorValue),
               ),
               if (task.recurrence != RecurrenceType.NONE)
                 _DetailTile(
@@ -138,38 +139,6 @@ class TaskDetailSheet extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
-          // Tags
-          if (task.customTags.isNotEmpty) ...[
-            const Text(
-              'TAGS',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-                color: FlowColors.slate400,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: task.customTags.map((tag) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: FlowColors.slate100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  tag,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: FlowColors.slate500,
-                  ),
-                ),
-              )).toList(),
-            ),
-            const SizedBox(height: 24),
-          ],
           // Subtasks
           if (task.subtasks.isNotEmpty) ...[
             const Text(
@@ -252,11 +221,13 @@ class _DetailTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color? valueColor;
 
   const _DetailTile({
     required this.icon,
     required this.label,
     required this.value,
+    this.valueColor,
   });
 
   @override
@@ -283,9 +254,10 @@ class _DetailTile extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value.titleCase,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
+            color: valueColor,
           ),
         ),
       ],

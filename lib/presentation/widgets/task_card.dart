@@ -13,7 +13,6 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onDelete;
   final VoidCallback onTap;
-  final Map<String, Color> tagColors;
   final bool isSelectionMode;
   final bool isSelected;
   final VoidCallback? onSelectionToggle;
@@ -27,7 +26,6 @@ class TaskCard extends StatelessWidget {
     required this.onToggle,
     required this.onDelete,
     required this.onTap,
-    this.tagColors = const {},
     this.isSelectionMode = false,
     this.isSelected = false,
     this.onSelectionToggle,
@@ -114,17 +112,6 @@ class TaskCard extends StatelessWidget {
                             : (isDark ? Colors.white : FlowColors.textLight),
                       ),
                     ),
-                    if (task.customTags.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: task.customTags.map((tag) => FlowBadge(
-                          label: tag, 
-                          color: tagColors[tag] ?? FlowColors.slate500,
-                        )).toList(),
-                      ),
-                    ],
                     if (task.dueDate != null || task.subtasks.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Row(
@@ -153,7 +140,9 @@ class TaskCard extends StatelessWidget {
                                 color: FlowColors.slate400,
                               ),
                             ),
+                            const SizedBox(width: 12),
                           ],
+                          _buildUrgencyIndicator(task.urgencyLevel),
                           const Spacer(),
                           FlowBadge(
                             label: projectTitle,
@@ -174,14 +163,15 @@ class TaskCard extends StatelessWidget {
 
 
   Widget _buildUrgencyIndicator(UrgencyLevel level) {
-    final config = {
-      UrgencyLevel.planning: (FlowColors.slate400, LucideIcons.calendar),
-      UrgencyLevel.low: (Colors.blue, LucideIcons.clock),
-      UrgencyLevel.moderate: (Colors.amber, LucideIcons.alertCircle),
-      UrgencyLevel.urgent: (Colors.orange, LucideIcons.alertTriangle),
-      UrgencyLevel.critical: (Colors.red, LucideIcons.flame),
+    final color = Color(level.colorValue);
+    final icon = {
+      UrgencyLevel.planning: LucideIcons.calendar,
+      UrgencyLevel.low: LucideIcons.clock,
+      UrgencyLevel.moderate: LucideIcons.alertCircle,
+      UrgencyLevel.urgent: LucideIcons.alertTriangle,
+      UrgencyLevel.critical: LucideIcons.flame,
     }[level]!;
-    final (color, icon) = config;
+    
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(

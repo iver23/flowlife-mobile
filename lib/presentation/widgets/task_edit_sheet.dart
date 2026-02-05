@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../data/models/models.dart';
 import 'ui_components.dart';
+import 'ui_components.dart';
 import 'project_picker.dart';
-import 'tag_picker.dart';
 
 class TaskEditSheet extends StatefulWidget {
   final TaskModel task;
@@ -20,7 +20,6 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   late TextEditingController _descController;
   late UrgencyLevel _urgencyLevel;
   late String? _selectedProjectId;
-  late List<String> _selectedCustomTags;
   late bool _isPinned;
   late List<Subtask> _subtasks;
   late RecurrenceType _recurrence;
@@ -35,7 +34,6 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
     _urgencyLevel = widget.task.urgencyLevel;
     _subtasks = List.from(widget.task.subtasks);
     _selectedProjectId = widget.task.projectId;
-    _selectedCustomTags = List.from(widget.task.customTags);
     _isPinned = widget.task.isPinned;
     _recurrence = widget.task.recurrence;
     _reminderEnabled = widget.task.reminderEnabled;
@@ -131,11 +129,6 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
               onSelected: (id) => setState(() => _selectedProjectId = id),
             ),
             const SizedBox(height: 32),
-            TagPicker(
-              selectedTagNames: _selectedCustomTags,
-              onSelected: (tags) => setState(() => _selectedCustomTags = tags),
-            ),
-            const SizedBox(height: 32),
             const Text(
               'SUBTASKS',
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500),
@@ -185,7 +178,6 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
                   completedAt: widget.task.completedAt,
                   urgencyLevel: _urgencyLevel,
                   projectId: _selectedProjectId,
-                  customTags: _selectedCustomTags,
                   isPinned: _isPinned,
                   subtasks: _subtasks,
                   createdAt: widget.task.createdAt,
@@ -206,27 +198,29 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
 
   Widget _buildUrgencyChip(UrgencyLevel level, IconData icon, String label) {
     bool isSelected = _urgencyLevel == level;
+    final color = Color(level.colorValue);
+    
     return GestureDetector(
       onTap: () => setState(() => _urgencyLevel = level),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? FlowColors.primary : FlowColors.slate500.withOpacity(0.2),
+            color: isSelected ? color : FlowColors.slate500.withOpacity(0.2),
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14, color: isSelected ? FlowColors.primary : FlowColors.slate500),
+            Icon(icon, size: 14, color: isSelected ? color : FlowColors.slate500),
             const SizedBox(width: 6),
             Text(
-              label,
+              level.label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? FlowColors.primary : FlowColors.slate500,
+                color: isSelected ? color : FlowColors.slate500,
               ),
             ),
           ],
