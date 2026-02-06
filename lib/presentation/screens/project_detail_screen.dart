@@ -7,6 +7,7 @@ import '../../data/models/models.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_edit_sheet.dart';
+import '../widgets/task_detail_sheet.dart';
 import '../widgets/project_analytics.dart';
 
 class ProjectDetailScreen extends ConsumerWidget {
@@ -95,10 +96,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                             context: context,
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
-                            builder: (context) => TaskEditSheet(
-                              task: task,
-                              onSave: (updatedTask) => taskNotifier.updateTask(updatedTask),
-                            ),
+                            builder: (context) => TaskDetailSheet(task: task),
                           );
                         },
                       ),

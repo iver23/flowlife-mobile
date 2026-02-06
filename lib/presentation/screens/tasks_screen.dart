@@ -223,37 +223,52 @@ class TasksScreen extends ConsumerWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : FlowColors.slate100.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(
-            color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon, 
-              size: 14, 
-              color: isSelected ? color : FlowColors.slate400
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? color : FlowColors.slate500,
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final inactiveBackground = isDark 
+            ? Colors.white.withOpacity(0.08) 
+            : FlowColors.slate100.withOpacity(0.5);
+        final inactiveTextColor = isDark 
+            ? Colors.white.withOpacity(0.6) 
+            : FlowColors.slate500;
+        final inactiveIconColor = isDark 
+            ? Colors.white.withOpacity(0.5) 
+            : FlowColors.slate400;
+
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? color.withOpacity(0.15) : inactiveBackground,
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: isSelected ? color.withOpacity(0.3) : Colors.transparent,
               ),
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon, 
+                  size: 14, 
+                  color: isSelected ? color : inactiveIconColor
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? color : inactiveTextColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
