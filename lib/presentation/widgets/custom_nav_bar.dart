@@ -18,7 +18,7 @@ class FlowNavigationBar extends StatelessWidget {
     LucideIcons.listTodo,   // Tasks
     LucideIcons.layers,     // Dashboard
     LucideIcons.bookmark,   // Ideas
-    LucideIcons.settings,   // Settings
+    LucideIcons.bookOpen,   // Study
   ];
 
   @override

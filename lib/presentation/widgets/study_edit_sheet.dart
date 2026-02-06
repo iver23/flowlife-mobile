@@ -79,7 +79,9 @@ class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
             decoration: InputDecoration(
               hintText: 'Enter name...',
               filled: true,
-              fillColor: FlowColors.slate50,
+              fillColor: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white.withOpacity(0.08) 
+                  : FlowColors.slate50,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
