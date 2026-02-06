@@ -57,11 +57,10 @@ class TaskCard extends StatelessWidget {
         }
       },
       child: FlowCard(
-        backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
         onTap: onTap,
         padding: 0,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               // Circular Indicator or Checkbox
@@ -75,14 +74,14 @@ class TaskCard extends StatelessWidget {
                   }
                 },
                 child: Container(
-                  width: 28,
-                  height: 28,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: isSelectionMode
                         ? (isSelected ? FlowColors.primary : Colors.transparent)
                         : (task.completed ? FlowColors.primary : Colors.transparent),
                     shape: isSelectionMode ? BoxShape.rectangle : BoxShape.circle,
-                    borderRadius: isSelectionMode ? BorderRadius.circular(8) : null,
+                    borderRadius: isSelectionMode ? BorderRadius.circular(6) : null,
                     border: Border.all(
                       color: isSelectionMode
                           ? (isSelected ? FlowColors.primary : FlowColors.slate200)
@@ -91,11 +90,11 @@ class TaskCard extends StatelessWidget {
                     ),
                   ),
                   child: (isSelectionMode ? isSelected : task.completed)
-                      ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
+                      ? const Icon(LucideIcons.check, size: 14, color: Colors.white)
                       : null,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               // Content
               Expanded(
                 child: Column(
@@ -104,7 +103,7 @@ class TaskCard extends StatelessWidget {
                     Text(
                       task.title,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         decoration: task.completed ? TextDecoration.lineThrough : null,
                         color: task.completed
@@ -112,45 +111,30 @@ class TaskCard extends StatelessWidget {
                             : (isDark ? Colors.white : FlowColors.textLight),
                       ),
                     ),
-                    if (task.dueDate != null || task.subtasks.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          if (task.dueDate != null) ...[
-                            Icon(LucideIcons.calendar, size: 12, color: DateFormatter.isOverdue(task.dueDate!, task.completed) ? Colors.red.withOpacity(0.8) : FlowColors.slate400),
-                            const SizedBox(width: 4),
-                            Text(
-                              DateFormatter.format(task.dueDate!),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: DateFormatter.isOverdue(task.dueDate!, task.completed) ? Colors.red.withOpacity(0.8) : FlowColors.slate400,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                          ],
-                          if (task.subtasks.isNotEmpty) ...[
-                            const Icon(LucideIcons.checkSquare, size: 12, color: FlowColors.slate400),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${task.subtasks.where((s) => s.completed).length}/${task.subtasks.length}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: FlowColors.slate400,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                          ],
-                          _buildUrgencyIndicator(task.urgencyLevel),
-                          const Spacer(),
-                          FlowBadge(
-                            label: projectTitle,
-                            color: projectColor,
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        if (task.dueDate != null)
+                          _buildChip(
+                            label: DateFormatter.format(task.dueDate!),
+                            icon: LucideIcons.calendar,
+                            color: DateFormatter.isOverdue(task.dueDate!, task.completed) 
+                                ? Colors.red 
+                                : FlowColors.slate400,
                           ),
-                        ],
-                      ),
-                    ],
+                        if (task.subtasks.isNotEmpty)
+                          _buildChip(
+                            label: '${task.subtasks.where((s) => s.completed).length}/${task.subtasks.length}',
+                            icon: LucideIcons.checkSquare,
+                            color: FlowColors.slate400,
+                          ),
+                        _buildUrgencyChip(task.urgencyLevel),
+                        _buildProjectChip(projectTitle, projectColor, projectIcon),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -162,7 +146,15 @@ class TaskCard extends StatelessWidget {
   }
 
 
-  Widget _buildUrgencyIndicator(UrgencyLevel level) {
+  Widget _buildProjectChip(String title, Color color, String iconName) {
+    return _buildChip(
+      label: title,
+      icon: _parseIcon(iconName),
+      color: color,
+    );
+  }
+
+  Widget _buildUrgencyChip(UrgencyLevel level) {
     final color = Color(level.colorValue);
     final icon = {
       UrgencyLevel.planning: LucideIcons.calendar,
@@ -172,14 +164,59 @@ class TaskCard extends StatelessWidget {
       UrgencyLevel.critical: LucideIcons.flame,
     }[level]!;
     
+    // Capitalize first letter of level.name
+    final label = level.name[0].toUpperCase() + level.name.substring(1);
+
+    return _buildChip(
+      label: label,
+      icon: icon,
+      color: color,
+    );
+  }
+
+  Widget _buildChip({
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(100),
       ),
-      child: Icon(icon, size: 12, color: color),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  IconData _parseIcon(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'work': return LucideIcons.briefcase;
+      case 'home': return LucideIcons.home;
+      case 'favorite': return LucideIcons.heart;
+      case 'personal': return LucideIcons.user;
+      case 'health': return LucideIcons.activity;
+      case 'finance': return LucideIcons.wallet;
+      case 'learning': return LucideIcons.book;
+      case 'fitness': return LucideIcons.dumbbell;
+      case 'shopping': return LucideIcons.shoppingCart;
+      case 'social': return LucideIcons.users;
+      default: return LucideIcons.folder;
+    }
   }
 
   Widget _buildSwipeBackground(

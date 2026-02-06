@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/providers.dart';
+import '../../core/task_notifier.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/momentum_heatmap.dart';
 import '../widgets/habit_streak_card.dart';
@@ -187,14 +188,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
                 ),
-                if (_isTasksExpanded) ...[
-                  const SizedBox(height: 16),
-                  tasks.when(
-                    data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList(), projects.value ?? []),
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Text('Error: $e'),
-                  ),
-                ],
+                // Expanded: show tasks with smooth animation
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  child: _isTasksExpanded
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: tasks.when(
+                            data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList(), projects.value ?? []),
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (e, _) => Text('Error: $e'),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
               ],
             ),
           ),
@@ -659,50 +667,114 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         );
         final projectColor = FlowColors.parseProjectColor(project.color);
+        final urgencyColor = Color(task.urgencyLevel.colorValue);
+        final urgencyLabel = task.urgencyLevel.name[0].toUpperCase() + task.urgencyLevel.name.substring(1);
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12.0),
-          child: Builder(
-            builder: (context) {
-              final isDark = Theme.of(context).brightness == Brightness.dark;
-              return GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => TaskDetailSheet(task: task),
-                  );
-                },
-                child: FlowCard(
-                  backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
-                  padding: 16,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: projectColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          task.title,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                      ),
-                      const Icon(LucideIcons.chevronRight, size: 14, color: FlowColors.slate400),
-                    ],
-                  ),
-                ),
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: GestureDetector(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => TaskDetailSheet(task: task),
               );
             },
+            child: FlowCard(
+              padding: 12,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Circular checkbox
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(taskNotifierProvider.notifier).toggleTask(task);
+                    },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: task.completed ? FlowColors.primary : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: task.completed ? FlowColors.primary : FlowColors.slate200,
+                          width: 2,
+                        ),
+                      ),
+                      child: task.completed
+                          ? const Icon(LucideIcons.check, size: 12, color: Colors.white)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          task.title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            decoration: task.completed ? TextDecoration.lineThrough : null,
+                            color: task.completed ? FlowColors.slate400 : null,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            _buildTaskChip(urgencyLabel, _getUrgencyIcon(task.urgencyLevel), urgencyColor),
+                            _buildTaskChip(project.title, _parseIcon(project.icon), projectColor),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       }).toList(),
     );
+  }
+
+  Widget _buildTaskChip(String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getUrgencyIcon(UrgencyLevel level) {
+    switch (level) {
+      case UrgencyLevel.planning: return LucideIcons.calendar;
+      case UrgencyLevel.low: return LucideIcons.clock;
+      case UrgencyLevel.moderate: return LucideIcons.alertCircle;
+      case UrgencyLevel.urgent: return LucideIcons.alertTriangle;
+      case UrgencyLevel.critical: return LucideIcons.flame;
+    }
   }
 }

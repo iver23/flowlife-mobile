@@ -95,11 +95,19 @@ class HabitStreakCard extends ConsumerWidget {
                   minHeight: 6,
                 ),
               ),
-              // Expanded: show all habits
-              if (isExpanded) ...[
-                const SizedBox(height: 16),
-                ...habits.map((habit) => _buildHabitRow(context, ref, habit, isDark)),
-              ],
+              // Expanded: show all habits with smooth animation
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: isExpanded
+                    ? Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          ...habits.map((habit) => _buildHabitRow(context, ref, habit, isDark)),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
           ),
         );
