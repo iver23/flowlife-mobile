@@ -15,11 +15,36 @@ class DashboardWidgetNotifier extends AsyncNotifier<List<DashboardWidgetModel>> 
       if (widgets.isEmpty) {
         _initializeDefaultWidgets();
       } else {
-        state = AsyncData(widgets);
+        // Migration: ensure study widget exists for existing users
+        final hasStudy = widgets.any((w) => w.type == WidgetType.study);
+        if (!hasStudy) {
+          _addMissingStudyWidget(widgets);
+        } else {
+          state = AsyncData(widgets);
+        }
       }
     });
 
     return stream.first;
+  }
+
+  Future<void> _addMissingStudyWidget(List<DashboardWidgetModel> existingWidgets) async {
+    // Find the tasks widget to place study after it
+    final tasksWidget = existingWidgets.firstWhere(
+      (w) => w.type == WidgetType.tasks,
+      orElse: () => existingWidgets.last,
+    );
+    final insertOrder = tasksWidget.order + 1;
+    
+    // Shift all widgets after tasks down by 1
+    for (final w in existingWidgets.where((w) => w.order >= insertOrder)) {
+      await _service.updateWidget(w.copyWith(order: w.order + 1));
+    }
+    
+    // Add the study widget
+    await _service.initializeWidgets([
+      DashboardWidgetModel(id: 'study', type: WidgetType.study, title: 'Study Progress', order: insertOrder, gridColumnSpan: 2),
+    ]);
   }
 
   Future<void> _initializeDefaultWidgets() async {
@@ -28,6 +53,7 @@ class DashboardWidgetNotifier extends AsyncNotifier<List<DashboardWidgetModel>> 
       DashboardWidgetModel(id: 'habits', type: WidgetType.habits, title: 'Habit Streaks', order: 1, gridColumnSpan: 1),
       DashboardWidgetModel(id: 'tasks', type: WidgetType.tasks, title: 'Today\'s Focus', order: 2, gridColumnSpan: 1),
       DashboardWidgetModel(id: 'projects', type: WidgetType.projects, title: 'Active Projects', order: 3, gridColumnSpan: 2),
+      DashboardWidgetModel(id: 'study', type: WidgetType.study, title: 'Study Progress', order: 4, gridColumnSpan: 2),
     ];
     await _service.initializeWidgets(defaults);
   }

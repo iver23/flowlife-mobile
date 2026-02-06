@@ -100,6 +100,7 @@ class DashboardWidgetSettingsSheet extends ConsumerWidget {
       case WidgetType.projects: return LucideIcons.folder;
       case WidgetType.ideas: return LucideIcons.lightbulb;
       case WidgetType.achievements: return LucideIcons.trophy;
+      case WidgetType.study: return LucideIcons.bookOpen;
     }
   }
 }

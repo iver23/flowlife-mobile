@@ -6,7 +6,8 @@ enum WidgetType {
   projects,
   ideas,
   achievements,
-  stats
+  stats,
+  study
 }
 
 class DashboardWidgetModel {
