@@ -29,16 +29,22 @@ class TasksScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context, ref),
+            _buildProjectFilterRow(context, ref, projectsAsync),
+            _buildUrgencyFilterRow(context, ref),
             Expanded(
               child: Stack(
                 children: [
                   tasksAsync.when(
                 data: (tasks) {
                   final selectedProjectId = ref.watch(selectedProjectFilterProvider);
+                  final selectedUrgency = ref.watch(selectedUrgencyFilterProvider);
                   var activeTasks = tasks.where((t) => !t.completed).toList();
                   
                   if (selectedProjectId != null) {
                     activeTasks = activeTasks.where((t) => t.projectId == selectedProjectId).toList();
+                  }
+                  if (selectedUrgency != null) {
+                    activeTasks = activeTasks.where((t) => t.urgencyLevel == selectedUrgency).toList();
                   }
                   
                   // Sort: Pinned first, then by creation date (newest first)
@@ -116,6 +122,171 @@ class TasksScreen extends ConsumerWidget {
     ),
       ),
     );
+  }
+
+  Widget _buildProjectFilterRow(BuildContext context, WidgetRef ref, AsyncValue<List<ProjectModel>> projectsAsync) {
+    final selectedProjectId = ref.watch(selectedProjectFilterProvider);
+    
+    return Container(
+      height: 44,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Row(
+          children: [
+            _buildFilterChip(
+              label: 'All Projects',
+              icon: LucideIcons.layers,
+              color: FlowColors.primary,
+              isSelected: selectedProjectId == null,
+              onTap: () => ref.read(selectedProjectFilterProvider.notifier).clear(),
+            ),
+            const SizedBox(width: 8),
+            projectsAsync.when(
+              data: (projects) => Row(
+                children: projects.map((project) {
+                  final color = FlowColors.parseProjectColor(project.color);
+                  final isSelected = selectedProjectId == project.id;
+                  
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildFilterChip(
+                      label: project.title,
+                      icon: _parseProjectIcon(project.icon),
+                      color: color,
+                      isSelected: isSelected,
+                      onTap: () {
+                        ref.read(selectedProjectFilterProvider.notifier).setProject(isSelected ? null : project.id);
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUrgencyFilterRow(BuildContext context, WidgetRef ref) {
+    final selectedUrgency = ref.watch(selectedUrgencyFilterProvider);
+    
+    return Container(
+      height: 44,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Row(
+          children: [
+            _buildFilterChip(
+              label: 'All Urgency',
+              icon: LucideIcons.alertCircle,
+              color: FlowColors.primary,
+              isSelected: selectedUrgency == null,
+              onTap: () => ref.read(selectedUrgencyFilterProvider.notifier).clear(),
+            ),
+            const SizedBox(width: 8),
+            ...UrgencyLevel.values.map((level) {
+              final color = Color(level.colorValue);
+              final isSelected = selectedUrgency == level;
+              final label = level.name[0].toUpperCase() + level.name.substring(1);
+              final icon = _getUrgencyIcon(level);
+              
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _buildFilterChip(
+                  label: label,
+                  icon: icon,
+                  color: color,
+                  isSelected: isSelected,
+                  onTap: () {
+                    ref.read(selectedUrgencyFilterProvider.notifier).setUrgency(isSelected ? null : level);
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.1) : FlowColors.slate100.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon, 
+              size: 14, 
+              color: isSelected ? color : FlowColors.slate400
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? color : FlowColors.slate500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getUrgencyIcon(UrgencyLevel level) {
+    switch (level) {
+      case UrgencyLevel.planning: return LucideIcons.calendar;
+      case UrgencyLevel.low: return LucideIcons.clock;
+      case UrgencyLevel.moderate: return LucideIcons.alertCircle;
+      case UrgencyLevel.urgent: return LucideIcons.alertTriangle;
+      case UrgencyLevel.critical: return LucideIcons.flame;
+    }
+  }
+
+  IconData _parseProjectIcon(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'work': return LucideIcons.briefcase;
+      case 'home': return LucideIcons.home;
+      case 'favorite': return LucideIcons.heart;
+      case 'bolt': return LucideIcons.zap;
+      case 'menu_book': return LucideIcons.book;
+      case 'coffee': return LucideIcons.coffee;
+      case 'public': return LucideIcons.globe;
+      case 'anchor': return LucideIcons.anchor;
+      case 'fitness_center': return LucideIcons.dumbbell;
+      case 'shopping_cart': return LucideIcons.shoppingCart;
+      case 'flight': return LucideIcons.plane;
+      case 'music_note': return LucideIcons.music;
+      case 'pets': return LucideIcons.dog;
+      case 'spa': return LucideIcons.flower;
+      case 'code': return LucideIcons.code;
+      case 'savings': return LucideIcons.banknote;
+      default: return LucideIcons.folder;
+    }
   }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref) {

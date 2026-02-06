@@ -40,6 +40,18 @@ final selectedProjectFilterProvider = NotifierProvider<SelectedProjectFilterNoti
   return SelectedProjectFilterNotifier();
 });
 
+class SelectedUrgencyFilterNotifier extends Notifier<UrgencyLevel?> {
+  @override
+  UrgencyLevel? build() => null;
+  
+  void setUrgency(UrgencyLevel? level) => state = level;
+  void clear() => state = null;
+}
+
+final selectedUrgencyFilterProvider = NotifierProvider<SelectedUrgencyFilterNotifier, UrgencyLevel?>(() {
+  return SelectedUrgencyFilterNotifier();
+});
+
 class QuoteNotifier extends Notifier<Quote> {
   final _service = QuoteService();
 
