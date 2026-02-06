@@ -8,7 +8,7 @@ import '../widgets/ui_components.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_edit_sheet.dart';
 import '../widgets/task_detail_sheet.dart';
-import '../widgets/project_analytics.dart';
+import '../widgets/project_edit_sheet.dart';
 
 class ProjectDetailScreen extends ConsumerWidget {
   final ProjectModel project;
@@ -19,6 +19,12 @@ class ProjectDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(taskNotifierProvider);
     final taskNotifier = ref.read(taskNotifierProvider.notifier);
+    
+    // Watch project state to stay reactive to edits
+    final projectState = ref.watch(projectNotifierProvider);
+    final currentProject = projectState.whenOrNull(
+      data: (projects) => projects.firstWhere((p) => p.id == project.id, orElse: () => project),
+    ) ?? project;
 
     return Scaffold(
       extendBody: true,
@@ -35,13 +41,32 @@ class ProjectDetailScreen extends ConsumerWidget {
 
           final completedCount = projectTasks.where((t) => t.completed).length;
           final progress = projectTasks.isEmpty ? 0.0 : completedCount / projectTasks.length;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
 
           return CustomScrollView(
             slivers: [
-              _buildSliverAppBar(context, ref),
+              _buildSliverAppBar(context, ref, currentProject),
+              // Description section (only if exists)
+              if (currentProject.description?.isNotEmpty ?? false)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                    child: Text(
+                      currentProject.description!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: isDark ? Colors.white.withOpacity(0.5) : FlowColors.slate500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                   child: Column(
                     children: [
                       _buildProgressCard(context, progress, completedCount, projectTasks.length),
@@ -124,11 +149,13 @@ class ProjectDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context, WidgetRef ref) {
+  Widget _buildSliverAppBar(BuildContext context, WidgetRef ref, ProjectModel currentProject) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SliverAppBar(
       expandedHeight: 0,
       floating: true,
+      pinned: false,
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: Padding(
@@ -136,20 +163,38 @@ class ProjectDetailScreen extends ConsumerWidget {
         child: _buildActionCircle(LucideIcons.chevronLeft, () => Navigator.pop(context)),
       ),
       title: Text(
-        project.title,
+        currentProject.title,
         style: TextStyle(
           color: isDark ? Colors.white : FlowColors.textLight,
           fontWeight: FontWeight.w700,
           fontSize: 18,
         ),
       ),
+      centerTitle: true,
       actions: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref), color: Colors.red.withOpacity(0.8)),
+          child: _buildActionCircle(LucideIcons.edit3, () => _showEditProject(context, ref, currentProject)),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 16.0),
+          child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentProject), color: Colors.red.withOpacity(0.8)),
         ),
       ],
-      centerTitle: true,
+    );
+  }
+
+  void _showEditProject(BuildContext context, WidgetRef ref, ProjectModel currentProject) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ProjectEditSheet(
+        project: currentProject,
+        onSave: (updatedProject) {
+          ref.read(projectNotifierProvider.notifier).updateProject(updatedProject);
+        },
+      ),
     );
   }
 
@@ -278,7 +323,7 @@ class ProjectDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref) {
+  void _confirmDelete(BuildContext context, WidgetRef ref, ProjectModel currentProject) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -291,7 +336,7 @@ class ProjectDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              ref.read(projectNotifierProvider.notifier).deleteProject(project.id);
+              ref.read(projectNotifierProvider.notifier).deleteProject(currentProject.id);
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Go back to dashboard
             },
