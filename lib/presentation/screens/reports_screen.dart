@@ -40,7 +40,7 @@ class ReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, List<TaskModel> tasks, List<ProjectModel> projects, StudyState studyState) {
+  Widget _buildBody(BuildContext context, WidgetRef ref, List<TaskModel> tasks, List<ProjectModel> projects, AsyncValue<StudyState> studyStateAsync) {
     final completedTasks = tasks.where((t) => t.completed && t.completedAt != null).toList();
     
     // 1. Calculations
@@ -96,12 +96,22 @@ class ReportsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           _buildProjectCircles(projects, projectCounts),
 
-          if (studyState.lessons.isNotEmpty) ...[
-            const SizedBox(height: 48),
-            _buildSectionHeader('STUDY PROGRESS', 'Lessons & Learning'),
-            const SizedBox(height: 24),
-            _buildStudySummary(studyState),
-          ],
+          studyStateAsync.when(
+            data: (state) {
+              if (state.lessons.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 48),
+                  _buildSectionHeader('STUDY PROGRESS', 'Lessons & Learning'),
+                  const SizedBox(height: 24),
+                  _buildStudySummary(state),
+                ],
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
 
           const SizedBox(height: 100),
         ],

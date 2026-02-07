@@ -7,6 +7,45 @@ import 'package:flutter/material.dart';
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
+  /// Try to schedule with exact alarms first, fall back to inexact if not permitted
+  static Future<void> _scheduleWithFallback({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required NotificationDetails notificationDetails,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    try {
+      // Try exact alarm first
+      await _notifications.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: matchDateTimeComponents,
+      );
+    } catch (e) {
+      // If exact alarms not permitted, fall back to inexact
+      if (e.toString().contains('exact_alarms_not_permitted')) {
+        await _notifications.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: matchDateTimeComponents,
+        );
+      } else {
+        // Re-throw other exceptions
+        rethrow;
+      }
+    }
+  }
+
   static Future<void> init() async {
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
@@ -24,8 +63,7 @@ class NotificationService {
   }
 
   static Future<void> scheduleNotification(int id, String title, String body, DateTime scheduledDate) async {
-    // flutter_local_notifications 20.x: zonedSchedule uses named parameters
-    await _notifications.zonedSchedule(
+    await _scheduleWithFallback(
       id: id,
       title: title,
       body: body,
@@ -39,7 +77,6 @@ class NotificationService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
@@ -50,7 +87,7 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    await _notifications.zonedSchedule(
+    await _scheduleWithFallback(
       id: 999,
       title: 'Good Morning!',
       body: 'You have $taskCount tasks to focus on today.',
@@ -63,7 +100,6 @@ class NotificationService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -74,7 +110,7 @@ class NotificationService {
     final reminderDate = DateTime.fromMillisecondsSinceEpoch(task.reminderTime!);
     if (reminderDate.isBefore(DateTime.now())) return;
 
-    await _notifications.zonedSchedule(
+    await _scheduleWithFallback(
       id: task.id.hashCode,
       title: 'Task Reminder',
       body: task.title,
@@ -87,7 +123,6 @@ class NotificationService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 

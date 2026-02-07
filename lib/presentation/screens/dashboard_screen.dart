@@ -83,104 +83,122 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: _buildQuoteCard(tasks),
         );
       case WidgetType.study:
-        final studyState = ref.watch(studyNotifierProvider);
-        final totalLessons = ref.read(studyNotifierProvider.notifier).getTotalLessonsCount();
-        final completedLessons = ref.read(studyNotifierProvider.notifier).getCompletedLessonsCount();
-        final overallProgress = totalLessons == 0 ? 0.0 : completedLessons / totalLessons;
+        return ref.watch(studyNotifierProvider).when(
+          data: (studyState) {
+            final notifier = ref.read(studyNotifierProvider.notifier);
+            final totalLessons = notifier.getTotalLessonsCount();
+            final completedLessons = notifier.getCompletedLessonsCount();
+            final overallProgress = totalLessons == 0 ? 0.0 : completedLessons / totalLessons;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 24.0),
-          child: FlowCard(
-            padding: 24,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => setState(() => _isStudyExpanded = !_isStudyExpanded),
-                  behavior: HitTestBehavior.opaque,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: FlowCard(
+                padding: 24,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () => setState(() => _isStudyExpanded = !_isStudyExpanded),
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'STUDY PROGRESS',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+                          Row(
+                            children: [
+                              const Text(
+                                'STUDY PROGRESS',
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2.0, color: FlowColors.slate400),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                _isStudyExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                                size: 14,
+                                color: FlowColors.slate400,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            _isStudyExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                            size: 14,
-                            color: FlowColors.slate400,
+                          Text(
+                            '$completedLessons/$totalLessons',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: FlowColors.slate500),
                           ),
                         ],
                       ),
-                      Text(
-                        '$completedLessons/$totalLessons',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: FlowColors.slate500),
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: overallProgress,
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
+                        valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
+                        minHeight: 6,
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: overallProgress,
-                    backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
-                    valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
-                    minHeight: 6,
-                  ),
-                ),
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  child: _isStudyExpanded
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: studyState.areas.where((a) => !a.isArchived).map((area) {
-                              final areaProgress = ref.read(studyNotifierProvider.notifier).getAreaProgress(area.id);
-                              final areaColor = FlowColors.parseProjectColor(area.color);
-                              
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      child: _isStudyExpanded
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: studyState.areas.where((a) => !a.isArchived).map((area) {
+                                  final areaProgress = notifier.getAreaProgress(area.id);
+                                  final areaColor = FlowColors.parseProjectColor(area.color);
+                                  
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 12.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          area.name.toUpperCase(),
-                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 0.5),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              area.name.toUpperCase(),
+                                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 0.5),
+                                            ),
+                                            Text(
+                                              '${(areaProgress * 100).toInt()}%',
+                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: areaColor),
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          '${(areaProgress * 100).toInt()}%',
-                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: areaColor),
+                                        const SizedBox(height: 6),
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(2),
+                                          child: LinearProgressIndicator(
+                                            value: areaProgress,
+                                            backgroundColor: areaColor.withOpacity(0.1),
+                                            valueColor: AlwaysStoppedAnimation<Color>(areaColor),
+                                            minHeight: 4,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 6),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(2),
-                                      child: LinearProgressIndicator(
-                                        value: areaProgress,
-                                        backgroundColor: areaColor.withOpacity(0.1),
-                                        valueColor: AlwaysStoppedAnimation<Color>(areaColor),
-                                        minHeight: 4,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
+                                  );
+                                }).toList(),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            );
+          },
+          loading: () => const Padding(
+            padding: EdgeInsets.only(bottom: 24.0),
+            child: FlowCard(
+              padding: 24,
+              child: SizedBox(height: 60, child: Center(child: CircularProgressIndicator())),
+            ),
+          ),
+          error: (e, _) => Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: FlowCard(
+              padding: 24,
+              child: Text('Error loading study data: $e'),
             ),
           ),
         );

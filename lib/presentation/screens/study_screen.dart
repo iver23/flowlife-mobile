@@ -19,8 +19,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(studyNotifierProvider);
-    final filteredAreas = state.areas.where((a) => a.isArchived == _showArchived).toList();
+    final asyncState = ref.watch(studyNotifierProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -28,26 +27,49 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           children: [
             _buildScreenHeader(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(ref),
-                    const SizedBox(height: 16),
-                    _buildViewToggle(),
-                    const SizedBox(height: 8),
-                    if (filteredAreas.isEmpty)
-                      _buildEmptyState(context)
-                    else
-                      ...filteredAreas.map((area) => _buildAreaTile(context, ref, area)),
-                    const SizedBox(height: 100),
-                  ],
+              child: asyncState.when(
+                data: (state) => _buildContent(context, ref, state),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stack) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(LucideIcons.alertCircle, color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text('Error: $error', style: const TextStyle(color: FlowColors.slate500)),
+                      TextButton(
+                        onPressed: () => ref.invalidate(studyNotifierProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, WidgetRef ref, StudyState state) {
+    final filteredAreas = state.areas.where((a) => a.isArchived == _showArchived).toList();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(ref, state),
+          const SizedBox(height: 16),
+          _buildViewToggle(),
+          const SizedBox(height: 8),
+          if (filteredAreas.isEmpty)
+            _buildEmptyState(context)
+          else
+            ...filteredAreas.map((area) => _buildAreaTile(context, ref, area, state)),
+          const SizedBox(height: 100),
+        ],
       ),
     );
   }
@@ -137,10 +159,15 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     );
   }
 
-  Widget _buildHeader(WidgetRef ref) {
-    final notifier = ref.read(studyNotifierProvider.notifier);
-    final total = notifier.getTotalLessonsCount();
-    final completed = notifier.getCompletedLessonsCount();
+  Widget _buildHeader(WidgetRef ref, StudyState state) {
+    int total = 0;
+    int completed = 0;
+    
+    for (var lesson in state.lessons) {
+      total++;
+      if (lesson.isCompleted) completed++;
+    }
+    
     final progress = total == 0 ? 0.0 : completed / total;
 
     return FlowCard(
@@ -183,8 +210,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     );
   }
 
-  Widget _buildAreaTile(BuildContext context, WidgetRef ref, SubjectArea area) {
-    final state = ref.watch(studyNotifierProvider);
+  Widget _buildAreaTile(BuildContext context, WidgetRef ref, SubjectArea area, StudyState state) {
     final notifier = ref.read(studyNotifierProvider.notifier);
     final areaSubjects = state.subjects.where((s) => s.areaId == area.id).toList();
     final progress = notifier.getAreaProgress(area.id);
@@ -263,7 +289,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
                   child: Text('No subjects yet', style: TextStyle(color: FlowColors.slate400, fontSize: 13, fontStyle: FontStyle.italic)),
                 )
               else
-                ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject, FlowColors.parseProjectColor(area.color))),
+                ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject, FlowColors.parseProjectColor(area.color), state)),
               ListTile(
                 dense: true,
                 leading: Icon(LucideIcons.plus, size: 18, color: FlowColors.parseProjectColor(area.color)),
@@ -277,8 +303,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     );
   }
 
-  Widget _buildSubjectTile(BuildContext context, WidgetRef ref, Subject subject, Color areaColor) {
-    final state = ref.watch(studyNotifierProvider);
+  Widget _buildSubjectTile(BuildContext context, WidgetRef ref, Subject subject, Color areaColor, StudyState state) {
     final notifier = ref.read(studyNotifierProvider.notifier);
     final lessons = state.lessons.where((l) => l.subjectId == subject.id).toList();
     final progress = notifier.getSubjectProgress(subject.id);
