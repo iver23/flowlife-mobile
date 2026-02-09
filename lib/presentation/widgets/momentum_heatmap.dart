@@ -33,8 +33,8 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
           firstChild: _buildCollapsedView(context, now),
           secondChild: _buildExpandedView(context, daysInMonth, startOffset, now),
           crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 300),
-          sizeCurve: Curves.easeInOut,
+          duration: FlowAnimations.normal,
+          sizeCurve: FlowAnimations.defaultCurve,
         ),
       ],
     );

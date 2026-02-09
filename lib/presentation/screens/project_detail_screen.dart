@@ -103,6 +103,21 @@ class ProjectDetailScreen extends ConsumerWidget {
               ),
               SliverReorderableList(
                 itemCount: projectTasks.length,
+                proxyDecorator: (child, index, animation) {
+                  return AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, child) {
+                      final elevate = FlowAnimations.defaultCurve.transform(animation.value);
+                      return Material(
+                        elevation: 8 * elevate,
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(28),
+                        child: child!,
+                      );
+                    },
+                    child: child,
+                  );
+                },
                 onReorder: (oldIndex, newIndex) {
                   if (newIndex > oldIndex) newIndex -= 1;
                   final item = projectTasks.removeAt(oldIndex);
@@ -223,9 +238,13 @@ class ProjectDetailScreen extends ConsumerWidget {
   Widget _buildProgressCard(BuildContext context, double progress, int completed, int total) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
     final projectColor = FlowColors.parseProjectColor(project.color);
+    final tintedBg = FlowColors.getTintedBackground(projectColor, isDark);
+    final textColor = FlowColors.getContrastTextColor(tintedBg);
+    final secondaryColor = FlowColors.getContrastSecondaryColor(tintedBg);
     
     return FlowCard(
       useGlass: true,
+      backgroundColor: tintedBg,
       padding: 24,
       child: Row(
         children: [
@@ -245,7 +264,11 @@ class ProjectDetailScreen extends ConsumerWidget {
               ),
               Text(
                 '${(progress * 100).toInt()}%',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                  fontSize: 18, 
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                ),
               ),
             ],
           ),
@@ -256,12 +279,20 @@ class ProjectDetailScreen extends ConsumerWidget {
               children: [
                 Text(
                   '$completed / $total Tasks',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontSize: 20, 
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                  ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Current project progress',
-                  style: TextStyle(fontSize: 12, color: FlowColors.slate400, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 12, 
+                    color: secondaryColor, 
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),

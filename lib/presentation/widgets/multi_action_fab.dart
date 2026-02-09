@@ -27,10 +27,10 @@ class _MultiActionFABState extends State<MultiActionFAB> with SingleTickerProvid
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 250),
+      duration: FlowAnimations.normal,
       vsync: this,
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _animation = CurvedAnimation(parent: _controller, curve: FlowAnimations.defaultCurve);
   }
 
   @override
@@ -93,7 +93,8 @@ class _MultiActionFABState extends State<MultiActionFAB> with SingleTickerProvid
           backgroundColor: FlowColors.primary,
           child: AnimatedRotation(
             turns: _isOpen ? 0.125 : 0,
-            duration: const Duration(milliseconds: 250),
+            duration: FlowAnimations.normal,
+            curve: FlowAnimations.defaultCurve,
             child: const Icon(LucideIcons.plus, color: Colors.white),
           ),
         ),

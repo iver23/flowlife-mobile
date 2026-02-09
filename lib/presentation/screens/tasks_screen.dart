@@ -64,6 +64,21 @@ class TasksScreen extends ConsumerWidget {
                       return ReorderableListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         itemCount: activeTasks.length,
+                        proxyDecorator: (child, index, animation) {
+                          return AnimatedBuilder(
+                            animation: animation,
+                            builder: (context, child) {
+                              final elevate = FlowAnimations.defaultCurve.transform(animation.value);
+                              return Material(
+                                elevation: 8 * elevate,
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(28),
+                                child: child!,
+                              );
+                            },
+                            child: child,
+                          );
+                        },
                         onReorder: (oldIndex, newIndex) {
                           if (newIndex > oldIndex) newIndex -= 1;
                           final item = activeTasks.removeAt(oldIndex);

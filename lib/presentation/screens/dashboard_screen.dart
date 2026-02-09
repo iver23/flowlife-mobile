@@ -135,8 +135,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ),
                     AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
+                      duration: FlowAnimations.normal,
+                      curve: FlowAnimations.defaultCurve,
                       child: _isStudyExpanded
                           ? Padding(
                               padding: const EdgeInsets.only(top: 16),
@@ -316,8 +316,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
                 // Expanded: show tasks with smooth animation
                 AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
+                  duration: FlowAnimations.normal,
+                  curve: FlowAnimations.defaultCurve,
                   child: _isTasksExpanded
                       ? Padding(
                           padding: const EdgeInsets.only(top: 16),

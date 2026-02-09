@@ -27,8 +27,8 @@ class ThemeToggle extends ConsumerWidget {
             children: [
               // Sliding background highlight
               AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOutCubic,
+                duration: FlowAnimations.normal,
+                curve: FlowAnimations.defaultCurve,
                 left: _getOffset(selection, segmentWidth),
                 child: Container(
                   width: segmentWidth,

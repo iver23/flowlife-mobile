@@ -37,6 +37,8 @@ class TaskCard extends StatelessWidget {
 
     return Dismissible(
       key: Key(task.id),
+      movementDuration: FlowAnimations.normal,
+      resizeDuration: FlowAnimations.normal,
       background: _buildSwipeBackground(
         Alignment.centerLeft,
         Colors.green,

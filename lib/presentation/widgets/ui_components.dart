@@ -59,6 +59,29 @@ class FlowColors {
   static Color getSubtleProjectColor(Color color, bool isDark) {
     return color.withOpacity(isDark ? 0.15 : 0.12);
   }
+
+  static Color getTintedBackground(Color projectColor, bool isDark) {
+    final base = isDark ? surfaceDark : surfaceLight;
+    return Color.lerp(base, projectColor, isDark ? 0.12 : 0.08)!;
+  }
+
+  static Color getContrastTextColor(Color background) {
+    return background.computeLuminance() > 0.5 ? textLight : textDark;
+  }
+
+  static Color getContrastSecondaryColor(Color background) {
+    return background.computeLuminance() > 0.5 ? slate500 : slate400;
+  }
+}
+
+class FlowAnimations {
+  static const Duration fast = Duration(milliseconds: 150);
+  static const Duration normal = Duration(milliseconds: 250);
+  static const Duration slow = Duration(milliseconds: 350);
+  
+  static const Curve defaultCurve = Curves.easeInOutCubic;
+  static const Curve enterCurve = Curves.easeOutCubic;
+  static const Curve exitCurve = Curves.easeInCubic;
 }
 
 class FlowTheme {

@@ -97,8 +97,8 @@ class HabitStreakCard extends ConsumerWidget {
               ),
               // Expanded: show all habits with smooth animation
               AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
+                duration: FlowAnimations.normal,
+                curve: FlowAnimations.defaultCurve,
                 child: isExpanded
                     ? Column(
                         children: [

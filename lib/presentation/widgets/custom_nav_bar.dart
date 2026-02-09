@@ -72,7 +72,8 @@ class FlowNavigationBar extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
+            duration: FlowAnimations.normal,
+            curve: FlowAnimations.defaultCurve,
             opacity: isActive ? 1.0 : 0.0,
             child: Container(
               width: 40,
