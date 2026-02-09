@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/habit_notifier.dart';
 import '../../data/models/habit_model.dart';
 import '../widgets/ui_components.dart';
+import '../widgets/undo_toast.dart';
 
 class HabitsScreen extends ConsumerWidget {
   const HabitsScreen({super.key});
@@ -141,8 +142,27 @@ class HabitsScreen extends ConsumerWidget {
         ? Colors.orange
         : (habit.currentStreak >= 3 ? Colors.amber : FlowColors.primary);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    return Dismissible(
+      key: Key(habit.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Icon(LucideIcons.trash2, color: Colors.white),
+      ),
+      onDismissed: (_) {
+        ref.read(habitNotifierProvider.notifier).deleteHabit(habit);
+        UndoToast.show(
+          context: context,
+          message: 'Habit moved to Trash',
+          onUndo: () => ref.read(habitNotifierProvider.notifier).restoreHabit(habit.id),
+        );
+      },
       child: FlowCard(
         padding: 16,
         child: Row(

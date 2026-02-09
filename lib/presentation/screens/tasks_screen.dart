@@ -12,6 +12,7 @@ import '../widgets/task_edit_sheet.dart';
 import 'package:flutter/services.dart';
 import '../../core/bulk_selection_provider.dart';
 import '../widgets/task_detail_sheet.dart';
+import '../widgets/undo_toast.dart';
 
 class TasksScreen extends ConsumerWidget {
   const TasksScreen({super.key});
@@ -88,7 +89,14 @@ class TasksScreen extends ConsumerWidget {
                               isSelected: selectionState.selectedTaskIds.contains(task.id),
                                 onSelectionToggle: () => selectionNotifier.selectTask(task.id),
                                 onToggle: () => taskNotifier.toggleTask(task),
-                                onDelete: () => taskNotifier.deleteTask(task.id),
+                                onDelete: () {
+                                  taskNotifier.deleteTask(task);
+                                  UndoToast.show(
+                                    context: context,
+                                    message: 'Task moved to Trash',
+                                    onUndo: () => taskNotifier.restoreTask(task.id),
+                                  );
+                                },
                               onTap: () {
                                 if (selectionState.isSelectionMode) {
                                   selectionNotifier.selectTask(task.id);

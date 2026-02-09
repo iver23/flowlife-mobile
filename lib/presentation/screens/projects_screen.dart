@@ -8,6 +8,7 @@ import '../widgets/ui_components.dart';
 import 'settings_screen.dart';
 import 'project_detail_screen.dart';
 import '../widgets/project_edit_sheet.dart';
+import '../widgets/undo_toast.dart';
 
 class ProjectsScreen extends ConsumerStatefulWidget {
   const ProjectsScreen({super.key});
@@ -154,8 +155,17 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
   Widget _buildProjectCard(BuildContext context, ProjectModel project, WidgetRef ref) {
     return Dismissible(
       key: Key(project.id),
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.horizontal,
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Icon(LucideIcons.trash2, color: Colors.white),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
@@ -167,11 +177,20 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
           color: Colors.white,
         ),
       ),
-      onDismissed: (_) {
-        if (project.isArchived) {
-          ref.read(projectNotifierProvider.notifier).unarchiveProject(project);
+      onDismissed: (direction) {
+        if (direction == DismissDirection.startToEnd) {
+          ref.read(projectNotifierProvider.notifier).deleteProject(project);
+          UndoToast.show(
+            context: context,
+            message: 'Project moved to Trash',
+            onUndo: () => ref.read(projectNotifierProvider.notifier).restoreProject(project.id),
+          );
         } else {
-          ref.read(projectNotifierProvider.notifier).archiveProject(project);
+          if (project.isArchived) {
+            ref.read(projectNotifierProvider.notifier).unarchiveProject(project);
+          } else {
+            ref.read(projectNotifierProvider.notifier).archiveProject(project);
+          }
         }
       },
       child: FlowCard(

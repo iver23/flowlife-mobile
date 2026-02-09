@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../data/study_repository.dart';
+import '../data/services/firestore_service.dart';
 import '../data/models/study_models.dart';
+import 'providers.dart';
 import 'theme_notifier.dart';
 
 class StudyState {
@@ -30,14 +31,24 @@ class StudyState {
 }
 
 class StudyNotifier extends AsyncNotifier<StudyState> {
-  StudyRepository get _repo => ref.watch(studyRepositoryProvider);
+  FirestoreService get _firestore => ref.watch(firestoreServiceProvider);
   final _uuid = Uuid();
 
   @override
   Future<StudyState> build() async {
-    final areas = await _repo.getAreas();
-    final subjects = await _repo.getSubjects();
-    final lessons = await _repo.getLessons();
+    // Listen to firestore streams and combine them
+    // For simplicity in the first pass, we'll fetch once and then rebuild on changes if needed,
+    // or use StreamProvider for each.
+    // However, the requested architectural goal is to unify.
+    
+    // We'll use StreamZip or simple combine-latest style if we wanted pure streams,
+    // but the current Notifier is AsyncNotifier which builds once.
+    // To maintain the "Notifier" feel with real-time Firestore, we should switch to StreamNotifier
+    // or manually subscribe.
+    
+    final areas = await _firestore.streamSubjectAreas().first;
+    final subjects = await _firestore.streamSubjects().first;
+    final lessons = await _firestore.streamLessons().first;
     
     return StudyState(
       areas: areas..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
@@ -48,95 +59,92 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
 
   // --- AREAS ---
   Future<void> addArea(String name, String color) async {
-    final current = state.value ?? StudyState();
     final area = SubjectArea(
       id: _uuid.v4(),
       name: name,
       color: color,
       createdAt: DateTime.now(),
     );
-    final newList = [...current.areas, area];
-    state = AsyncData(current.copyWith(areas: newList));
-    await _repo.saveAreas(newList);
+    await _firestore.addSubjectArea(area);
+    ref.invalidateSelf();
   }
 
-  Future<void> deleteArea(String id) async {
-    final current = state.value ?? StudyState();
-    final newList = current.areas.where((e) => e.id != id).toList();
-    state = AsyncData(current.copyWith(areas: newList));
-    await _repo.saveAreas(newList);
+  Future<void> deleteArea(SubjectArea area) async {
+    await _firestore.updateSubjectArea(area.copyWith(isDeleted: true, deletedAt: DateTime.now().millisecondsSinceEpoch));
+    ref.invalidateSelf();
+  }
+
+  Future<void> restoreArea(String id) async {
+    final areas = await _firestore.streamTrashedSubjectAreas().first;
+    final area = areas.firstWhere((e) => e.id == id);
+    await _firestore.updateSubjectArea(area.copyWith(isDeleted: false, deletedAt: null));
+    ref.invalidateSelf();
   }
 
   Future<void> archiveArea(SubjectArea area) async {
-    final current = state.value ?? StudyState();
-    final newList = current.areas.map((e) {
-      if (e.id == area.id) return e.copyWith(isArchived: true);
-      return e;
-    }).toList();
-    state = AsyncData(current.copyWith(areas: newList));
-    await _repo.saveAreas(newList);
+    await _firestore.updateSubjectArea(area.copyWith(isArchived: true));
+    ref.invalidateSelf();
   }
 
   Future<void> unarchiveArea(SubjectArea area) async {
-    final current = state.value ?? StudyState();
-    final newList = current.areas.map((e) {
-      if (e.id == area.id) return e.copyWith(isArchived: false);
-      return e;
-    }).toList();
-    state = AsyncData(current.copyWith(areas: newList));
-    await _repo.saveAreas(newList);
+    await _firestore.updateSubjectArea(area.copyWith(isArchived: false));
+    ref.invalidateSelf();
   }
 
   // --- SUBJECTS ---
   Future<void> addSubject(String areaId, String name) async {
-    final current = state.value ?? StudyState();
     final subject = Subject(
       id: _uuid.v4(),
       areaId: areaId,
       name: name,
       createdAt: DateTime.now(),
     );
-    final newList = [...current.subjects, subject];
-    state = AsyncData(current.copyWith(subjects: newList));
-    await _repo.saveSubjects(newList);
+    await _firestore.addSubject(subject);
+    ref.invalidateSelf();
   }
 
-  Future<void> deleteSubject(String id) async {
-    final current = state.value ?? StudyState();
-    final newList = current.subjects.where((e) => e.id != id).toList();
-    state = AsyncData(current.copyWith(subjects: newList));
-    await _repo.saveSubjects(newList);
+  Future<void> deleteSubject(Subject subject) async {
+    await _firestore.updateSubject(subject.copyWith(isDeleted: true, deletedAt: DateTime.now().millisecondsSinceEpoch));
+    ref.invalidateSelf();
+  }
+
+  Future<void> restoreSubject(String id) async {
+    final subjects = await _firestore.streamTrashedSubjects().first;
+    final subject = subjects.firstWhere((e) => e.id == id);
+    await _firestore.updateSubject(subject.copyWith(isDeleted: false, deletedAt: null));
+    ref.invalidateSelf();
   }
 
   // --- LESSONS ---
   Future<void> addLesson(String subjectId, String title) async {
-    final current = state.value ?? StudyState();
     final lesson = Lesson(
       id: _uuid.v4(),
       subjectId: subjectId,
       title: title,
       createdAt: DateTime.now(),
     );
-    final newList = [...current.lessons, lesson];
-    state = AsyncData(current.copyWith(lessons: newList));
-    await _repo.saveLessons(newList);
+    await _firestore.addLesson(lesson);
+    ref.invalidateSelf();
   }
 
   Future<void> toggleLesson(String id) async {
-    final current = state.value ?? StudyState();
-    final newList = current.lessons.map((e) {
-      if (e.id == id) return e.copyWith(isCompleted: !e.isCompleted);
-      return e;
-    }).toList();
-    state = AsyncData(current.copyWith(lessons: newList));
-    await _repo.saveLessons(newList);
+    final state_val = state.value;
+    if (state_val == null) return;
+    final lesson = state_val.lessons.firstWhere((e) => e.id == id);
+    await _firestore.updateLesson(lesson.copyWith(isCompleted: !lesson.isCompleted));
+    ref.invalidateSelf();
   }
 
-  Future<void> deleteLesson(String id) async {
-    final current = state.value ?? StudyState();
-    final newList = current.lessons.where((e) => e.id != id).toList();
-    state = AsyncData(current.copyWith(lessons: newList));
-    await _repo.saveLessons(newList);
+  Future<void> deleteLesson(Lesson lesson) async {
+    await _firestore.updateLesson(lesson.copyWith(isDeleted: true, deletedAt: DateTime.now().millisecondsSinceEpoch));
+    ref.invalidateSelf();
+  }
+
+  Future<void> restoreLesson(String id) async {
+    final lessons = await _firestore.streamTrashedLessons().first;
+    final lesson = lessons.firstWhere((e) => e.id == id);
+    await _firestore.updateLesson(lesson.copyWith(isDeleted: false, deletedAt: null));
+    ref.invalidateSelf();
   }
 
   // --- HELPERS ---
@@ -177,11 +185,8 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
   }
 }
 
-final studyRepositoryProvider = Provider<StudyRepository>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return StudyRepository(prefs);
-});
-
+// Provider already unified in providers.dart if needed, 
+// but here we keep the existing structure but update the repo dependency.
 final studyNotifierProvider = AsyncNotifierProvider<StudyNotifier, StudyState>(() {
   return StudyNotifier();
 });

@@ -178,7 +178,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           projectIcon: project.icon,
           projectColor: FlowColors.parseProjectColor(project.color),
           onToggle: () => ref.read(taskNotifierProvider.notifier).toggleTask(task),
-          onDelete: () => ref.read(taskNotifierProvider.notifier).deleteTask(task.id),
+          onDelete: () => ref.read(taskNotifierProvider.notifier).deleteTask(task),
           onTap: () {
             showModalBottomSheet(
               context: context,

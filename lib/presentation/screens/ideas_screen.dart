@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/providers.dart';
 import '../../core/idea_notifier.dart';
+import '../widgets/undo_toast.dart';
 import '../../core/project_notifier.dart';
 import '../../core/date_formatter.dart';
 import 'settings_screen.dart';
@@ -200,48 +201,70 @@ class IdeasScreen extends ConsumerWidget {
       project = projects.firstWhere((p) => p.id == idea.projectId, orElse: () => _defaultProject());
     }
 
-    return FlowCard(
-      padding: 20,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  idea.content,
-                  style: const TextStyle(fontSize: 16, height: 1.5),
+    return Dismissible(
+      key: Key(idea.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(LucideIcons.trash2, color: Colors.white),
+      ),
+      onDismissed: (_) {
+        notifier.deleteIdea(idea);
+        UndoToast.show(
+          context: context,
+          message: 'Idea moved to Trash',
+          onUndo: () => notifier.restoreIdea(idea.id),
+        );
+      },
+      child: FlowCard(
+        padding: 20,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    idea.content,
+                    style: const TextStyle(fontSize: 16, height: 1.5),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              _buildProjectTag(project),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                DateFormatter.formatTimestamp(idea.createdAt),
-                style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
-              ),
-              GestureDetector(
-                onTap: () => notifier.convertToTask(idea),
-                child: const Row(
-                  children: [
-                    Icon(LucideIcons.arrowRightCircle, size: 18, color: FlowColors.primary),
-                    SizedBox(width: 4),
-                    Text(
-                      'CONVERT TO TASK',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.primary),
-                    ),
-                  ],
+                const SizedBox(width: 8),
+                _buildProjectTag(project),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  DateFormatter.formatTimestamp(idea.createdAt),
+                  style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
                 ),
-              ),
-            ],
-          ),
-        ],
+                GestureDetector(
+                  onTap: () => notifier.convertToTask(idea),
+                  child: const Row(
+                    children: [
+                      Icon(LucideIcons.arrowRightCircle, size: 18, color: FlowColors.primary),
+                      SizedBox(width: 4),
+                      Text(
+                        'CONVERT TO TASK',
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

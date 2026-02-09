@@ -50,21 +50,67 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authProvider);
     final themeState = ref.watch(themeNotifierProvider);
 
-    return MaterialApp(
-      title: 'FlowLife',
-      debugShowCheckedModeBanner: false,
-      theme: FlowTheme.light(),
-      darkTheme: FlowTheme.dark(),
-      themeMode: themeState.mode,
-      home: user == null ? const LoginScreen() : const MainScreen(),
+    ref.listen(confettiProvider, (previous, next) {
+      if (next != null) {
+        _confettiController.play();
+      }
+    });
+
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Stack(
+        children: [
+          MaterialApp(
+            title: 'FlowLife',
+            debugShowCheckedModeBanner: false,
+            theme: FlowTheme.light(),
+            darkTheme: FlowTheme.dark(),
+            themeMode: themeState.mode,
+            home: user == null ? const LoginScreen() : const MainScreen(),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              colors: const [
+                FlowColors.primary,
+                Colors.blue,
+                Colors.purple,
+                Colors.pink,
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -78,13 +124,11 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObserver {
   int _selectedIndex = 2; // Default to Dashboard
-  late ConfettiController _confettiController;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
     
     // Listen for Home Widget clicks
     HomeWidget.widgetClicked.listen((uri) {
@@ -134,7 +178,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _confettiController.dispose();
     super.dispose();
   }
 
@@ -160,12 +203,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
-        ref.listen(confettiProvider, (previous, next) {
-          if (next != null) {
-            _confettiController.play();
-          }
-        });
-
         return LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth > 600;
@@ -218,20 +255,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
                     bottomNavigationBar: isWide ? null : FlowNavigationBar(
                       currentIndex: _selectedIndex,
                       onTap: (index) => setState(() => _selectedIndex = index),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: ConfettiWidget(
-                      confettiController: _confettiController,
-                      blastDirectionality: BlastDirectionality.explosive,
-                      shouldLoop: false,
-                      colors: const [
-                        FlowColors.primary,
-                        Colors.blue,
-                        Colors.purple,
-                        Colors.pink,
-                      ],
                     ),
                   ),
                   if (ref.watch(biometricProvider).isLocked) const LockScreen(),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
+import 'trash_notifier.dart';
 import 'widget_service.dart';
 import 'task_notifier.dart';
 
@@ -39,8 +40,12 @@ class ProjectNotifier extends AsyncNotifier<List<ProjectModel>> {
     await _service.updateProject(project);
   }
 
-  Future<void> deleteProject(String projectId) async {
-    await _service.deleteProject(projectId);
+  Future<void> deleteProject(ProjectModel project) async {
+    await ref.read(trashNotifierProvider.notifier).trashProject(project);
+  }
+
+  Future<void> restoreProject(String projectId) async {
+    await ref.read(trashNotifierProvider.notifier).restoreProject(projectId);
   }
 
   Future<void> archiveProject(ProjectModel project) async {

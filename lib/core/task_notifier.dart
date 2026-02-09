@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
+import 'trash_notifier.dart';
 import 'confetti_notifier.dart';
 import 'date_parser.dart';
 import 'notification_service.dart';
@@ -122,8 +123,12 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
     _scheduleTaskNotification(task);
   }
 
-  Future<void> deleteTask(String taskId) async {
-    await _service.deleteTask(taskId);
+  Future<void> deleteTask(TaskModel task) async {
+    await ref.read(trashNotifierProvider.notifier).trashTask(task);
+  }
+
+  Future<void> restoreTask(String taskId) async {
+    await ref.read(trashNotifierProvider.notifier).restoreTask(taskId);
   }
 
   Future<void> reorderTasks(List<TaskModel> tasks) async {

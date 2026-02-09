@@ -278,11 +278,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       tasks.when(
                         data: (data) {
-                          final activeTasks = data.where((t) => !t.completed).toList();
-                          final totalToday = data.length;
-                          final completedToday = data.where((t) => t.completed).length;
+                          final filteredTasks = data
+                              .where((t) => !t.completed)
+                              .where((t) => t.urgencyLevel == UrgencyLevel.critical || t.urgencyLevel == UrgencyLevel.urgent)
+                              .toList();
+                          final totalFiltered = filteredTasks.length;
+                          
                           return Text(
-                            '$completedToday/$totalToday',
+                            '$totalFiltered High Priority',
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: FlowColors.slate500),
                           );
                         },
@@ -319,7 +322,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ? Padding(
                           padding: const EdgeInsets.only(top: 16),
                           child: tasks.when(
-                            data: (data) => _buildRecentTasks(data.where((t) => !t.completed).toList(), projects.value ?? []),
+                            data: (data) {
+                              final filtered = data
+                                  .where((t) => !t.completed)
+                                  .where((t) => t.urgencyLevel == UrgencyLevel.critical || t.urgencyLevel == UrgencyLevel.urgent)
+                                  .toList()
+                                ..sort((a, b) => b.urgencyLevel.value.compareTo(a.urgencyLevel.value));
+                              return _buildRecentTasks(filtered, projects.value ?? []);
+                            },
                             loading: () => const Center(child: CircularProgressIndicator()),
                             error: (e, _) => Text('Error: $e'),
                           ),

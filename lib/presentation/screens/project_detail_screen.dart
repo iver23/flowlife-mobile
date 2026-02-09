@@ -33,8 +33,15 @@ class ProjectDetailScreen extends ConsumerWidget {
           final projectTasks = tasks.where((t) => t.projectId == project.id).toList();
           
           projectTasks.sort((a, b) {
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
+            // 1. Completed tasks go to bottom
+            if (a.completed != b.completed) return a.completed ? 1 : -1;
+            // 2. Pinned tasks float to top (within their group)
+            if (a.isPinned != b.isPinned) return a.isPinned ? -1 : 1;
+            // 3. Sort by urgency (higher value = more urgent = top)
+            if (a.urgencyLevel != b.urgencyLevel) {
+              return b.urgencyLevel.value.compareTo(a.urgencyLevel.value);
+            }
+            // 4. Fall back to manual order, then creation date
             if (a.order != null && b.order != null) return a.order!.compareTo(b.order!);
             return b.createdAt.compareTo(a.createdAt);
           });
@@ -115,7 +122,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                         projectIcon: project.icon,
                         projectColor: FlowColors.parseProjectColor(project.color),
                         onToggle: () => taskNotifier.toggleTask(task),
-                        onDelete: () => taskNotifier.deleteTask(task.id),
+                        onDelete: () => taskNotifier.deleteTask(task),
                         onTap: () {
                           showModalBottomSheet(
                             context: context,
@@ -336,7 +343,7 @@ class ProjectDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              ref.read(projectNotifierProvider.notifier).deleteProject(currentProject.id);
+              ref.read(projectNotifierProvider.notifier).deleteProject(currentProject);
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Go back to dashboard
             },

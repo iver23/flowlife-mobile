@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/habit_model.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
+import 'trash_notifier.dart';
 import 'achievement_notifier.dart';
 
 class HabitNotifier extends AsyncNotifier<List<HabitModel>> {
@@ -31,8 +32,12 @@ class HabitNotifier extends AsyncNotifier<List<HabitModel>> {
     await _service.updateHabit(habit);
   }
 
-  Future<void> deleteHabit(String habitId) async {
-    await _service.deleteHabit(habitId);
+  Future<void> deleteHabit(HabitModel habit) async {
+    await ref.read(trashNotifierProvider.notifier).trashHabit(habit);
+  }
+
+  Future<void> restoreHabit(String habitId) async {
+    await ref.read(trashNotifierProvider.notifier).restoreHabit(habitId);
   }
 }
 

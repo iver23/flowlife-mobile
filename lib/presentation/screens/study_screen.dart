@@ -6,6 +6,7 @@ import '../../core/study_notifier.dart';
 import '../../data/models/study_models.dart';
 import 'settings_screen.dart';
 import '../widgets/study_edit_sheet.dart';
+import '../widgets/undo_toast.dart';
 
 class StudyScreen extends ConsumerStatefulWidget {
   const StudyScreen({super.key});
@@ -217,8 +218,18 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
 
     return Dismissible(
       key: Key(area.id),
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.horizontal,
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        margin: const EdgeInsets.only(top: 24),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Icon(LucideIcons.trash2, color: Colors.white),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(top: 24),
@@ -231,11 +242,20 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           color: Colors.white,
         ),
       ),
-      onDismissed: (_) {
-        if (area.isArchived) {
-          notifier.unarchiveArea(area);
+      onDismissed: (direction) {
+        if (direction == DismissDirection.startToEnd) {
+          notifier.deleteArea(area);
+          UndoToast.show(
+            context: context,
+            message: 'Subject Area moved to Trash',
+            onUndo: () => notifier.restoreArea(area.id),
+          );
         } else {
-          notifier.archiveArea(area);
+          if (area.isArchived) {
+            notifier.unarchiveArea(area);
+          } else {
+            notifier.archiveArea(area);
+          }
         }
       },
       child: Theme(
@@ -357,7 +377,14 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
               ),
               trailing: IconButton(
                 icon: const Icon(LucideIcons.trash2, size: 14, color: Colors.redAccent),
-                onPressed: () => notifier.deleteLesson(lesson.id),
+                onPressed: () {
+                  notifier.deleteLesson(lesson);
+                  UndoToast.show(
+                    context: context,
+                    message: 'Lesson moved to Trash',
+                    onUndo: () => notifier.restoreLesson(lesson.id),
+                  );
+                },
               ),
             )),
             ListTile(

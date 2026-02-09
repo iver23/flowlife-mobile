@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/models.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
+import 'trash_notifier.dart';
 
 class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
@@ -30,8 +31,12 @@ class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
     await _service.addIdea(newIdea);
   }
 
-  Future<void> deleteIdea(String id) async {
-    await _service.deleteIdea(id);
+  Future<void> deleteIdea(IdeaModel idea) async {
+    await ref.read(trashNotifierProvider.notifier).trashIdea(idea);
+  }
+
+  Future<void> restoreIdea(String ideaId) async {
+    await ref.read(trashNotifierProvider.notifier).restoreIdea(ideaId);
   }
 
   Future<void> convertToTask(IdeaModel idea) async {

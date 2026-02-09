@@ -68,6 +68,7 @@ class TaskDetailSheet extends ConsumerWidget {
                 children: [
                   IconButton(
                     onPressed: () {
+                      final firestore = ref.read(firestoreServiceProvider);
                       Navigator.pop(context); // Close detail sheet
                       showModalBottomSheet(
                         context: context,
@@ -76,7 +77,7 @@ class TaskDetailSheet extends ConsumerWidget {
                         builder: (context) => TaskEditSheet(
                           task: task,
                           onSave: (updatedTask) {
-                            ref.read(firestoreServiceProvider).updateTask(updatedTask);
+                            firestore.updateTask(updatedTask);
                           },
                         ),
                       );

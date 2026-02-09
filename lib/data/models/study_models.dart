@@ -6,6 +6,8 @@ class SubjectArea {
   final String color;
   final DateTime createdAt;
   final bool isArchived;
+  final bool isDeleted;
+  final int? deletedAt;
 
   SubjectArea({
     required this.id,
@@ -13,12 +15,16 @@ class SubjectArea {
     required this.color,
     required this.createdAt,
     this.isArchived = false,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   SubjectArea copyWith({
     String? name,
     String? color,
     bool? isArchived,
+    bool? isDeleted,
+    int? deletedAt,
   }) {
     return SubjectArea(
       id: id,
@@ -26,6 +32,8 @@ class SubjectArea {
       color: color ?? this.color,
       createdAt: createdAt,
       isArchived: isArchived ?? this.isArchived,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -36,22 +44,29 @@ class SubjectArea {
       'color': color,
       'createdAt': createdAt.toIso8601String(),
       'isArchived': isArchived,
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
-  factory SubjectArea.fromMap(Map<String, dynamic> map) {
+  factory SubjectArea.fromMap(Map<String, dynamic> map, String docId) {
     return SubjectArea(
-      id: map['id'] ?? '',
+      id: docId,
       name: map['name'] ?? '',
       color: map['color'] ?? 'duskblue',
       createdAt: DateTime.parse(map['createdAt']),
       isArchived: map['isArchived'] ?? false,
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory SubjectArea.fromJson(String source) => SubjectArea.fromMap(json.decode(source));
+  factory SubjectArea.fromJson(String source) {
+    final map = json.decode(source) as Map<String, dynamic>;
+    return SubjectArea.fromMap(map, map['id'] ?? '');
+  }
 }
 
 class Subject {
@@ -59,12 +74,16 @@ class Subject {
   final String areaId;
   final String name;
   final DateTime createdAt;
+  final bool isDeleted;
+  final int? deletedAt;
 
   Subject({
     required this.id,
     required this.areaId,
     required this.name,
     required this.createdAt,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -73,21 +92,44 @@ class Subject {
       'areaId': areaId,
       'name': name,
       'createdAt': createdAt.toIso8601String(),
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
-  factory Subject.fromMap(Map<String, dynamic> map) {
+  Subject copyWith({
+    String? areaId,
+    String? name,
+    bool? isDeleted,
+    int? deletedAt,
+  }) {
     return Subject(
-      id: map['id'] ?? '',
+      id: id,
+      areaId: areaId ?? this.areaId,
+      name: name ?? this.name,
+      createdAt: createdAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+
+  factory Subject.fromMap(Map<String, dynamic> map, String docId) {
+    return Subject(
+      id: docId,
       areaId: map['areaId'] ?? '',
       name: map['name'] ?? '',
       createdAt: DateTime.parse(map['createdAt']),
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Subject.fromJson(String source) => Subject.fromMap(json.decode(source));
+  factory Subject.fromJson(String source) {
+    final map = json.decode(source) as Map<String, dynamic>;
+    return Subject.fromMap(map, map['id'] ?? '');
+  }
 }
 
 class Lesson {
@@ -96,6 +138,8 @@ class Lesson {
   final String title;
   final bool isCompleted;
   final DateTime createdAt;
+  final bool isDeleted;
+  final int? deletedAt;
 
   Lesson({
     required this.id,
@@ -103,6 +147,8 @@ class Lesson {
     required this.title,
     this.isCompleted = false,
     required this.createdAt,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   Lesson copyWith({
@@ -111,6 +157,8 @@ class Lesson {
     String? title,
     bool? isCompleted,
     DateTime? createdAt,
+    bool? isDeleted,
+    int? deletedAt,
   }) {
     return Lesson(
       id: id ?? this.id,
@@ -118,6 +166,8 @@ class Lesson {
       title: title ?? this.title,
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -128,20 +178,27 @@ class Lesson {
       'title': title,
       'isCompleted': isCompleted,
       'createdAt': createdAt.toIso8601String(),
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
-  factory Lesson.fromMap(Map<String, dynamic> map) {
+  factory Lesson.fromMap(Map<String, dynamic> map, String docId) {
     return Lesson(
-      id: map['id'] ?? '',
+      id: docId,
       subjectId: map['subjectId'] ?? '',
       title: map['title'] ?? '',
       isCompleted: map['isCompleted'] ?? false,
       createdAt: DateTime.parse(map['createdAt']),
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Lesson.fromJson(String source) => Lesson.fromMap(json.decode(source));
+  factory Lesson.fromJson(String source) {
+    final map = json.decode(source) as Map<String, dynamic>;
+    return Lesson.fromMap(map, map['id'] ?? '');
+  }
 }

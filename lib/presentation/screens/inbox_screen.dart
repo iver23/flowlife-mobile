@@ -44,7 +44,7 @@ class InboxScreen extends ConsumerWidget {
                           projectIcon: 'inbox',
                           projectColor: FlowColors.primary,
                           onToggle: () => taskNotifier.toggleTask(task),
-                          onDelete: () => taskNotifier.deleteTask(task.id),
+                          onDelete: () => taskNotifier.deleteTask(task),
                           onTap: () {
                             showModalBottomSheet(
                               context: context,

@@ -6,6 +6,8 @@ class HabitModel {
   final List<int> completedDates; // epoch days (days since epoch, not milliseconds)
   final int createdAt;
   final String? icon;
+  final bool isDeleted;
+  final int? deletedAt;
 
   HabitModel({
     required this.id,
@@ -14,6 +16,8 @@ class HabitModel {
     this.completedDates = const [],
     required this.createdAt,
     this.icon,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   /// Calculate the current streak (consecutive days ending today or yesterday)
@@ -73,6 +77,8 @@ class HabitModel {
     List<int>? completedDates,
     int? createdAt,
     String? icon,
+    bool? isDeleted,
+    int? deletedAt,
   }) {
     return HabitModel(
       id: id ?? this.id,
@@ -81,6 +87,8 @@ class HabitModel {
       completedDates: completedDates ?? this.completedDates,
       createdAt: createdAt ?? this.createdAt,
       icon: icon ?? this.icon,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -91,6 +99,8 @@ class HabitModel {
       'completedDates': completedDates,
       'createdAt': createdAt,
       'icon': icon,
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -102,6 +112,8 @@ class HabitModel {
       completedDates: List<int>.from(map['completedDates'] ?? []),
       createdAt: map['createdAt'] ?? 0,
       icon: map['icon'],
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 }

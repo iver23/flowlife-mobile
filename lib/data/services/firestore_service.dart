@@ -4,6 +4,7 @@ import '../models/models.dart';
 import '../models/habit_model.dart';
 import '../models/achievement_model.dart';
 import '../models/widget_model.dart';
+import '../models/study_models.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -18,6 +19,20 @@ class FirestoreService {
         .collection('users')
         .doc(userId)
         .collection('projects')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ProjectModel.fromMap(doc.data(), doc.id))
+            .where((item) => item.isDeleted != true)
+            .toList());
+  }
+
+  Stream<List<ProjectModel>> streamTrashedProjects() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('projects')
+        .where('isDeleted', isEqualTo: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => ProjectModel.fromMap(doc.data(), doc.id))
@@ -57,11 +72,32 @@ class FirestoreService {
         .collection('users')
         .doc(userId)
         .collection('tasks')
-        .orderBy('order')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => TaskModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+          final tasks = snapshot.docs
+              .map((doc) => TaskModel.fromMap(doc.data(), doc.id))
+              .where((task) => task.isDeleted != true)
+              .toList();
+          tasks.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
+          return tasks;
+        });
+  }
+
+  Stream<List<TaskModel>> streamTrashedTasks() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          final tasks = snapshot.docs
+              .map((doc) => TaskModel.fromMap(doc.data(), doc.id))
+              .toList();
+          tasks.sort((a, b) => (b.deletedAt ?? 0).compareTo(a.deletedAt ?? 0));
+          return tasks;
+        });
   }
 
   // --- Ideas ---
@@ -71,11 +107,32 @@ class FirestoreService {
         .collection('users')
         .doc(userId)
         .collection('ideas')
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => IdeaModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+          final ideas = snapshot.docs
+              .map((doc) => IdeaModel.fromMap(doc.data(), doc.id))
+              .where((item) => item.isDeleted != true)
+              .toList();
+          ideas.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
+          return ideas;
+        });
+  }
+
+  Stream<List<IdeaModel>> streamTrashedIdeas() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('ideas')
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          final ideas = snapshot.docs
+              .map((doc) => IdeaModel.fromMap(doc.data(), doc.id))
+              .toList();
+          ideas.sort((a, b) => (b.deletedAt ?? 0).compareTo(a.deletedAt ?? 0));
+          return ideas;
+        });
   }
 
   // --- Ideas Actions ---
@@ -179,11 +236,32 @@ class FirestoreService {
         .collection('users')
         .doc(userId)
         .collection('habits')
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => HabitModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+          final habits = snapshot.docs
+              .map((doc) => HabitModel.fromMap(doc.data(), doc.id))
+              .where((item) => item.isDeleted != true)
+              .toList();
+          habits.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
+          return habits;
+        });
+  }
+
+  Stream<List<HabitModel>> streamTrashedHabits() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('habits')
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          final habits = snapshot.docs
+              .map((doc) => HabitModel.fromMap(doc.data(), doc.id))
+              .toList();
+          habits.sort((a, b) => (b.deletedAt ?? 0).compareTo(a.deletedAt ?? 0));
+          return habits;
+        });
   }
 
   Future<void> addHabit(HabitModel habit) {
@@ -283,4 +361,92 @@ class FirestoreService {
     }
     return batch.commit();
   }
+
+  // --- Study ---
+  Stream<List<SubjectArea>> streamSubjectAreas() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('subject_areas')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => SubjectArea.fromMap(doc.data(), doc.id))
+            .where((item) => item.isDeleted != true)
+            .toList());
+  }
+
+  Stream<List<SubjectArea>> streamTrashedSubjectAreas() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('subject_areas')
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => SubjectArea.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Stream<List<Subject>> streamSubjects() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('subjects')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Subject.fromMap(doc.data(), doc.id))
+            .where((item) => item.isDeleted != true)
+            .toList());
+  }
+
+  Stream<List<Subject>> streamTrashedSubjects() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('subjects')
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Subject.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Stream<List<Lesson>> streamLessons() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('lessons')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Lesson.fromMap(doc.data(), doc.id))
+            .where((item) => item.isDeleted != true)
+            .toList());
+  }
+
+  Stream<List<Lesson>> streamTrashedLessons() {
+    if (userId == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(userId)
+        .collection('lessons')
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Lesson.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  Future<void> addSubjectArea(SubjectArea area) => _db.collection('users').doc(userId).collection('subject_areas').doc(area.id).set(area.toMap());
+  Future<void> updateSubjectArea(SubjectArea area) => _db.collection('users').doc(userId).collection('subject_areas').doc(area.id).update(area.toMap());
+
+  Future<void> addSubject(Subject subject) => _db.collection('users').doc(userId).collection('subjects').doc(subject.id).set(subject.toMap());
+  Future<void> updateSubject(Subject subject) => _db.collection('users').doc(userId).collection('subjects').doc(subject.id).update(subject.toMap());
+
+  Future<void> addLesson(Lesson lesson) => _db.collection('users').doc(userId).collection('lessons').doc(lesson.id).set(lesson.toMap());
+  Future<void> updateLesson(Lesson lesson) => _db.collection('users').doc(userId).collection('lessons').doc(lesson.id).update(lesson.toMap());
 }

@@ -93,6 +93,8 @@ class TaskModel {
   final int? order;
   final bool reminderEnabled;
   final int? reminderTime; // epoch milliseconds
+  final bool isDeleted;
+  final int? deletedAt;
 
   TaskModel({
     required this.id,
@@ -110,6 +112,8 @@ class TaskModel {
     this.order,
     this.reminderEnabled = false,
     this.reminderTime,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -129,6 +133,8 @@ class TaskModel {
       'order': order,
       'reminderEnabled': reminderEnabled,
       'reminderTime': reminderTime,
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -156,6 +162,8 @@ class TaskModel {
       order: map['order'],
       reminderEnabled: map['reminderEnabled'] ?? false,
       reminderTime: map['reminderTime'],
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 
@@ -174,6 +182,8 @@ class TaskModel {
     int? order,
     bool? reminderEnabled,
     int? reminderTime,
+    bool? isDeleted,
+    int? deletedAt,
   }) {
     return TaskModel(
       id: id,
@@ -191,6 +201,8 @@ class TaskModel {
       order: order ?? this.order,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderTime: reminderTime ?? this.reminderTime,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -218,6 +230,8 @@ class ProjectModel {
   final String? description;
   final bool isArchived;
   final int? lastVisitedAt;
+  final bool isDeleted;
+  final int? deletedAt;
 
   ProjectModel({
     required this.id,
@@ -228,6 +242,8 @@ class ProjectModel {
     this.description,
     this.isArchived = false,
     this.lastVisitedAt,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -240,6 +256,8 @@ class ProjectModel {
       'description': description,
       'isArchived': isArchived,
       'lastVisitedAt': lastVisitedAt,
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -253,6 +271,8 @@ class ProjectModel {
       description: map['description'],
       isArchived: map['isArchived'] ?? false,
       lastVisitedAt: map['lastVisitedAt'],
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 
@@ -264,6 +284,8 @@ class ProjectModel {
     String? description,
     bool? isArchived,
     int? lastVisitedAt,
+    bool? isDeleted,
+    int? deletedAt,
   }) {
     return ProjectModel(
       id: id,
@@ -274,6 +296,8 @@ class ProjectModel {
       description: description ?? this.description,
       isArchived: isArchived ?? this.isArchived,
       lastVisitedAt: lastVisitedAt ?? this.lastVisitedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
@@ -283,12 +307,16 @@ class IdeaModel {
   final String content;
   final String? projectId;
   final int createdAt;
+  final bool isDeleted;
+  final int? deletedAt;
 
   IdeaModel({
     required this.id,
     required this.content,
     this.projectId,
     required this.createdAt,
+    this.isDeleted = false,
+    this.deletedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -297,6 +325,8 @@ class IdeaModel {
       'content': content,
       'projectId': projectId,
       'createdAt': createdAt,
+      'isDeleted': isDeleted,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -306,6 +336,8 @@ class IdeaModel {
       content: map['content'] ?? '',
       projectId: map['projectId'],
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+      isDeleted: map['isDeleted'] ?? false,
+      deletedAt: map['deletedAt'],
     );
   }
 
@@ -313,12 +345,16 @@ class IdeaModel {
     String? content,
     String? projectId,
     int? createdAt,
+    bool? isDeleted,
+    int? deletedAt,
   }) {
     return IdeaModel(
       id: id,
       content: content ?? this.content,
       projectId: projectId ?? this.projectId,
       createdAt: createdAt ?? this.createdAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
