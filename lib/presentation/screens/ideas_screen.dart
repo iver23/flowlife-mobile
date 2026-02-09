@@ -10,6 +10,8 @@ import 'settings_screen.dart';
 import '../widgets/ui_components.dart';
 import '../../data/models/models.dart';
 import '../widgets/idea_edit_sheet.dart';
+import '../../core/task_notifier.dart';
+import '../widgets/task_edit_sheet.dart';
 
 class IdeasScreen extends ConsumerWidget {
   const IdeasScreen({super.key});
@@ -195,8 +197,6 @@ class IdeasScreen extends ConsumerWidget {
 
 
   Widget _buildIdeaCard(BuildContext context, IdeaModel idea, IdeaNotifier notifier, List<ProjectModel> projects, WidgetRef ref) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-    
     ProjectModel? project;
     if (idea.projectId != null) {
       project = projects.firstWhere((p) => p.id == idea.projectId, orElse: () => _defaultProject());
@@ -261,7 +261,7 @@ class IdeasScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 16),
                     GestureDetector(
-                      onTap: () => notifier.convertToTask(idea),
+                      onTap: () => _showConvertToTaskSheet(context, idea, notifier, ref),
                       child: const Row(
                         children: [
                           Icon(LucideIcons.arrowRightCircle, size: 18, color: FlowColors.primary),
@@ -291,6 +291,34 @@ class IdeasScreen extends ConsumerWidget {
       builder: (context) => IdeaEditSheet(
         idea: idea,
         onSave: (updatedIdea) => notifier.updateIdea(updatedIdea),
+      ),
+    );
+  }
+
+  void _showConvertToTaskSheet(BuildContext context, IdeaModel idea, IdeaNotifier ideaNotifier, WidgetRef ref) {
+    // Create pre-filled task
+    final prefilledTask = TaskModel(
+      id: '',
+      title: idea.content,
+      projectId: idea.projectId ?? 'other',
+      completed: false,
+      subtasks: [],
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      order: 0,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TaskEditSheet(
+        task: prefilledTask,
+        onSave: (newTask) async {
+          // Add task via TaskNotifier
+          await ref.read(taskNotifierProvider.notifier).addTask(newTask);
+          // Delete the original idea
+          await ref.read(firestoreServiceProvider).deleteIdea(idea.id);
+        },
       ),
     );
   }
