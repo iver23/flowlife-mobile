@@ -9,6 +9,7 @@ import '../../core/date_formatter.dart';
 import 'settings_screen.dart';
 import '../widgets/ui_components.dart';
 import '../../data/models/models.dart';
+import '../widgets/idea_edit_sheet.dart';
 
 class IdeasScreen extends ConsumerWidget {
   const IdeasScreen({super.key});
@@ -248,23 +249,48 @@ class IdeasScreen extends ConsumerWidget {
                   DateFormatter.formatTimestamp(idea.createdAt),
                   style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
                 ),
-                GestureDetector(
-                  onTap: () => notifier.convertToTask(idea),
-                  child: const Row(
-                    children: [
-                      Icon(LucideIcons.arrowRightCircle, size: 18, color: FlowColors.primary),
-                      SizedBox(width: 4),
-                      Text(
-                        'CONVERT TO TASK',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.primary),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => _showEditSheet(context, idea, notifier),
+                      child: const Icon(
+                        LucideIcons.edit,
+                        size: 18,
+                        color: FlowColors.slate500,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    GestureDetector(
+                      onTap: () => notifier.convertToTask(idea),
+                      child: const Row(
+                        children: [
+                          Icon(LucideIcons.arrowRightCircle, size: 18, color: FlowColors.primary),
+                          SizedBox(width: 4),
+                          Text(
+                            'CONVERT TO TASK',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.primary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEditSheet(BuildContext context, IdeaModel idea, IdeaNotifier notifier) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => IdeaEditSheet(
+        idea: idea,
+        onSave: (updatedIdea) => notifier.updateIdea(updatedIdea),
       ),
     );
   }

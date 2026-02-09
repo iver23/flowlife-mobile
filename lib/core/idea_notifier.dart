@@ -31,6 +31,10 @@ class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
     await _service.addIdea(newIdea);
   }
 
+  Future<void> updateIdea(IdeaModel idea) async {
+    await _service.updateIdea(idea);
+  }
+
   Future<void> deleteIdea(IdeaModel idea) async {
     await ref.read(trashNotifierProvider.notifier).trashIdea(idea);
   }
