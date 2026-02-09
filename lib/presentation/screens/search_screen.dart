@@ -233,7 +233,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   ProjectModel _defaultProject() {
-    return ProjectModel(id: '', title: 'Inbox', color: 'blue', icon: 'inbox', weight: Importance.medium);
+    return ProjectModel(
+      id: 'other',
+      title: 'Other',
+      color: 'slate',
+      icon: 'hash',
+      weight: Importance.medium,
+      isSystemProject: true,
+    );
   }
 
   IconData _parseIcon(String iconName) {

@@ -22,6 +22,7 @@ import 'core/auth_notifier.dart';
 import 'core/project_notifier.dart';
 import 'core/task_notifier.dart';
 import 'core/idea_notifier.dart';
+import 'core/providers.dart';
 import 'core/notification_service.dart';
 import 'data/models/models.dart';
 import 'package:confetti/confetti.dart';
@@ -143,6 +144,12 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
     // Check for project nudges
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(taskNotifierProvider.notifier).checkProjectNudges();
+      
+      // Initialize "Other" project and migrate unassigned items
+      final firestoreService = ref.read(firestoreServiceProvider);
+      firestoreService.ensureOtherProjectExists().then((_) {
+        firestoreService.migrateNullProjectItems();
+      });
     });
 
     // Check if app was launched via Home Widget

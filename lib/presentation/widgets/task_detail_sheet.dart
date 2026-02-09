@@ -19,11 +19,12 @@ class TaskDetailSheet extends ConsumerWidget {
     final project = projects.firstWhere(
       (p) => p.id == task.projectId,
       orElse: () => ProjectModel(
-        id: 'temp',
-        title: 'Inbox',
+        id: 'other',
+        title: 'Other',
         color: 'slate',
-        icon: 'inbox',
+        icon: 'hash',
         weight: Importance.low,
+        isSystemProject: true,
       ),
     );
     final projectColor = FlowColors.parseProjectColor(project.color);

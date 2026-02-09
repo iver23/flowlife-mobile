@@ -194,14 +194,16 @@ class ProjectDetailScreen extends ConsumerWidget {
       ),
       centerTitle: true,
       actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: _buildActionCircle(LucideIcons.edit3, () => _showEditProject(context, ref, currentProject)),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 16.0),
-          child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentProject), color: Colors.red.withOpacity(0.8)),
-        ),
+        if (!currentProject.isSystemProject) ...[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _buildActionCircle(LucideIcons.edit3, () => _showEditProject(context, ref, currentProject)),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 16.0),
+            child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentProject), color: Colors.red.withOpacity(0.8)),
+          ),
+        ],
       ],
     );
   }

@@ -153,6 +153,65 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
   }
 
   Widget _buildProjectCard(BuildContext context, ProjectModel project, WidgetRef ref) {
+    Widget card = FlowCard(
+      backgroundColor: FlowColors.getSubtleProjectColor(_parseColor(project.color), Theme.of(context).brightness == Brightness.dark),
+      onTap: () {
+        ref.read(projectNotifierProvider.notifier).updateProject(
+          project.copyWith(lastVisitedAt: DateTime.now().millisecondsSinceEpoch),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProjectDetailScreen(project: project),
+          ),
+        );
+      },
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _parseColor(project.color).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(project.isSystemProject ? LucideIcons.hash : _parseIcon(project.icon), color: _parseColor(project.color), size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  project.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                if (project.description != null && project.description!.isNotEmpty)
+                  Text(
+                    project.description!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
+                  ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FlowBadge(
+                label: project.weight.name,
+                color: _getWeightColor(project.weight),
+              ),
+              const SizedBox(height: 8),
+              _buildProgressMini(project.id, ref),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (project.isSystemProject) return card;
+
     return Dismissible(
       key: Key(project.id),
       direction: DismissDirection.horizontal,
@@ -193,62 +252,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
           }
         }
       },
-      child: FlowCard(
-        backgroundColor: FlowColors.getSubtleProjectColor(_parseColor(project.color), Theme.of(context).brightness == Brightness.dark),
-        onTap: () {
-          ref.read(projectNotifierProvider.notifier).updateProject(
-            project.copyWith(lastVisitedAt: DateTime.now().millisecondsSinceEpoch),
-          );
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProjectDetailScreen(project: project),
-            ),
-          );
-        },
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _parseColor(project.color).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(_parseIcon(project.icon), color: _parseColor(project.color), size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    project.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  if (project.description != null && project.description!.isNotEmpty)
-                    Text(
-                      project.description!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
-                    ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                FlowBadge(
-                  label: project.weight.name,
-                  color: _getWeightColor(project.weight),
-                ),
-                const SizedBox(height: 8),
-                _buildProgressMini(project.id, ref),
-              ],
-            ),
-          ],
-        ),
-      ),
+      child: card,
     );
   }
 

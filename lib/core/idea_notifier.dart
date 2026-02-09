@@ -25,7 +25,7 @@ class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
     final newIdea = IdeaModel(
       id: '',
       content: content,
-      projectId: projectId,
+      projectId: projectId ?? 'other',
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
     await _service.addIdea(newIdea);

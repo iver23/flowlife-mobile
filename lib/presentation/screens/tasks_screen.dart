@@ -427,11 +427,12 @@ class TasksScreen extends ConsumerWidget {
 
   ProjectModel _defaultProject() {
     return ProjectModel(
-      id: '',
-      title: 'Inbox',
-      color: 'blue',
-      icon: 'inbox',
+      id: 'other',
+      title: 'Other',
+      color: 'slate',
+      icon: 'hash',
       weight: Importance.medium,
+      isSystemProject: true,
     );
   }
 
@@ -635,15 +636,6 @@ class TasksScreen extends ConsumerWidget {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        ListTile(
-                          leading: const Icon(LucideIcons.inbox, color: FlowColors.slate400),
-                          title: const Text('Inbox'),
-                          onTap: () {
-                            ref.read(taskNotifierProvider.notifier).moveTasksToProject(selectedIds, null);
-                            ref.read(bulkSelectionProvider.notifier).toggleSelectionMode();
-                            Navigator.pop(context);
-                          },
-                        ),
                         ...projects.map((p) => ListTile(
                           leading: Icon(
                             _parseIcon(p.icon), 

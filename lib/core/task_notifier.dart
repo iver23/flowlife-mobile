@@ -144,7 +144,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
       id: '', // Will be assigned by Firestore
       title: cleanTitle,
       description: task.description,
-      projectId: task.projectId,
+      projectId: task.projectId ?? 'other',
       dueDate: dueDate,
       recurrence: task.recurrence,
       completed: false,

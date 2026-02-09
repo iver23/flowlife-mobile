@@ -65,6 +65,66 @@ class FirestoreService {
         .delete();
   }
 
+  // --- System Project Initialization & Migration ---
+  Future<void> ensureOtherProjectExists() async {
+    if (userId == null) return;
+    final docRef = _db
+        .collection('users')
+        .doc(userId)
+        .collection('projects')
+        .doc('other');
+    
+    final doc = await docRef.get();
+    if (!doc.exists) {
+      await docRef.set({
+        'title': 'Other',
+        'color': 'slate',
+        'icon': 'hash',
+        'weight': 1,
+        'isSystemProject': true,
+        'isDeleted': false,
+        'isArchived': false,
+        'createdAt': DateTime.now().millisecondsSinceEpoch,
+      });
+    }
+  }
+
+  Future<void> migrateNullProjectItems() async {
+    if (userId == null) return;
+    final batch = _db.batch();
+    bool hasChanges = false;
+
+    // Migrate tasks where projectId is null
+    final tasksSnapshot = await _db
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .where('projectId', isNull: true)
+        .get();
+    
+    for (final doc in tasksSnapshot.docs) {
+      batch.update(doc.reference, {'projectId': 'other'});
+      hasChanges = true;
+    }
+
+    // Migrate ideas where projectId is null
+    final ideasSnapshot = await _db
+        .collection('users')
+        .doc(userId)
+        .collection('ideas')
+        .where('projectId', isNull: true)
+        .get();
+    
+    for (final doc in ideasSnapshot.docs) {
+      batch.update(doc.reference, {'projectId': 'other'});
+      hasChanges = true;
+    }
+
+    if (hasChanges) {
+      await batch.commit();
+    }
+  }
+
   // --- Tasks ---
   Stream<List<TaskModel>> streamTasks() {
     if (userId == null) return Stream.value([]);

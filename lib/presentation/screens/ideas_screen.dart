@@ -318,18 +318,19 @@ class IdeasScreen extends ConsumerWidget {
 
   Widget _buildProjectTag(ProjectModel? project) {
     return FlowBadge(
-      label: project?.title ?? '#OTHER',
-      color: FlowColors.parseProjectColor(project?.color),
+      label: project?.title ?? 'Other',
+      color: FlowColors.parseProjectColor(project?.color ?? 'slate'),
     );
   }
 
   ProjectModel _defaultProject() {
     return ProjectModel(
-      id: '',
+      id: 'other',
       title: 'Other',
       color: 'slate',
       icon: 'hash',
       weight: Importance.low,
+      isSystemProject: true,
     );
   }
 

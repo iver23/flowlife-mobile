@@ -34,15 +34,6 @@ class ProjectPicker extends ConsumerWidget {
               return ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _buildChip(
-                    context,
-                    label: 'Other',
-                    isSelected: selectedProjectId == null,
-                    onTap: () => onSelected(null),
-                    icon: LucideIcons.hash,
-                    color: FlowColors.slate500,
-                  ),
-                  const SizedBox(width: 8),
                   ...projects.map((p) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _buildChip(
@@ -50,7 +41,7 @@ class ProjectPicker extends ConsumerWidget {
                       label: p.title,
                       isSelected: selectedProjectId == p.id,
                       onTap: () => onSelected(p.id),
-                      icon: _parseIcon(p.icon),
+                      icon: p.isSystemProject ? LucideIcons.hash : _parseIcon(p.icon),
                       color: FlowColors.parseProjectColor(p.color),
                     ),
                   )),

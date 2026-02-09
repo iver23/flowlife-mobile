@@ -232,6 +232,7 @@ class ProjectModel {
   final int? lastVisitedAt;
   final bool isDeleted;
   final int? deletedAt;
+  final bool isSystemProject;
 
   ProjectModel({
     required this.id,
@@ -244,6 +245,7 @@ class ProjectModel {
     this.lastVisitedAt,
     this.isDeleted = false,
     this.deletedAt,
+    this.isSystemProject = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -258,6 +260,7 @@ class ProjectModel {
       'lastVisitedAt': lastVisitedAt,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'isSystemProject': isSystemProject,
     };
   }
 
@@ -273,6 +276,7 @@ class ProjectModel {
       lastVisitedAt: map['lastVisitedAt'],
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      isSystemProject: map['isSystemProject'] ?? false,
     );
   }
 
@@ -286,6 +290,7 @@ class ProjectModel {
     int? lastVisitedAt,
     bool? isDeleted,
     int? deletedAt,
+    bool? isSystemProject,
   }) {
     return ProjectModel(
       id: id,
@@ -298,6 +303,7 @@ class ProjectModel {
       lastVisitedAt: lastVisitedAt ?? this.lastVisitedAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      isSystemProject: isSystemProject ?? this.isSystemProject,
     );
   }
 }
