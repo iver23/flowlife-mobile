@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/auth_notifier.dart';
-import '../../core/theme_notifier.dart';
 import '../widgets/ui_components.dart';
 import 'reports_screen.dart';
 import 'habits_screen.dart';
@@ -112,35 +111,48 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildNotificationSettings(context, ref),
           const SizedBox(height: 24),
-          _buildSettingsTile(
-            icon: LucideIcons.barChart2,
-            title: 'Insights & Reports',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportsScreen())),
-            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+          const Text(
+            'TOOLS',
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.slate500, letterSpacing: 1.2),
           ),
-          const Divider(height: 1, indent: 52, endIndent: 16),
-          _buildSettingsTile(
-            icon: LucideIcons.repeat,
-            title: 'Habits',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HabitsScreen())),
-            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
-            useCard: false,
-          ),
-          const Divider(height: 1, indent: 52, endIndent: 16),
-          _buildSettingsTile(
-            icon: LucideIcons.trophy,
-            title: 'Achievements',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AchievementsScreen())),
-            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
-            useCard: false,
-          ),
-          const Divider(height: 1, indent: 52, endIndent: 16),
-          _buildSettingsTile(
-            icon: LucideIcons.trash2,
-            title: 'Trash',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TrashScreen())),
-            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
-            useCard: false,
+          const SizedBox(height: 16),
+          FlowCard(
+            padding: 0,
+            child: Column(
+              children: [
+                _buildSettingsTile(
+                  icon: LucideIcons.barChart2,
+                  title: 'Insights & Reports',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportsScreen())),
+                  trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+                  useCard: false,
+                ),
+                const Divider(height: 1, indent: 52, endIndent: 16),
+                _buildSettingsTile(
+                  icon: LucideIcons.repeat,
+                  title: 'Habits',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HabitsScreen())),
+                  trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+                  useCard: false,
+                ),
+                const Divider(height: 1, indent: 52, endIndent: 16),
+                _buildSettingsTile(
+                  icon: LucideIcons.trophy,
+                  title: 'Achievements',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AchievementsScreen())),
+                  trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+                  useCard: false,
+                ),
+                const Divider(height: 1, indent: 52, endIndent: 16),
+                _buildSettingsTile(
+                  icon: LucideIcons.trash2,
+                  title: 'Trash',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TrashScreen())),
+                  trailing: const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate500),
+                  useCard: false,
+                ),
+              ],
+            ),
           ),
           
           const SizedBox(height: 32),
