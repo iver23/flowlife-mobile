@@ -64,7 +64,7 @@ class AchievementsScreen extends ConsumerWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.8,
+          childAspectRatio: 0.7,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -110,6 +110,8 @@ class AchievementsScreen extends ConsumerWidget {
           Text(
             ach.title,
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
@@ -120,6 +122,8 @@ class AchievementsScreen extends ConsumerWidget {
           Text(
             ach.description,
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 10,
               color: FlowColors.slate500.withOpacity(0.8),
