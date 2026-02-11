@@ -5,6 +5,7 @@ import '../widgets/ui_components.dart';
 import '../../core/study_notifier.dart';
 import '../../data/models/study_models.dart';
 import 'settings_screen.dart';
+import 'subject_area_detail_screen.dart';
 import '../widgets/study_edit_sheet.dart';
 import '../widgets/undo_toast.dart';
 
@@ -68,7 +69,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           if (filteredAreas.isEmpty)
             _buildEmptyState(context)
           else
-            ...filteredAreas.map((area) => _buildAreaTile(context, ref, area, state)),
+            ...filteredAreas.map((area) => _buildAreaCard(context, ref, area, state)),
           const SizedBox(height: 100),
         ],
       ),
@@ -211,10 +212,12 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     );
   }
 
-  Widget _buildAreaTile(BuildContext context, WidgetRef ref, SubjectArea area, StudyState state) {
+  Widget _buildAreaCard(BuildContext context, WidgetRef ref, SubjectArea area, StudyState state) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     final notifier = ref.read(studyNotifierProvider.notifier);
     final areaSubjects = state.subjects.where((s) => s.areaId == area.id).toList();
     final progress = notifier.getAreaProgress(area.id);
+    final areaColor = FlowColors.parseProjectColor(area.color);
 
     return Dismissible(
       key: Key(area.id),
@@ -222,7 +225,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        margin: const EdgeInsets.only(top: 24),
+        margin: const EdgeInsets.only(top: 16),
         decoration: BoxDecoration(
           color: Colors.red,
           borderRadius: BorderRadius.circular(24),
@@ -232,7 +235,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        margin: const EdgeInsets.only(top: 24),
+        margin: const EdgeInsets.only(top: 16),
         decoration: BoxDecoration(
           color: area.isArchived ? Colors.green : Colors.amber,
           borderRadius: BorderRadius.circular(24),
@@ -258,141 +261,71 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           }
         }
       },
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: FlowCard(
-          margin: const EdgeInsets.only(top: 24),
-          padding: 0,
-          child: ExpansionTile(
-            key: PageStorageKey(area.id),
-            leading: Container(
-              width: 12,
-              height: 12,
+      child: FlowCard(
+        margin: const EdgeInsets.only(top: 16),
+        padding: 20,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SubjectAreaDetailScreen(area: area),
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: FlowColors.parseProjectColor(area.color),
-                shape: BoxShape.circle,
+                color: areaColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(LucideIcons.book, color: areaColor, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    area.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  Text(
+                    '${areaSubjects.length} subjects',
+                    style: const TextStyle(fontSize: 12, color: FlowColors.slate500),
+                  ),
+                ],
               ),
             ),
-            title: Text(
-              area.name.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                color: FlowColors.slate500,
-              ),
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 4,
-                  backgroundColor: FlowColors.slate100,
-                  valueColor: AlwaysStoppedAnimation<Color>(FlowColors.parseProjectColor(area.color)),
-                ),
-              ),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: FlowColors.parseProjectColor(area.color), fontWeight: FontWeight.bold)),
-                const SizedBox(width: 8),
-                const Icon(LucideIcons.chevronDown, size: 16),
+                Text(
+                  '${(progress * 100).toInt()}%',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: areaColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: 60,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 4,
+                      backgroundColor: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+                      valueColor: AlwaysStoppedAnimation<Color>(areaColor),
+                    ),
+                  ),
+                ),
               ],
             ),
-            children: [
-              if (areaSubjects.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text('No subjects yet', style: TextStyle(color: FlowColors.slate400, fontSize: 13, fontStyle: FontStyle.italic)),
-                )
-              else
-                ...areaSubjects.map((subject) => _buildSubjectTile(context, ref, subject, FlowColors.parseProjectColor(area.color), state)),
-              ListTile(
-                dense: true,
-                leading: Icon(LucideIcons.plus, size: 18, color: FlowColors.parseProjectColor(area.color)),
-                title: Text('Add Subject', style: TextStyle(color: FlowColors.parseProjectColor(area.color), fontWeight: FontWeight.w600)),
-                onTap: () => _showAddSubject(context, area.id),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubjectTile(BuildContext context, WidgetRef ref, Subject subject, Color areaColor, StudyState state) {
-    final notifier = ref.read(studyNotifierProvider.notifier);
-    final lessons = state.lessons.where((l) => l.subjectId == subject.id).toList();
-    final progress = notifier.getSubjectProgress(subject.id);
-
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: FlowCard(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: 0,
-        child: ExpansionTile(
-          key: PageStorageKey(subject.id),
-          title: Text(
-            subject.name,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 4,
-                backgroundColor: FlowColors.slate100,
-                valueColor: AlwaysStoppedAnimation<Color>(areaColor),
-              ),
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, color: areaColor, fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              const Icon(LucideIcons.chevronDown, size: 16),
-            ],
-          ),
-          children: [
-            ...lessons.map((lesson) => ListTile(
-              dense: true,
-              leading: Checkbox(
-                value: lesson.isCompleted,
-                onChanged: (_) => notifier.toggleLesson(lesson.id),
-                activeColor: areaColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-              ),
-              title: Text(
-                lesson.title,
-                style: TextStyle(
-                  decoration: lesson.isCompleted ? TextDecoration.lineThrough : null,
-                  color: lesson.isCompleted ? FlowColors.slate400 : null,
-                ),
-              ),
-              trailing: IconButton(
-                icon: const Icon(LucideIcons.trash2, size: 14, color: Colors.redAccent),
-                onPressed: () {
-                  notifier.deleteLesson(lesson);
-                  UndoToast.show(
-                    context: context,
-                    message: 'Lesson moved to Trash',
-                    onUndo: () => notifier.restoreLesson(lesson.id),
-                  );
-                },
-              ),
-            )),
-            ListTile(
-              dense: true,
-              leading: Icon(LucideIcons.plus, size: 18, color: areaColor),
-              title: Text('Add Lesson', style: TextStyle(color: areaColor, fontWeight: FontWeight.w600)),
-              onTap: () => _showAddLesson(context, subject.id),
-            ),
+            const SizedBox(width: 12),
+            const Icon(LucideIcons.chevronRight, size: 16, color: FlowColors.slate400),
           ],
         ),
       ),
@@ -427,16 +360,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => StudyEditSheet(type: StudyEntryType.subject, parentId: areaId),
-    );
-  }
-
-  void _showAddLesson(BuildContext context, String subjectId) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StudyEditSheet(type: StudyEntryType.lesson, parentId: subjectId),
+      builder: (context) => StudyEditSheet(type: StudyEntryType.area, parentId: areaId),
     );
   }
 }

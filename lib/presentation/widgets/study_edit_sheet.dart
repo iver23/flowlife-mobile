@@ -3,17 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'ui_components.dart';
 import '../../core/study_notifier.dart';
+import '../../data/models/study_models.dart';
 
 enum StudyEntryType { area, subject, lesson }
 
 class StudyEditSheet extends ConsumerStatefulWidget {
   final StudyEntryType type;
   final String? parentId;
+  final SubjectArea? area;
 
   const StudyEditSheet({
     super.key,
     required this.type,
     this.parentId,
+    this.area,
   });
 
   @override
@@ -22,7 +25,14 @@ class StudyEditSheet extends ConsumerStatefulWidget {
 
 class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
   final _nameController = TextEditingController();
-  String _selectedColor = 'duskblue';
+  late String _selectedColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.area?.name ?? '';
+    _selectedColor = widget.area?.color ?? 'duskblue';
+  }
 
   @override
   void dispose() {
@@ -37,7 +47,14 @@ class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
     
     switch (widget.type) {
       case StudyEntryType.area:
-        notifier.addArea(_nameController.text.trim(), _selectedColor);
+        if (widget.area != null) {
+          notifier.updateArea(widget.area!.copyWith(
+            name: _nameController.text.trim(),
+            color: _selectedColor,
+          ));
+        } else {
+          notifier.addArea(_nameController.text.trim(), _selectedColor);
+        }
         break;
       case StudyEntryType.subject:
         notifier.addSubject(widget.parentId!, _nameController.text.trim());
@@ -52,9 +69,11 @@ class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.type == StudyEntryType.area 
-        ? 'Add Subject Area' 
-        : (widget.type == StudyEntryType.subject ? 'Add Subject' : 'Add Lesson');
+    final title = widget.area != null 
+        ? 'Edit Subject Area' 
+        : (widget.type == StudyEntryType.area 
+            ? 'Add Subject Area' 
+            : (widget.type == StudyEntryType.subject ? 'Add Subject' : 'Add Lesson'));
 
     return Container(
       decoration: BoxDecoration(
@@ -117,7 +136,7 @@ class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 0,
               ),
-              child: const Text('Add Entry', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(widget.area != null ? 'Save Changes' : 'Add Entry', style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],

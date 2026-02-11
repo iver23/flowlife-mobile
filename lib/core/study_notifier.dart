@@ -74,6 +74,11 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
     ref.invalidateSelf();
   }
 
+  Future<void> updateArea(SubjectArea area) async {
+    await _firestore.updateSubjectArea(area);
+    ref.invalidateSelf();
+  }
+
   Future<void> restoreArea(String id) async {
     final areas = await _firestore.streamTrashedSubjectAreas().first;
     final area = areas.firstWhere((e) => e.id == id);
@@ -100,6 +105,11 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
       createdAt: DateTime.now(),
     );
     await _firestore.addSubject(subject);
+    ref.invalidateSelf();
+  }
+
+  Future<void> updateSubject(Subject subject) async {
+    await _firestore.updateSubject(subject);
     ref.invalidateSelf();
   }
 
