@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'app_logger.dart';
 import '../data/models/models.dart' hide Importance;
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,7 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: matchDateTimeComponents,
       );
+      AppLogger.notification('Scheduled notification $id at $scheduledDate (Exact)');
     } catch (e) {
       // If exact alarms not permitted, fall back to inexact
       if (e.toString().contains('exact_alarms_not_permitted')) {
@@ -39,6 +41,7 @@ class NotificationService {
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           matchDateTimeComponents: matchDateTimeComponents,
         );
+        AppLogger.notification('Scheduled notification $id at $scheduledDate (Inexact fallback)');
       } else {
         // Re-throw other exceptions
         rethrow;

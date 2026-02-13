@@ -1,14 +1,20 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'app_logger.dart';
 
 class AuthNotifier extends Notifier<User?> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  StreamSubscription<User?>? _subscription;
 
   @override
   User? build() {
     _init();
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
     return _auth.currentUser;
   }
 
@@ -17,7 +23,8 @@ class AuthNotifier extends Notifier<User?> {
     await GoogleSignIn.instance.initialize();
     
     // Set up auth state listening
-    _auth.authStateChanges().listen((user) async {
+    _subscription = _auth.authStateChanges().listen((user) async {
+      AppLogger.auth('Auth state changed: ${user?.email ?? "signed out"}');
       state = user;
       
       // If no firebase user, try lightweight (silent) authentication
@@ -35,8 +42,8 @@ class AuthNotifier extends Notifier<User?> {
               await _auth.signInWithCredential(credential);
             }
           }
-        } catch (e) {
-          debugPrint('Silent sign-in failed: $e');
+        } catch (e, st) {
+          AppLogger.error('Silent sign-in failed', e, st);
         }
       }
     });
@@ -59,8 +66,8 @@ class AuthNotifier extends Notifier<User?> {
 
         await _auth.signInWithCredential(credential);
       }
-    } catch (e) {
-      debugPrint('Google sign-in error: $e');
+    } catch (e, st) {
+      AppLogger.error('Google sign-in error', e, st);
     }
   }
 

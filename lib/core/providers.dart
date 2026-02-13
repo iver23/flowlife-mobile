@@ -1,14 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/services/firestore_service.dart';
 import '../data/models/models.dart';
-import 'quote_service.dart';
-
+import '../data/services/firestore_service.dart';
+import '../data/services/schema_migration_service.dart';
 import 'auth_notifier.dart';
+import '../core/quote_service.dart';
+
+final schemaMigrationServiceProvider = Provider((ref) => SchemaMigrationService());
 
 final firestoreServiceProvider = Provider((ref) {
   // We watch authProvider to ensure this provider is recreated when user changes
   ref.watch(authProvider);
-  return FirestoreService();
+  final migrationService = ref.watch(schemaMigrationServiceProvider);
+  return FirestoreService(migrationService);
 });
 
 final projectsProvider = StreamProvider<List<ProjectModel>>((ref) {
@@ -25,6 +28,7 @@ final ideasProvider = StreamProvider<List<IdeaModel>>((ref) {
   final service = ref.watch(firestoreServiceProvider);
   return service.streamIdeas();
 });
+
 
 // Riverpod 3.x: StateProvider moved to Notifier pattern
 class SelectedProjectFilterNotifier extends Notifier<String?> {

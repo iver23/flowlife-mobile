@@ -5,12 +5,26 @@ import '../models/habit_model.dart';
 import '../models/achievement_model.dart';
 import '../models/widget_model.dart';
 import '../models/study_models.dart';
+import '../services/schema_migration_service.dart';
+import '../../core/app_logger.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final SchemaMigrationService _migration;
+
+  FirestoreService(this._migration);
 
   String? get userId => _auth.currentUser?.uid;
+
+  void _writebackIfMigrated(DocumentReference ref, Map<String, dynamic> original, Map<String, dynamic> migrated) {
+    if (migrated['schemaVersion'] != original['schemaVersion']) {
+      AppLogger.migration('Writing back migrated document to ${ref.path}');
+      ref.update({'schemaVersion': migrated['schemaVersion']}).catchError(
+        (e, st) => AppLogger.error('Migration writeback failed: ${ref.path}', e, st),
+      );
+    }
+  }
 
   // --- Projects ---
   Stream<List<ProjectModel>> streamProjects() {
@@ -20,10 +34,12 @@ class FirestoreService {
         .doc(userId)
         .collection('projects')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ProjectModel.fromMap(doc.data(), doc.id))
-            .where((item) => item.isDeleted != true)
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              final migrated = _migration.migrateDocument('projects', data);
+              _writebackIfMigrated(doc.reference, data, migrated);
+              return ProjectModel.fromMap(migrated, doc.id);
+            }).where((item) => item.isDeleted != true).toList());
   }
 
   Stream<List<ProjectModel>> streamTrashedProjects() {
@@ -134,10 +150,12 @@ class FirestoreService {
         .collection('tasks')
         .snapshots()
         .map((snapshot) {
-          final tasks = snapshot.docs
-              .map((doc) => TaskModel.fromMap(doc.data(), doc.id))
-              .where((task) => task.isDeleted != true)
-              .toList();
+          final tasks = snapshot.docs.map((doc) {
+            final data = doc.data();
+            final migrated = _migration.migrateDocument('tasks', data);
+            _writebackIfMigrated(doc.reference, data, migrated);
+            return TaskModel.fromMap(migrated, doc.id);
+          }).where((task) => task.isDeleted != true).toList();
           tasks.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
           return tasks;
         });
@@ -169,10 +187,12 @@ class FirestoreService {
         .collection('ideas')
         .snapshots()
         .map((snapshot) {
-          final ideas = snapshot.docs
-              .map((doc) => IdeaModel.fromMap(doc.data(), doc.id))
-              .where((item) => item.isDeleted != true)
-              .toList();
+          final ideas = snapshot.docs.map((doc) {
+            final data = doc.data();
+            final migrated = _migration.migrateDocument('ideas', data);
+            _writebackIfMigrated(doc.reference, data, migrated);
+            return IdeaModel.fromMap(migrated, doc.id);
+          }).where((item) => item.isDeleted != true).toList();
           ideas.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
           return ideas;
         });
@@ -299,7 +319,7 @@ class FirestoreService {
         .snapshots()
         .map((snapshot) {
           final habits = snapshot.docs
-              .map((doc) => HabitModel.fromMap(doc.data(), doc.id))
+              .map((doc) => HabitModel.fromMap(_migration.migrateDocument('habits', doc.data()), doc.id))
               .where((item) => item.isDeleted != true)
               .toList();
           habits.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
@@ -365,7 +385,7 @@ class FirestoreService {
         .collection('achievements')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => AchievementModel.fromMap(doc.data(), doc.id))
+            .map((doc) => AchievementModel.fromMap(_migration.migrateDocument('achievements', doc.data()), doc.id))
             .toList());
   }
 
@@ -400,7 +420,7 @@ class FirestoreService {
         .orderBy('order')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => DashboardWidgetModel.fromMap(doc.data(), doc.id))
+            .map((doc) => DashboardWidgetModel.fromMap(_migration.migrateDocument('dashboard_widgets', doc.data()), doc.id))
             .toList());
   }
 
@@ -431,7 +451,7 @@ class FirestoreService {
         .collection('subject_areas')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => SubjectArea.fromMap(doc.data(), doc.id))
+            .map((doc) => SubjectArea.fromMap(_migration.migrateDocument('subject_areas', doc.data()), doc.id))
             .where((item) => item.isDeleted != true)
             .toList());
   }
@@ -457,11 +477,10 @@ class FirestoreService {
         .collection('subjects')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Subject.fromMap(doc.data(), doc.id))
+            .map((doc) => Subject.fromMap(_migration.migrateDocument('subjects', doc.data()), doc.id))
             .where((item) => item.isDeleted != true)
             .toList());
   }
-
   Stream<List<Subject>> streamTrashedSubjects() {
     if (userId == null) return Stream.value([]);
     return _db
@@ -471,7 +490,7 @@ class FirestoreService {
         .where('isDeleted', isEqualTo: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Subject.fromMap(doc.data(), doc.id))
+            .map((doc) => Subject.fromMap(_migration.migrateDocument('subjects', doc.data()), doc.id))
             .toList());
   }
 
@@ -483,7 +502,7 @@ class FirestoreService {
         .collection('lessons')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Lesson.fromMap(doc.data(), doc.id))
+            .map((doc) => Lesson.fromMap(_migration.migrateDocument('lessons', doc.data()), doc.id))
             .where((item) => item.isDeleted != true)
             .toList());
   }

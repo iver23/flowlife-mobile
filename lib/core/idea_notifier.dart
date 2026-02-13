@@ -7,12 +7,17 @@ import 'trash_notifier.dart';
 
 class IdeaNotifier extends AsyncNotifier<List<IdeaModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
+  StreamSubscription<List<IdeaModel>>? _subscription;
 
   @override
   FutureOr<List<IdeaModel>> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
     final stream = _service.streamIdeas();
     
-    stream.listen((ideas) {
+    _subscription = stream.listen((ideas) {
       state = AsyncData(ideas);
     }, onError: (e, st) {
       state = AsyncError(e, st);

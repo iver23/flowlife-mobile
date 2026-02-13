@@ -34,10 +34,23 @@ import 'core/theme_notifier.dart';
 import 'core/biometric_notifier.dart';
 import 'core/connectivity_notifier.dart';
 import 'presentation/screens/lock_screen.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  
+  // Pass all uncaught errors from the framework to Crashlytics.
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   await NotificationService.init();
   final prefs = await SharedPreferences.getInstance();
   

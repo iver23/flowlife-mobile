@@ -78,6 +78,7 @@ class Subtask {
 }
 
 class TaskModel {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String title;
   final String? description;
@@ -95,6 +96,7 @@ class TaskModel {
   final int? reminderTime; // epoch milliseconds
   final bool isDeleted;
   final int? deletedAt;
+  final int schemaVersion;
 
   TaskModel({
     required this.id,
@@ -114,6 +116,7 @@ class TaskModel {
     this.reminderTime,
     this.isDeleted = false,
     this.deletedAt,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -135,6 +138,7 @@ class TaskModel {
       'reminderTime': reminderTime,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -164,6 +168,7 @@ class TaskModel {
       reminderTime: map['reminderTime'],
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
@@ -184,6 +189,7 @@ class TaskModel {
     int? reminderTime,
     bool? isDeleted,
     int? deletedAt,
+    int? schemaVersion,
   }) {
     return TaskModel(
       id: id,
@@ -203,6 +209,7 @@ class TaskModel {
       reminderTime: reminderTime ?? this.reminderTime,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -222,6 +229,7 @@ class TaskModel {
 }
 
 class ProjectModel {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String title;
   final String color;
@@ -233,6 +241,7 @@ class ProjectModel {
   final bool isDeleted;
   final int? deletedAt;
   final bool isSystemProject;
+  final int schemaVersion;
 
   ProjectModel({
     required this.id,
@@ -246,6 +255,7 @@ class ProjectModel {
     this.isDeleted = false,
     this.deletedAt,
     this.isSystemProject = false,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -261,6 +271,7 @@ class ProjectModel {
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
       'isSystemProject': isSystemProject,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -277,6 +288,7 @@ class ProjectModel {
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
       isSystemProject: map['isSystemProject'] ?? false,
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
@@ -291,6 +303,7 @@ class ProjectModel {
     bool? isDeleted,
     int? deletedAt,
     bool? isSystemProject,
+    int? schemaVersion,
   }) {
     return ProjectModel(
       id: id,
@@ -304,17 +317,20 @@ class ProjectModel {
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
       isSystemProject: isSystemProject ?? this.isSystemProject,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 }
 
 class IdeaModel {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String content;
   final String? projectId;
   final int createdAt;
   final bool isDeleted;
   final int? deletedAt;
+  final int schemaVersion;
 
   IdeaModel({
     required this.id,
@@ -323,6 +339,7 @@ class IdeaModel {
     required this.createdAt,
     this.isDeleted = false,
     this.deletedAt,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -333,6 +350,7 @@ class IdeaModel {
       'createdAt': createdAt,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -344,6 +362,7 @@ class IdeaModel {
       createdAt: map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
@@ -353,6 +372,7 @@ class IdeaModel {
     int? createdAt,
     bool? isDeleted,
     int? deletedAt,
+    int? schemaVersion,
   }) {
     return IdeaModel(
       id: id,
@@ -361,6 +381,7 @@ class IdeaModel {
       createdAt: createdAt ?? this.createdAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'app_logger.dart';
 
 class Quote {
   final String text;
@@ -44,8 +45,8 @@ class QuoteService {
         _isLoaded = true;
         return;
       }
-    } catch (e) {
-      print('Firebase quote fetch failed: $e');
+    } catch (e, st) {
+      AppLogger.error('Firebase quote fetch failed', e, st);
     }
 
     // 2. Fallback to local CSV if Firebase fails or is empty
@@ -78,8 +79,8 @@ class QuoteService {
         _isLoaded = true;
         return;
       }
-    } catch (e) {
-      print('Local CSV quote load failed: $e');
+    } catch (e, st) {
+      AppLogger.error('Local CSV quote load failed', e, st);
     }
 
     // 3. Absolute fallback

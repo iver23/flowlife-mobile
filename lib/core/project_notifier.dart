@@ -9,12 +9,17 @@ import 'task_notifier.dart';
 
 class ProjectNotifier extends AsyncNotifier<List<ProjectModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
+  StreamSubscription<List<ProjectModel>>? _subscription;
 
   @override
   FutureOr<List<ProjectModel>> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
     final stream = _service.streamProjects();
     
-    stream.listen((projects) {
+    _subscription = stream.listen((projects) {
       state = AsyncData(projects);
       _triggerWidgetUpdate(projects);
     }, onError: (e, st) {

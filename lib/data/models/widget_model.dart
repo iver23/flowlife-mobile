@@ -11,12 +11,14 @@ enum WidgetType {
 }
 
 class DashboardWidgetModel {
+  static const int currentSchemaVersion = 1;
   final String id;
   final WidgetType type;
   final String title;
   final bool isEnabled;
   final int order;
   final int gridColumnSpan; // 1 or 2
+  final int schemaVersion;
 
   DashboardWidgetModel({
     required this.id,
@@ -25,6 +27,7 @@ class DashboardWidgetModel {
     this.isEnabled = true,
     required this.order,
     this.gridColumnSpan = 1,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +37,7 @@ class DashboardWidgetModel {
       'isEnabled': isEnabled,
       'order': order,
       'gridColumnSpan': gridColumnSpan,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -45,6 +49,7 @@ class DashboardWidgetModel {
       isEnabled: map['isEnabled'] ?? true,
       order: map['order'] ?? 0,
       gridColumnSpan: map['gridColumnSpan'] ?? 1,
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
@@ -52,6 +57,7 @@ class DashboardWidgetModel {
     bool? isEnabled,
     int? order,
     int? gridColumnSpan,
+    int? schemaVersion,
   }) {
     return DashboardWidgetModel(
       id: id,
@@ -60,6 +66,7 @@ class DashboardWidgetModel {
       isEnabled: isEnabled ?? this.isEnabled,
       order: order ?? this.order,
       gridColumnSpan: gridColumnSpan ?? this.gridColumnSpan,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 }

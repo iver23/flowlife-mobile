@@ -1,5 +1,6 @@
 /// Model for tracking habits with streak functionality.
 class HabitModel {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String title;
   final String category; // 'health', 'productivity', 'learning', 'wellness'
@@ -8,6 +9,7 @@ class HabitModel {
   final String? icon;
   final bool isDeleted;
   final int? deletedAt;
+  final int schemaVersion;
 
   HabitModel({
     required this.id,
@@ -18,6 +20,7 @@ class HabitModel {
     this.icon,
     this.isDeleted = false,
     this.deletedAt,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   /// Calculate the current streak (consecutive days ending today or yesterday)
@@ -79,6 +82,7 @@ class HabitModel {
     String? icon,
     bool? isDeleted,
     int? deletedAt,
+    int? schemaVersion,
   }) {
     return HabitModel(
       id: id ?? this.id,
@@ -89,6 +93,7 @@ class HabitModel {
       icon: icon ?? this.icon,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -101,6 +106,7 @@ class HabitModel {
       'icon': icon,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -114,6 +120,7 @@ class HabitModel {
       icon: map['icon'],
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 }

@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:rxdart/rxdart.dart' hide Subject;
 import '../data/services/firestore_service.dart';
 import '../data/models/study_models.dart';
 import 'providers.dart';
-import 'theme_notifier.dart';
 
 class StudyState {
   final List<SubjectArea> areas;
@@ -33,28 +33,32 @@ class StudyState {
 class StudyNotifier extends AsyncNotifier<StudyState> {
   FirestoreService get _firestore => ref.watch(firestoreServiceProvider);
   final _uuid = Uuid();
+  StreamSubscription<StudyState>? _subscription;
 
   @override
-  Future<StudyState> build() async {
-    // Listen to firestore streams and combine them
-    // For simplicity in the first pass, we'll fetch once and then rebuild on changes if needed,
-    // or use StreamProvider for each.
-    // However, the requested architectural goal is to unify.
-    
-    // We'll use StreamZip or simple combine-latest style if we wanted pure streams,
-    // but the current Notifier is AsyncNotifier which builds once.
-    // To maintain the "Notifier" feel with real-time Firestore, we should switch to StreamNotifier
-    // or manually subscribe.
-    
-    final areas = await _firestore.streamSubjectAreas().first;
-    final subjects = await _firestore.streamSubjects().first;
-    final lessons = await _firestore.streamLessons().first;
-    
-    return StudyState(
-      areas: areas..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
-      subjects: subjects..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
-      lessons: lessons..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+  FutureOr<StudyState> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
+    final stream = Rx.combineLatest3(
+      _firestore.streamSubjectAreas(),
+      _firestore.streamSubjects(),
+      _firestore.streamLessons(),
+      (areas, subjects, lessons) => StudyState(
+        areas: areas..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+        subjects: subjects..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+        lessons: lessons..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+      ),
     );
+
+    _subscription = stream.listen((newState) {
+      state = AsyncData(newState);
+    }, onError: (e, st) {
+      state = AsyncError(e, st);
+    });
+
+    return stream.first;
   }
 
   // --- AREAS ---
@@ -66,34 +70,28 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
       createdAt: DateTime.now(),
     );
     await _firestore.addSubjectArea(area);
-    ref.invalidateSelf();
   }
 
   Future<void> deleteArea(SubjectArea area) async {
     await _firestore.updateSubjectArea(area.copyWith(isDeleted: true, deletedAt: DateTime.now().millisecondsSinceEpoch));
-    ref.invalidateSelf();
   }
 
   Future<void> updateArea(SubjectArea area) async {
     await _firestore.updateSubjectArea(area);
-    ref.invalidateSelf();
   }
 
   Future<void> restoreArea(String id) async {
     final areas = await _firestore.streamTrashedSubjectAreas().first;
     final area = areas.firstWhere((e) => e.id == id);
     await _firestore.updateSubjectArea(area.copyWith(isDeleted: false, deletedAt: null));
-    ref.invalidateSelf();
   }
 
   Future<void> archiveArea(SubjectArea area) async {
     await _firestore.updateSubjectArea(area.copyWith(isArchived: true));
-    ref.invalidateSelf();
   }
 
   Future<void> unarchiveArea(SubjectArea area) async {
     await _firestore.updateSubjectArea(area.copyWith(isArchived: false));
-    ref.invalidateSelf();
   }
 
   // --- SUBJECTS ---
@@ -105,24 +103,20 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
       createdAt: DateTime.now(),
     );
     await _firestore.addSubject(subject);
-    ref.invalidateSelf();
   }
 
   Future<void> updateSubject(Subject subject) async {
     await _firestore.updateSubject(subject);
-    ref.invalidateSelf();
   }
 
   Future<void> deleteSubject(Subject subject) async {
     await _firestore.updateSubject(subject.copyWith(isDeleted: true, deletedAt: DateTime.now().millisecondsSinceEpoch));
-    ref.invalidateSelf();
   }
 
   Future<void> restoreSubject(String id) async {
     final subjects = await _firestore.streamTrashedSubjects().first;
     final subject = subjects.firstWhere((e) => e.id == id);
     await _firestore.updateSubject(subject.copyWith(isDeleted: false, deletedAt: null));
-    ref.invalidateSelf();
   }
 
   // --- LESSONS ---
@@ -134,7 +128,6 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
       createdAt: DateTime.now(),
     );
     await _firestore.addLesson(lesson);
-    ref.invalidateSelf();
   }
 
   Future<void> toggleLesson(String id) async {
@@ -142,19 +135,16 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
     if (state_val == null) return;
     final lesson = state_val.lessons.firstWhere((e) => e.id == id);
     await _firestore.updateLesson(lesson.copyWith(isCompleted: !lesson.isCompleted));
-    ref.invalidateSelf();
   }
 
   Future<void> deleteLesson(Lesson lesson) async {
     await _firestore.updateLesson(lesson.copyWith(isDeleted: true, deletedAt: DateTime.now().millisecondsSinceEpoch));
-    ref.invalidateSelf();
   }
 
   Future<void> restoreLesson(String id) async {
     final lessons = await _firestore.streamTrashedLessons().first;
     final lesson = lessons.firstWhere((e) => e.id == id);
     await _firestore.updateLesson(lesson.copyWith(isDeleted: false, deletedAt: null));
-    ref.invalidateSelf();
   }
 
   // --- HELPERS ---
@@ -195,8 +185,6 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
   }
 }
 
-// Provider already unified in providers.dart if needed, 
-// but here we keep the existing structure but update the repo dependency.
 final studyNotifierProvider = AsyncNotifierProvider<StudyNotifier, StudyState>(() {
   return StudyNotifier();
 });

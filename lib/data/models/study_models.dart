@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 class SubjectArea {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String name;
   final String color;
@@ -8,6 +9,7 @@ class SubjectArea {
   final bool isArchived;
   final bool isDeleted;
   final int? deletedAt;
+  final int schemaVersion;
 
   SubjectArea({
     required this.id,
@@ -17,6 +19,7 @@ class SubjectArea {
     this.isArchived = false,
     this.isDeleted = false,
     this.deletedAt,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   SubjectArea copyWith({
@@ -25,6 +28,7 @@ class SubjectArea {
     bool? isArchived,
     bool? isDeleted,
     int? deletedAt,
+    int? schemaVersion,
   }) {
     return SubjectArea(
       id: id,
@@ -34,6 +38,7 @@ class SubjectArea {
       isArchived: isArchived ?? this.isArchived,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -46,6 +51,7 @@ class SubjectArea {
       'isArchived': isArchived,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -58,6 +64,7 @@ class SubjectArea {
       isArchived: map['isArchived'] ?? false,
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
@@ -70,12 +77,14 @@ class SubjectArea {
 }
 
 class Subject {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String areaId;
   final String name;
   final DateTime createdAt;
   final bool isDeleted;
   final int? deletedAt;
+  final int schemaVersion;
 
   Subject({
     required this.id,
@@ -84,6 +93,7 @@ class Subject {
     required this.createdAt,
     this.isDeleted = false,
     this.deletedAt,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -94,6 +104,7 @@ class Subject {
       'createdAt': createdAt.toIso8601String(),
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -102,6 +113,7 @@ class Subject {
     String? name,
     bool? isDeleted,
     int? deletedAt,
+    int? schemaVersion,
   }) {
     return Subject(
       id: id,
@@ -110,6 +122,7 @@ class Subject {
       createdAt: createdAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -121,6 +134,7 @@ class Subject {
       createdAt: DateTime.parse(map['createdAt']),
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
@@ -133,6 +147,7 @@ class Subject {
 }
 
 class Lesson {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String subjectId;
   final String title;
@@ -140,6 +155,7 @@ class Lesson {
   final DateTime createdAt;
   final bool isDeleted;
   final int? deletedAt;
+  final int schemaVersion;
 
   Lesson({
     required this.id,
@@ -149,6 +165,7 @@ class Lesson {
     required this.createdAt,
     this.isDeleted = false,
     this.deletedAt,
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Lesson copyWith({
@@ -159,6 +176,7 @@ class Lesson {
     DateTime? createdAt,
     bool? isDeleted,
     int? deletedAt,
+    int? schemaVersion,
   }) {
     return Lesson(
       id: id ?? this.id,
@@ -168,6 +186,7 @@ class Lesson {
       createdAt: createdAt ?? this.createdAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -180,6 +199,7 @@ class Lesson {
       'createdAt': createdAt.toIso8601String(),
       'isDeleted': isDeleted,
       'deletedAt': deletedAt,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -192,6 +212,7 @@ class Lesson {
       createdAt: DateTime.parse(map['createdAt']),
       isDeleted: map['isDeleted'] ?? false,
       deletedAt: map['deletedAt'],
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 

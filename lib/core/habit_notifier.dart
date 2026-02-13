@@ -8,13 +8,20 @@ import 'achievement_notifier.dart';
 
 class HabitNotifier extends AsyncNotifier<List<HabitModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
+  StreamSubscription<List<HabitModel>>? _subscription;
 
   @override
   FutureOr<List<HabitModel>> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
     final stream = _service.streamHabits();
     
-    stream.listen((habits) {
+    _subscription = stream.listen((habits) {
       state = AsyncData(habits);
+    }, onError: (e, st) {
+      state = AsyncError(e, st);
     });
 
     return stream.first;

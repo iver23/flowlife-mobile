@@ -1,4 +1,5 @@
 class AchievementModel {
+  static const int currentSchemaVersion = 1;
   final String id;
   final String title;
   final String description;
@@ -8,6 +9,7 @@ class AchievementModel {
   final String requirementType; // 'tasks_completed', 'habit_streak', 'total_habits'
   final int requirementValue;
   final String category; // 'productivity', 'wellness', 'growth'
+  final int schemaVersion;
 
   AchievementModel({
     required this.id,
@@ -19,6 +21,7 @@ class AchievementModel {
     required this.requirementType,
     required this.requirementValue,
     this.category = 'productivity',
+    this.schemaVersion = currentSchemaVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +34,7 @@ class AchievementModel {
       'requirementType': requirementType,
       'requirementValue': requirementValue,
       'category': category,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -45,12 +49,14 @@ class AchievementModel {
       requirementType: map['requirementType'] ?? '',
       requirementValue: map['requirementValue'] ?? 0,
       category: map['category'] ?? 'productivity',
+      schemaVersion: map['schemaVersion'] ?? 0,
     );
   }
 
   AchievementModel copyWith({
     bool? isUnlocked,
     int? unlockedAt,
+    int? schemaVersion,
   }) {
     return AchievementModel(
       id: id,
@@ -62,6 +68,7 @@ class AchievementModel {
       requirementType: requirementType,
       requirementValue: requirementValue,
       category: category,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 }

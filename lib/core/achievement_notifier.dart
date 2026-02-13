@@ -8,9 +8,14 @@ import 'habit_notifier.dart';
 
 class AchievementNotifier extends AsyncNotifier<List<AchievementModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
+  StreamSubscription<List<AchievementModel>>? _subscription;
 
   @override
   FutureOr<List<AchievementModel>> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
     final stream = _service.streamAchievements();
     
     // Listen to changes in tasks and habits to trigger checks
@@ -21,12 +26,14 @@ class AchievementNotifier extends AsyncNotifier<List<AchievementModel>> {
       if (next is AsyncData) checkAchievements();
     });
 
-    stream.listen((achievements) {
+    _subscription = stream.listen((achievements) {
       if (achievements.isEmpty) {
         _initializeDefaultAchievements();
       } else {
         state = AsyncData(achievements);
       }
+    }, onError: (e, st) {
+      state = AsyncError(e, st);
     });
 
     return stream.first;

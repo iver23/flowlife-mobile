@@ -6,12 +6,17 @@ import 'providers.dart';
 
 class DashboardWidgetNotifier extends AsyncNotifier<List<DashboardWidgetModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
+  StreamSubscription<List<DashboardWidgetModel>>? _subscription;
 
   @override
   FutureOr<List<DashboardWidgetModel>> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
     final stream = _service.streamDashboardWidgets();
     
-    stream.listen((widgets) {
+    _subscription = stream.listen((widgets) {
       if (widgets.isEmpty) {
         _initializeDefaultWidgets();
       } else {
@@ -23,6 +28,8 @@ class DashboardWidgetNotifier extends AsyncNotifier<List<DashboardWidgetModel>> 
           state = AsyncData(widgets);
         }
       }
+    }, onError: (e, st) {
+      state = AsyncError(e, st);
     });
 
     return stream.first;

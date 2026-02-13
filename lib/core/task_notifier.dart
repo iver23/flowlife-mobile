@@ -14,14 +14,19 @@ import 'achievement_notifier.dart';
 
 class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
+  StreamSubscription<List<TaskModel>>? _subscription;
 
   @override
   FutureOr<List<TaskModel>> build() async {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
     // Initial data from stream
     final stream = _service.streamTasks();
     
     // Listen for updates and push into state
-    stream.listen((tasks) {
+    _subscription = stream.listen((tasks) {
       state = AsyncData(tasks);
       _updateDailyRecap(tasks);
       _triggerWidgetUpdate(tasks);
