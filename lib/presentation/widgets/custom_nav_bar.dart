@@ -24,7 +24,7 @@ class FlowNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? FlowColors.surfaceDark.withOpacity(0.8) : Colors.white.withOpacity(0.9);
+    final backgroundColor = isDark ? FlowColors.surfaceDark.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.9);
 
     Widget bar = Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 32),
@@ -33,12 +33,12 @@ class FlowNavigationBar extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
           width: 0.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -79,7 +79,7 @@ class FlowNavigationBar extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: (isActive) ? FlowColors.primary.withOpacity(0.12) : Colors.transparent,
+                color: (isActive) ? FlowColors.primary.withValues(alpha: 0.12) : Colors.transparent,
                 shape: BoxShape.circle,
               ),
             ),

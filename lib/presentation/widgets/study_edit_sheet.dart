@@ -99,7 +99,7 @@ class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
               hintText: 'Enter name...',
               filled: true,
               fillColor: Theme.of(context).brightness == Brightness.dark 
-                  ? Colors.white.withOpacity(0.08) 
+                  ? Colors.white.withValues(alpha: 0.08) 
                   : FlowColors.slate50,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -157,7 +157,7 @@ class _StudyEditSheetState extends ConsumerState<StudyEditSheet> {
           color: color,
           shape: BoxShape.circle,
           border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
-          boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8, spreadRadius: 2)] : null,
+          boxShadow: isSelected ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 8, spreadRadius: 2)] : null,
         ),
         child: isSelected ? const Icon(LucideIcons.check, color: Colors.white, size: 20) : null,
       ),

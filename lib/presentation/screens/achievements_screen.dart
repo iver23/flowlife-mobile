@@ -45,7 +45,7 @@ class AchievementsScreen extends ConsumerWidget {
           child: Icon(
             LucideIcons.trophy,
             size: 64,
-            color: FlowColors.primary.withOpacity(0.1),
+            color: FlowColors.primary.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -87,12 +87,12 @@ class AchievementsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: ach.isUnlocked
-                  ? FlowColors.primary.withOpacity(0.1)
-                  : (isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100),
+                  ? FlowColors.primary.withValues(alpha: 0.1)
+                  : (isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100),
               shape: BoxShape.circle,
               boxShadow: ach.isUnlocked ? [
                 BoxShadow(
-                  color: FlowColors.primary.withOpacity(0.2),
+                  color: FlowColors.primary.withValues(alpha: 0.2),
                   blurRadius: 12,
                   spreadRadius: 2,
                 )
@@ -126,7 +126,7 @@ class AchievementsScreen extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 10,
-              color: FlowColors.slate500.withOpacity(0.8),
+              color: FlowColors.slate500.withValues(alpha: 0.8),
             ),
           ),
           if (ach.isUnlocked && ach.unlockedAt != null) ...[
@@ -136,7 +136,7 @@ class AchievementsScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: FlowColors.primary.withOpacity(0.8),
+                color: FlowColors.primary.withValues(alpha: 0.8),
               ),
             ),
           ]

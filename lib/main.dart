@@ -7,9 +7,7 @@ import 'presentation/screens/projects_screen.dart';
 import 'presentation/screens/tasks_screen.dart';
 import 'presentation/screens/ideas_screen.dart';
 import 'presentation/screens/login_screen.dart';
-import 'presentation/screens/settings_screen.dart';
 import 'presentation/widgets/search_overlay.dart';
-import 'presentation/screens/search_screen.dart';
 import 'presentation/widgets/custom_nav_bar.dart';
 import 'presentation/widgets/multi_action_fab.dart';
 import 'presentation/widgets/project_edit_sheet.dart';
@@ -32,7 +30,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:home_widget/home_widget.dart';
 import 'core/theme_notifier.dart';
 import 'core/biometric_notifier.dart';
-import 'core/connectivity_notifier.dart';
 import 'presentation/screens/lock_screen.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -216,7 +213,7 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
     TasksScreen(),
     DashboardScreen(),
     IdeasScreen(),
-    const StudyScreen(),
+    StudyScreen(),
   ];
 
   @override

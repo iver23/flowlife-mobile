@@ -46,7 +46,7 @@ class TaskDetailSheet extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: projectColor.withOpacity(0.1),
+                  color: projectColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -93,7 +93,7 @@ class TaskDetailSheet extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           // Title
           Text(
             task.title,
@@ -132,7 +132,7 @@ class TaskDetailSheet extends ConsumerWidget {
                 value: task.urgencyLevel.label,
                 valueColor: Color(task.urgencyLevel.colorValue),
               ),
-              if (task.recurrence != RecurrenceType.NONE)
+              if (task.recurrence != RecurrenceType.none)
                 _DetailTile(
                   icon: LucideIcons.repeat,
                   label: 'REPEAT',
@@ -173,9 +173,9 @@ class TaskDetailSheet extends ConsumerWidget {
                   ),
                 ],
               ),
-            )).toList(),
+            )),
             const SizedBox(height: 24),
-          ],
+          ], // This was missing
           const SizedBox(height: 12),
           // Complete Button
           FlowButton(

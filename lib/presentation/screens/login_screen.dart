@@ -9,7 +9,6 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
@@ -23,7 +22,7 @@ class LoginScreen extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: FlowColors.primary.withOpacity(0.1),
+                color: FlowColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(LucideIcons.zap, size: 40, color: FlowColors.primary),
@@ -61,7 +60,7 @@ class LoginScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: FlowColors.slate500.withOpacity(0.6),
+                color: FlowColors.slate500.withValues(alpha: 0.6),
               ),
             ),
           ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/project_notifier.dart';
-import '../../data/models/models.dart';
 import 'ui_components.dart';
 
 class ProjectPicker extends ConsumerWidget {
@@ -49,7 +48,7 @@ class ProjectPicker extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-            error: (_, __) => const Text('Error loading projects'),
+            error: (_, _) => const Text('Error loading projects'),
           ),
         ),
       ],
@@ -69,10 +68,10 @@ class ProjectPicker extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : FlowColors.slate500.withOpacity(0.2),
+            color: isSelected ? color : FlowColors.slate500.withValues(alpha: 0.2),
             width: 1.5,
           ),
         ),

@@ -193,7 +193,7 @@ class FirestoreService {
             _writebackIfMigrated(doc.reference, data, migrated);
             return IdeaModel.fromMap(migrated, doc.id);
           }).where((item) => item.isDeleted != true).toList();
-          ideas.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
+          ideas.sort((a, b) => b.createdAt.compareTo(a.createdAt));
           return ideas;
         });
   }
@@ -322,7 +322,7 @@ class FirestoreService {
               .map((doc) => HabitModel.fromMap(_migration.migrateDocument('habits', doc.data()), doc.id))
               .where((item) => item.isDeleted != true)
               .toList();
-          habits.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
+          habits.sort((a, b) => b.createdAt.compareTo(a.createdAt));
           return habits;
         });
   }

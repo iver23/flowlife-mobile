@@ -33,7 +33,7 @@ class ProjectNotifier extends AsyncNotifier<List<ProjectModel>> {
     ref.read(taskNotifierProvider).when(
       data: (tasks) => WidgetService.updateWidget(tasks: tasks, projects: projects),
       loading: () => WidgetService.updateWidget(tasks: [], projects: projects),
-      error: (_, __) => WidgetService.updateWidget(tasks: [], projects: projects),
+      error: (_, _) => WidgetService.updateWidget(tasks: [], projects: projects),
     );
   }
 

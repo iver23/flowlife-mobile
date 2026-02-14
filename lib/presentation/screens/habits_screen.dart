@@ -80,7 +80,7 @@ class HabitsScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.repeat, size: 64, color: FlowColors.primary.withOpacity(0.2)),
+          Icon(LucideIcons.repeat, size: 64, color: FlowColors.primary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           const Text('No habits yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
@@ -180,7 +180,7 @@ class HabitsScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: habit.isCompletedToday
                       ? FlowColors.primary
-                      : (isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100),
+                      : (isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100),
                   borderRadius: BorderRadius.circular(10),
                   border: habit.isCompletedToday ? null : Border.all(color: FlowColors.slate200),
                 ),
@@ -217,7 +217,7 @@ class HabitsScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: streakColor.withOpacity(0.1),
+                    color: streakColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -288,7 +288,7 @@ class HabitsScreen extends ConsumerWidget {
                   hintText: 'Habit name...',
                   filled: true,
                   fillColor: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withOpacity(0.05)
+                      ? Colors.white.withValues(alpha: 0.05)
                       : FlowColors.slate50,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -307,7 +307,7 @@ class HabitsScreen extends ConsumerWidget {
                     label: Text(cat[0].toUpperCase() + cat.substring(1)),
                     selected: isSelected,
                     onSelected: (sel) => setState(() => selectedCategory = cat),
-                    selectedColor: FlowColors.primary.withOpacity(0.1),
+                    selectedColor: FlowColors.primary.withValues(alpha: 0.1),
                     checkmarkColor: FlowColors.primary,
                     labelStyle: TextStyle(
                       color: isSelected ? FlowColors.primary : FlowColors.slate500,

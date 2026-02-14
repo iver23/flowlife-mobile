@@ -4,7 +4,6 @@ import '../data/models/models.dart';
 import '../../presentation/widgets/ui_components.dart';
 
 class WidgetService {
-  static const String _groupId = 'HomeWidgetPreferences'; // Shared with native
   static const String _widgetName = 'FlowLifeWidget';
   
   static Future<void> updateWidget({
@@ -46,7 +45,7 @@ class WidgetService {
       String hex = '#64748B'; // Default slate
       try {
         final color = FlowColors.parseProjectColor(project.color);
-        hex = '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
+        hex = '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
       } catch (_) {}
 
       return {

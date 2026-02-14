@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/providers.dart';
 import '../../core/task_notifier.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/task_card.dart';
@@ -137,7 +136,7 @@ class InboxScreen extends ConsumerWidget {
                     );
                   },
                   loading: () => const Text('...', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                  error: (_, __) => const Text('Error', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                  error: (_, _) => const Text('Error', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -145,7 +144,7 @@ class InboxScreen extends ConsumerWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: FlowColors.primary.withOpacity(0.1),
+                color: FlowColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(LucideIcons.inbox, size: 32, color: FlowColors.primary),
@@ -168,7 +167,7 @@ class InboxScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: isDark ? [] : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             )
@@ -224,7 +223,7 @@ class InboxScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.checkCircle2, size: 64, color: FlowColors.primary.withOpacity(0.2)),
+          Icon(LucideIcons.checkCircle2, size: 64, color: FlowColors.primary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           const Text(
             'All caught up!',

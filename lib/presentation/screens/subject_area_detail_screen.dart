@@ -15,7 +15,7 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final studyAsync = ref.watch(studyNotifierProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+
 
     return Scaffold(
       extendBody: true,
@@ -147,7 +147,7 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 16.0),
-          child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentArea), color: Colors.red.withOpacity(0.8)),
+          child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentArea), color: Colors.red.withValues(alpha: 0.8)),
         ),
       ],
     );
@@ -172,7 +172,7 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: color ?? FlowColors.slate500),
@@ -203,7 +203,7 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
                   value: progress,
                   strokeWidth: 8,
                   strokeCap: StrokeCap.round,
-                  backgroundColor: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100,
                   valueColor: AlwaysStoppedAnimation<Color>(areaColor),
                 ),
               ),
@@ -248,9 +248,10 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildSubjectCard(BuildContext context, WidgetRef ref, Subject subject, List<Lesson> lessons, SubjectArea area) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final areaColor = FlowColors.parseProjectColor(area.color);
     final progress = ref.read(studyNotifierProvider.notifier).getSubjectProgress(subject.id);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
 
     return FlowCard(
       padding: 0,
@@ -273,7 +274,7 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 6,
-                      backgroundColor: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100,
                       valueColor: AlwaysStoppedAnimation<Color>(areaColor),
                     ),
                   ),
@@ -356,11 +357,11 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.08) : FlowColors.slate200,
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : FlowColors.slate200,
             width: 1,
             style: BorderStyle.solid, // Or use a custom dash painter if needed, but solid is fine for now
           ),
-          color: isDark ? Colors.white.withOpacity(0.02) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -369,7 +370,7 @@ class SubjectAreaDetailScreen extends ConsumerWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate50,
+                color: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate50,
                 shape: BoxShape.circle,
               ),
               child: const Icon(LucideIcons.plus, size: 18, color: FlowColors.slate400),

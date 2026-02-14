@@ -8,7 +8,6 @@ import '../../data/models/models.dart';
 import '../widgets/ui_components.dart';
 import 'settings_screen.dart';
 import '../widgets/task_card.dart';
-import '../widgets/task_edit_sheet.dart';
 import 'package:flutter/services.dart';
 import '../../core/bulk_selection_provider.dart';
 import '../widgets/task_detail_sheet.dart';
@@ -187,7 +186,7 @@ class TasksScreen extends ConsumerWidget {
                 }).toList(),
               ),
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
             ),
           ],
         ),
@@ -250,13 +249,13 @@ class TasksScreen extends ConsumerWidget {
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final inactiveBackground = isDark 
-            ? Colors.white.withOpacity(0.08) 
-            : FlowColors.slate100.withOpacity(0.5);
+            ? Colors.white.withValues(alpha: 0.08) 
+            : FlowColors.slate100.withValues(alpha: 0.5);
         final inactiveTextColor = isDark 
-            ? Colors.white.withOpacity(0.6) 
+            ? Colors.white.withValues(alpha: 0.6) 
             : FlowColors.slate500;
         final inactiveIconColor = isDark 
-            ? Colors.white.withOpacity(0.5) 
+            ? Colors.white.withValues(alpha: 0.5) 
             : FlowColors.slate400;
 
         return GestureDetector(
@@ -264,10 +263,10 @@ class TasksScreen extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? color.withOpacity(0.15) : inactiveBackground,
+              color: isSelected ? color.withValues(alpha: 0.15) : inactiveBackground,
               borderRadius: BorderRadius.circular(100),
               border: Border.all(
-                color: isSelected ? color.withOpacity(0.3) : Colors.transparent,
+                color: isSelected ? color.withValues(alpha: 0.3) : Colors.transparent,
               ),
             ),
             child: Row(
@@ -396,7 +395,7 @@ class TasksScreen extends ConsumerWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: FlowColors.slate500),
@@ -409,7 +408,7 @@ class TasksScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.checkCircle2, size: 64, color: FlowColors.primary.withOpacity(0.2)),
+          Icon(LucideIcons.checkCircle2, size: 64, color: FlowColors.primary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           const Text(
             'No active tasks',
@@ -436,86 +435,6 @@ class TasksScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTagFilters(BuildContext context, WidgetRef ref) {
-    final projectsAsync = ref.watch(projectNotifierProvider);
-    final selectedProjectId = ref.watch(selectedProjectFilterProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Project Filters
-        projectsAsync.when(
-          data: (projects) {
-            if (projects.isEmpty) return const SizedBox.shrink();
-            return Container(
-              height: 44,
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: projects.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        avatar: const Icon(LucideIcons.layers, size: 14),
-                        label: const Text('All Projects'),
-                        selected: selectedProjectId == null,
-                        onSelected: (selected) {
-                          ref.read(selectedProjectFilterProvider.notifier).state = null;
-                        },
-                        selectedColor: FlowColors.primary.withOpacity(0.1),
-                        checkmarkColor: FlowColors.primary,
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          color: selectedProjectId == null ? FlowColors.primary : FlowColors.slate500,
-                          fontWeight: selectedProjectId == null ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        backgroundColor: Colors.transparent,
-                        shape: StadiumBorder(side: BorderSide(
-                          color: selectedProjectId == null ? FlowColors.primary : FlowColors.slate400.withOpacity(0.2),
-                        )),
-                      ),
-                    );
-                  }
-
-                  final project = projects[index - 1];
-                  final isSelected = selectedProjectId == project.id;
-                  final projectColor = FlowColors.parseProjectColor(project.color);
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      avatar: Icon(_parseIcon(project.icon), size: 14, color: isSelected ? projectColor : FlowColors.slate500),
-                      label: Text(project.title),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        ref.read(selectedProjectFilterProvider.notifier).state = selected ? project.id : null;
-                      },
-                      selectedColor: projectColor.withOpacity(0.1),
-                      checkmarkColor: projectColor,
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        color: isSelected ? projectColor : FlowColors.slate500,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      shape: StadiumBorder(side: BorderSide(
-                        color: isSelected ? projectColor : FlowColors.slate400.withOpacity(0.2),
-                      )),
-                    ),
-                  );
-                },
-              ),
-            );
-          },
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
 
   Widget _buildBulkActionBar(BuildContext context, WidgetRef ref, List<String> selectedIds) {
     final taskNotifier = ref.read(taskNotifierProvider.notifier);
@@ -653,7 +572,7 @@ class TasksScreen extends ConsumerWidget {
                   ),
                 ),
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const Text('Error loading projects'),
+                error: (_, _) => const Text('Error loading projects'),
               ),
             ],
           ),

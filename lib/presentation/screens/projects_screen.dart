@@ -7,7 +7,6 @@ import '../../data/models/models.dart';
 import '../widgets/ui_components.dart';
 import 'settings_screen.dart';
 import 'project_detail_screen.dart';
-import '../widgets/project_edit_sheet.dart';
 import '../widgets/undo_toast.dart';
 
 class ProjectsScreen extends ConsumerStatefulWidget {
@@ -85,10 +84,10 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+            color: isActive ? FlowColors.primary.withValues(alpha: 0.1) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isActive ? FlowColors.primary : FlowColors.slate200.withOpacity(0.5),
+              color: isActive ? FlowColors.primary : FlowColors.slate200.withValues(alpha: 0.5),
               width: 1,
             ),
           ),
@@ -144,7 +143,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: FlowColors.slate500),
@@ -171,7 +170,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _parseColor(project.color).withOpacity(0.1),
+              color: _parseColor(project.color).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(project.isSystemProject ? LucideIcons.hash : _parseIcon(project.icon), color: _parseColor(project.color), size: 24),
@@ -267,7 +266,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
         return Text('$progress%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: FlowColors.primary));
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -276,7 +275,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.folder, size: 64, color: FlowColors.slate500.withOpacity(0.3)),
+          Icon(LucideIcons.folder, size: 64, color: FlowColors.slate500.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
             _showArchived ? 'No archived projects' : 'No active projects',

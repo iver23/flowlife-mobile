@@ -6,7 +6,6 @@ import '../../core/study_notifier.dart';
 import '../../data/models/study_models.dart';
 import 'settings_screen.dart';
 import 'subject_area_detail_screen.dart';
-import '../widgets/study_edit_sheet.dart';
 import '../widgets/undo_toast.dart';
 
 class StudyScreen extends ConsumerStatefulWidget {
@@ -114,7 +113,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: FlowColors.slate500),
@@ -140,10 +139,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+            color: isActive ? FlowColors.primary.withValues(alpha: 0.1) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isActive ? FlowColors.primary : FlowColors.slate200.withOpacity(0.5),
+              color: isActive ? FlowColors.primary : FlowColors.slate200.withValues(alpha: 0.5),
               width: 1,
             ),
           ),
@@ -277,7 +276,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: areaColor.withOpacity(0.1),
+                color: areaColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(LucideIcons.book, color: areaColor, size: 24),
@@ -317,7 +316,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 4,
-                      backgroundColor: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100,
                       valueColor: AlwaysStoppedAnimation<Color>(areaColor),
                     ),
                   ),
@@ -355,12 +354,4 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     );
   }
 
-  void _showAddSubject(BuildContext context, String areaId) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StudyEditSheet(type: StudyEntryType.area, parentId: areaId),
-    );
-  }
 }

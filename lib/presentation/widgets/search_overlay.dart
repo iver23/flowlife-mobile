@@ -30,7 +30,7 @@ class _SearchOverlayState extends ConsumerState<SearchOverlay> {
     final ideasAsync = ref.watch(ideasProvider);
 
     return Material(
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.black.withValues(alpha: 0.4),
       child: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
@@ -43,7 +43,7 @@ class _SearchOverlayState extends ConsumerState<SearchOverlay> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 40,
                 offset: const Offset(0, 20),
               )
@@ -92,7 +92,7 @@ class _SearchOverlayState extends ConsumerState<SearchOverlay> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: FlowColors.slate500.withOpacity(0.05),
+                  color: FlowColors.slate500.withValues(alpha: 0.05),
                   borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
                 ),
                 child: const Row(
@@ -205,7 +205,7 @@ class _SearchOverlayState extends ConsumerState<SearchOverlay> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, size: 16, color: color),

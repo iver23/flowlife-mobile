@@ -179,13 +179,13 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
     
     Color cellColor;
     if (isFuture) {
-      cellColor = isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03);
+      cellColor = isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03);
     } else if (count == 0) {
-      cellColor = isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05);
+      cellColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05);
     } else if (count <= 2) {
-      cellColor = FlowColors.primary.withOpacity(0.3);
+      cellColor = FlowColors.primary.withValues(alpha: 0.3);
     } else if (count <= 4) {
-      cellColor = FlowColors.primary.withOpacity(0.6);
+      cellColor = FlowColors.primary.withValues(alpha: 0.6);
     } else {
       cellColor = FlowColors.primary;
     }
@@ -201,7 +201,7 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
           border: isToday ? Border.all(color: Colors.white, width: 1.5) : null,
           boxShadow: isToday ? [
             BoxShadow(
-              color: FlowColors.primary.withOpacity(0.4),
+              color: FlowColors.primary.withValues(alpha: 0.4),
               blurRadius: 8,
               offset: const Offset(0, 2),
             )
@@ -215,7 +215,7 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
               fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
               color: isToday 
                   ? Colors.white 
-                  : (isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.5)),
+                  : (isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.5)),
             ),
           ),
         ),
@@ -232,8 +232,3 @@ class _MomentumHeatmapState extends State<MomentumHeatmap> {
   }
 }
 
-class _ChartDay {
-  final DateTime date;
-  final int count;
-  _ChartDay({required this.date, required this.count});
-}

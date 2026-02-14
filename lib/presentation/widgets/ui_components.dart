@@ -57,7 +57,7 @@ class FlowColors {
   }
 
   static Color getSubtleProjectColor(Color color, bool isDark) {
-    return color.withOpacity(isDark ? 0.15 : 0.12);
+    return color.withValues(alpha: isDark ? 0.15 : 0.12);
   }
 
   static Color getTintedBackground(Color projectColor, bool isDark) {
@@ -105,7 +105,7 @@ class FlowTheme {
           return FlowColors.slate400;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return FlowColors.primary.withOpacity(0.5);
+          if (states.contains(WidgetState.selected)) return FlowColors.primary.withValues(alpha: 0.5);
           return FlowColors.slate200;
         }),
       ),
@@ -139,7 +139,7 @@ class FlowTheme {
           return FlowColors.slate500;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return FlowColors.primaryDark.withOpacity(0.3);
+          if (states.contains(WidgetState.selected)) return FlowColors.primaryDark.withValues(alpha: 0.3);
           return FlowColors.midnight;
         }),
       ),
@@ -181,17 +181,17 @@ class FlowCard extends StatelessWidget {
       padding: EdgeInsets.all(padding),
       margin: margin,
       decoration: BoxDecoration(
-        color: (isDark && useGlass && backgroundColor == null) ? surfaceColor.withOpacity(0.7) : surfaceColor,
+        color: (isDark && useGlass && backgroundColor == null) ? surfaceColor.withValues(alpha: 0.7) : surfaceColor,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.03),
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.03),
           width: 0.5,
         ),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: const Color(0xFF64748B).withOpacity(0.06),
+                  color: const Color(0xFF64748B).withValues(alpha: 0.06),
                   blurRadius: 30,
                   offset: const Offset(0, 15),
                 )
@@ -247,7 +247,7 @@ class FlowButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? (isPrimary
               ? (isDark ? FlowColors.primaryDark : FlowColors.primary)
-              : (isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F5F9))),
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9))),
           foregroundColor: isPrimary
               ? Colors.white
               : (isDark ? Colors.white70 : const Color(0xFF334155)),
@@ -293,7 +293,7 @@ class FlowBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(isDark ? 0.2 : 0.1),
+        color: color.withValues(alpha: isDark ? 0.2 : 0.1),
         borderRadius: BorderRadius.circular(100),
       ),
       child: Text(
@@ -327,7 +327,7 @@ class FlowProgressBar extends StatelessWidget {
       height: 8,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F5F9),
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(100),
       ),
       child: FractionallySizedBox(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../data/models/models.dart';
 import 'ui_components.dart';
-import 'ui_components.dart';
 import 'project_picker.dart';
 
 class TaskEditSheet extends StatefulWidget {
@@ -146,13 +145,13 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildRecurrenceChip(RecurrenceType.NONE, 'None'),
+                  _buildRecurrenceChip(RecurrenceType.none, 'None'),
                   const SizedBox(width: 8),
-                  _buildRecurrenceChip(RecurrenceType.DAILY, 'Daily'),
+                  _buildRecurrenceChip(RecurrenceType.daily, 'Daily'),
                   const SizedBox(width: 8),
-                  _buildRecurrenceChip(RecurrenceType.WEEKLY, 'Weekly'),
+                  _buildRecurrenceChip(RecurrenceType.weekly, 'Weekly'),
                   const SizedBox(width: 8),
-                  _buildRecurrenceChip(RecurrenceType.MONTHLY, 'Monthly'),
+                  _buildRecurrenceChip(RecurrenceType.monthly, 'Monthly'),
                 ],
               ),
             ),
@@ -205,10 +204,10 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color : FlowColors.slate500.withOpacity(0.2),
+            color: isSelected ? color : FlowColors.slate500.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -292,10 +291,10 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? FlowColors.primary.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? FlowColors.primary : FlowColors.slate500.withOpacity(0.2),
+            color: isSelected ? FlowColors.primary : FlowColors.slate500.withValues(alpha: 0.2),
           ),
         ),
         child: Text(
@@ -317,7 +316,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
       value: _reminderEnabled,
       onChanged: (val) => setState(() => _reminderEnabled = val),
       contentPadding: EdgeInsets.zero,
-      activeColor: FlowColors.primary,
+      activeThumbColor: FlowColors.primary,
     );
   }
 
@@ -333,11 +332,13 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
             firstDate: now,
             lastDate: now.add(const Duration(days: 365)),
           );
+          if (!context.mounted) return;
           if (date != null) {
             final time = await showTimePicker(
               context: context,
               initialTime: TimeOfDay.fromDateTime(_reminderTime ?? now),
             );
+            if (!context.mounted) return;
             if (time != null) {
               setState(() {
                 _reminderTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
@@ -348,9 +349,9 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: FlowColors.primary.withOpacity(0.05),
+            color: FlowColors.primary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: FlowColors.primary.withOpacity(0.2)),
+            border: Border.all(color: FlowColors.primary.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [

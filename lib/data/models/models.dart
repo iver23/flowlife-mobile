@@ -13,7 +13,7 @@ enum Importance {
   }
 }
 
-enum RecurrenceType { NONE, DAILY, WEEKLY, MONTHLY }
+enum RecurrenceType { none, daily, weekly, monthly }
 
 enum UrgencyLevel {
   planning(1),
@@ -104,7 +104,7 @@ class TaskModel {
     this.description,
     this.projectId,
     this.dueDate,
-    this.recurrence = RecurrenceType.NONE,
+    this.recurrence = RecurrenceType.none,
     required this.completed,
     this.completedAt,
     this.urgencyLevel = UrgencyLevel.planning,
@@ -150,8 +150,8 @@ class TaskModel {
       projectId: map['projectId'],
       dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
       recurrence: RecurrenceType.values.firstWhere(
-        (e) => e.name == (map['recurrence'] ?? 'NONE'),
-        orElse: () => RecurrenceType.NONE,
+        (e) => e.name.toUpperCase() == (map['recurrence'] ?? 'NONE').toString().toUpperCase(),
+        orElse: () => RecurrenceType.none,
       ),
       completed: map['completed'] ?? false,
       completedAt: map['completedAt'],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/trash_notifier.dart';
-import '../../../data/services/firestore_service.dart';
 import '../../../core/providers.dart';
 import '../../../data/models/models.dart';
 import '../../../data/models/habit_model.dart';

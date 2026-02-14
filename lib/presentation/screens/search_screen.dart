@@ -7,7 +7,6 @@ import '../../core/project_notifier.dart';
 import '../../data/models/models.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/task_card.dart';
-import '../widgets/task_edit_sheet.dart';
 import '../widgets/task_detail_sheet.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -29,7 +28,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
     final tasksAsync = ref.watch(taskNotifierProvider);
     final ideasAsync = ref.watch(ideaNotifierProvider);
     final projectsAsync = ref.watch(projectNotifierProvider);
@@ -97,7 +95,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     ? FlowColors.surfaceDark 
                     : Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: FlowColors.slate400.withOpacity(0.2)),
+                border: Border.all(color: FlowColors.slate400.withValues(alpha: 0.2)),
               ),
               child: TextField(
                 controller: _searchController,
@@ -121,7 +119,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.search, size: 64, color: FlowColors.slate400.withOpacity(0.2)),
+          Icon(LucideIcons.search, size: 64, color: FlowColors.slate400.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           const Text('Search for anything', style: TextStyle(color: FlowColors.slate500)),
         ],
@@ -158,7 +156,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -190,7 +188,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -220,7 +218,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: FlowColors.parseProjectColor(project.color).withOpacity(0.1),
+              color: FlowColors.parseProjectColor(project.color).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(_parseIcon(project.icon), size: 18, color: FlowColors.parseProjectColor(project.color)),

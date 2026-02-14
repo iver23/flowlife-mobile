@@ -87,7 +87,7 @@ class ProjectAnalytics extends StatelessWidget {
     if (total == 0) {
       return [
         PieChartSectionData(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100]!,
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100]!,
           value: 1,
           radius: 12,
           showTitle: false,

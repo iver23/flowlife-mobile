@@ -16,14 +16,14 @@ class LockScreen extends ConsumerWidget {
           // Background with blur
           Positioned.fill(
             child: Container(
-              color: FlowColors.primary.withOpacity(0.05),
+              color: FlowColors.primary.withValues(alpha: 0.05),
             ),
           ),
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -41,7 +41,7 @@ class LockScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: FlowColors.primary.withOpacity(0.3),
+                          color: FlowColors.primary.withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),

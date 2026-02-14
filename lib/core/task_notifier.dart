@@ -10,7 +10,6 @@ import 'notification_service.dart';
 import 'widget_service.dart';
 import 'project_notifier.dart';
 import 'reminder_settings_notifier.dart';
-import 'achievement_notifier.dart';
 
 class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);
@@ -42,7 +41,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
     ref.read(projectNotifierProvider).when(
       data: (projects) => WidgetService.updateWidget(tasks: tasks, projects: projects),
       loading: () => WidgetService.updateWidget(tasks: tasks, projects: []),
-      error: (_, __) => WidgetService.updateWidget(tasks: tasks, projects: []),
+      error: (_, _) => WidgetService.updateWidget(tasks: tasks, projects: []),
     );
   }
 
@@ -88,7 +87,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
 
     // Recurrence Logic
     if (newCompleted && 
-        task.recurrence != RecurrenceType.NONE && 
+        task.recurrence != RecurrenceType.none && 
         task.dueDate != null) {
       final nextDueDate = _calculateNextDueDate(task.dueDate!, task.recurrence);
       final nextTask = TaskModel(
@@ -113,11 +112,11 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
   }
 
   DateTime _calculateNextDueDate(DateTime current, RecurrenceType type) {
-    if (type == RecurrenceType.DAILY) {
+    if (type == RecurrenceType.daily) {
       return current.add(const Duration(days: 1));
-    } else if (type == RecurrenceType.WEEKLY) {
+    } else if (type == RecurrenceType.weekly) {
       return current.add(const Duration(days: 7));
-    } else if (type == RecurrenceType.MONTHLY) {
+    } else if (type == RecurrenceType.monthly) {
       return DateTime(current.year, current.month + 1, current.day);
     }
     return current;
@@ -191,7 +190,7 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
       ));
 
       // Recurrence logic
-      if (task.recurrence != RecurrenceType.NONE && task.dueDate != null) {
+      if (task.recurrence != RecurrenceType.none && task.dueDate != null) {
         final nextDueDate = _calculateNextDueDate(task.dueDate!, task.recurrence);
         newTasksToAdd.add(TaskModel(
           id: '',

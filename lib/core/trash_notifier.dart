@@ -4,7 +4,6 @@ import '../data/models/models.dart';
 import '../data/models/habit_model.dart';
 import '../data/models/study_models.dart';
 import '../data/services/trash_service.dart';
-import 'providers.dart';
 
 class TrashNotifier extends AsyncNotifier<void> {
   TrashService get _service => ref.watch(trashServiceProvider);

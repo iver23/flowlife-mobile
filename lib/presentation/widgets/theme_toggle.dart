@@ -16,7 +16,7 @@ class ThemeToggle extends ConsumerWidget {
       height: 48,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100,
         borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
@@ -38,7 +38,7 @@ class ThemeToggle extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

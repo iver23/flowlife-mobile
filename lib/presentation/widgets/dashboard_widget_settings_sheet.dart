@@ -54,7 +54,7 @@ class DashboardWidgetSettingsSheet extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark ? FlowColors.surfaceDark.withOpacity(0.3) : FlowColors.slate50,
+                        color: isDark ? FlowColors.surfaceDark.withValues(alpha: 0.3) : FlowColors.slate50,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -71,7 +71,7 @@ class DashboardWidgetSettingsSheet extends ConsumerWidget {
                           ),
                           Switch(
                             value: widget.isEnabled,
-                            activeColor: FlowColors.primary,
+                            activeThumbColor: FlowColors.primary,
                             onChanged: (val) {
                               ref.read(dashboardWidgetProvider.notifier).toggleWidget(widget.id, val);
                             },

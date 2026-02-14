@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../lib/core/trash_notifier.dart';
-import '../../lib/data/services/trash_service.dart';
-import '../../lib/data/models/models.dart';
-import '../../lib/data/models/habit_model.dart';
-import '../../lib/data/models/study_models.dart';
+import 'package:flowlife_mobile/core/trash_notifier.dart';
+import 'package:flowlife_mobile/data/services/trash_service.dart';
+import 'package:flowlife_mobile/data/models/models.dart';
 
 class ManualMockTrashService implements TrashService {
   TaskModel? trashedTask;

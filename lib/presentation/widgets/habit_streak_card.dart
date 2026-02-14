@@ -90,7 +90,7 @@ class HabitStreakCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: habits.isEmpty ? 0.0 : completedCount / habits.length,
-                  backgroundColor: isDark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : FlowColors.slate100,
                   valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
                   minHeight: 6,
                 ),
@@ -116,7 +116,7 @@ class HabitStreakCard extends ConsumerWidget {
         padding: 20,
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -142,7 +142,7 @@ class HabitStreakCard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: habit.isCompletedToday
                     ? FlowColors.primary
-                    : (isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100),
+                    : (isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100),
                 borderRadius: BorderRadius.circular(8),
                 border: habit.isCompletedToday
                     ? null
@@ -169,7 +169,7 @@ class HabitStreakCard extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: streakColor.withOpacity(0.1),
+              color: streakColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(

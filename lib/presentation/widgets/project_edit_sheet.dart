@@ -112,7 +112,7 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
                 subtitle: const Text('Archived projects are hidden from the main view', style: TextStyle(fontSize: 12)),
                 value: _isArchived,
                 onChanged: (val) => setState(() => _isArchived = val),
-                activeColor: FlowColors.primary,
+                activeThumbColor: FlowColors.primary,
               ),
               const SizedBox(height: 16),
             ],
@@ -161,10 +161,10 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+                color: isSelected ? FlowColors.primary.withValues(alpha: 0.1) : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? FlowColors.primary : FlowColors.slate500.withOpacity(0.2),
+                  color: isSelected ? FlowColors.primary : FlowColors.slate500.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(
@@ -197,7 +197,7 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
               color: _parseColor(c),
               shape: BoxShape.circle,
               border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
-              boxShadow: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4)] : null,
+              boxShadow: isSelected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4)] : null,
             ),
           ),
         );
@@ -217,10 +217,10 @@ class _ProjectEditSheetState extends State<ProjectEditSheet> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isSelected ? FlowColors.primary.withOpacity(0.1) : Colors.transparent,
+              color: isSelected ? FlowColors.primary.withValues(alpha: 0.1) : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isSelected ? FlowColors.primary : FlowColors.slate500.withOpacity(0.2),
+                color: isSelected ? FlowColors.primary : FlowColors.slate500.withValues(alpha: 0.2),
               ),
             ),
             child: Icon(

@@ -1,9 +1,3 @@
-import 'package:flutter/foundation.dart';
-import '../models/models.dart';
-import '../models/habit_model.dart';
-import '../models/study_models.dart';
-import '../models/achievement_model.dart';
-import '../models/widget_model.dart';
 
 class SchemaMigrationService {
   /// Migrates a document map if its schemaVersion is outdated.

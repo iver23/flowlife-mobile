@@ -4,7 +4,6 @@ import '../data/models/habit_model.dart';
 import '../data/services/firestore_service.dart';
 import 'providers.dart';
 import 'trash_notifier.dart';
-import 'achievement_notifier.dart';
 
 class HabitNotifier extends AsyncNotifier<List<HabitModel>> {
   FirestoreService get _service => ref.watch(firestoreServiceProvider);

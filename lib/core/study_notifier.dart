@@ -131,9 +131,9 @@ class StudyNotifier extends AsyncNotifier<StudyState> {
   }
 
   Future<void> toggleLesson(String id) async {
-    final state_val = state.value;
-    if (state_val == null) return;
-    final lesson = state_val.lessons.firstWhere((e) => e.id == id);
+    final stateVal = state.value;
+    if (stateVal == null) return;
+    final lesson = stateVal.lessons.firstWhere((e) => e.id == id);
     await _firestore.updateLesson(lesson.copyWith(isCompleted: !lesson.isCompleted));
   }
 

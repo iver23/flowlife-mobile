@@ -63,7 +63,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: isDark ? Colors.white.withOpacity(0.5) : FlowColors.slate500,
+                        color: isDark ? Colors.white.withValues(alpha: 0.5) : FlowColors.slate500,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -201,7 +201,7 @@ class ProjectDetailScreen extends ConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 16.0),
-            child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentProject), color: Colors.red.withOpacity(0.8)),
+            child: _buildActionCircle(LucideIcons.trash2, () => _confirmDelete(context, ref, currentProject), color: Colors.red.withValues(alpha: 0.8)),
           ),
         ],
       ],
@@ -229,7 +229,7 @@ class ProjectDetailScreen extends ConsumerWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: color ?? FlowColors.slate500),
@@ -260,7 +260,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                   value: progress,
                   strokeWidth: 8,
                   strokeCap: StrokeCap.round,
-                  backgroundColor: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate100,
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate100,
                   valueColor: AlwaysStoppedAnimation<Color>(projectColor),
                 ),
               ),
@@ -331,10 +331,10 @@ class ProjectDetailScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.08) : FlowColors.slate200,
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : FlowColors.slate200,
             width: 1,
           ),
-          color: isDark ? Colors.white.withOpacity(0.02) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -343,7 +343,7 @@ class ProjectDetailScreen extends ConsumerWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : FlowColors.slate50,
+                color: isDark ? Colors.white.withValues(alpha: 0.05) : FlowColors.slate50,
                 shape: BoxShape.circle,
               ),
               child: const Icon(LucideIcons.plus, size: 20, color: FlowColors.slate400),

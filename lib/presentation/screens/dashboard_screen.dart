@@ -14,11 +14,8 @@ import 'settings_screen.dart';
 import '../../core/dashboard_widget_notifier.dart';
 import '../widgets/dashboard_widget_settings_sheet.dart';
 import '../../data/models/widget_model.dart';
-import '../../core/quote_service.dart';
-import '../widgets/task_edit_sheet.dart';
 import '../widgets/task_detail_sheet.dart';
 import '../../core/study_notifier.dart';
-import '../widgets/theme_toggle.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -28,7 +25,6 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  bool _isProjectsExpanded = false;
   bool _isHabitsExpanded = true;
   bool _isTasksExpanded = false;
   bool _isStudyExpanded = false;
@@ -47,7 +43,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.8),
+              Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -129,7 +125,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: overallProgress,
-                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.1) : FlowColors.slate100,
                         valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
                         minHeight: 6,
                       ),
@@ -169,7 +165,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           borderRadius: BorderRadius.circular(2),
                                           child: LinearProgressIndicator(
                                             value: areaProgress,
-                                            backgroundColor: areaColor.withOpacity(0.1),
+                                            backgroundColor: areaColor.withValues(alpha: 0.1),
                                             valueColor: AlwaysStoppedAnimation<Color>(areaColor),
                                             minHeight: 4,
                                           ),
@@ -234,13 +230,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         style: const TextStyle(fontSize: 12, color: FlowColors.slate400),
                       ),
                       loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
+                      error: (_, _) => const SizedBox.shrink(),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 projects.when(
-                  data: (data) => _buildProjectListCompact(data),
+                  data: (data) => _buildProjectListCompact(context, ref, data),
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Text('Error: $e'),
                 ),
@@ -290,7 +286,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           );
                         },
                         loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
                       ),
                     ],
                   ),
@@ -305,14 +301,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.1) : FlowColors.slate100,
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.1) : FlowColors.slate100,
                         valueColor: AlwaysStoppedAnimation<Color>(FlowColors.primary),
                         minHeight: 6,
                       ),
                     );
                   },
                   loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
                 // Expanded: show tasks with smooth animation
                 AnimatedSize(
@@ -328,7 +324,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   .where((t) => t.urgencyLevel == UrgencyLevel.critical || t.urgencyLevel == UrgencyLevel.urgent)
                                   .toList()
                                 ..sort((a, b) => b.urgencyLevel.value.compareTo(a.urgencyLevel.value));
-                              return _buildRecentTasks(filtered, projects.value ?? []);
+                              return _buildRecentTasks(context, ref, filtered, projects.value ?? []);
                             },
                             loading: () => const Center(child: CircularProgressIndicator()),
                             error: (e, _) => Text('Error: $e'),
@@ -379,8 +375,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 32),
           ],
         );
-      default:
-        return const SizedBox.shrink();
     }
   }
 
@@ -405,7 +399,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         padding: const EdgeInsets.only(right: 12.0),
         child: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: FlowColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+          decoration: BoxDecoration(color: FlowColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
           child: const Icon(LucideIcons.trophy, size: 16, color: FlowColors.primary),
         ),
       )).toList(),
@@ -468,7 +462,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: FlowColors.slate500),
@@ -515,7 +509,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.amber.shade600.withOpacity(0.1),
+                        color: Colors.amber.shade600.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -564,105 +558,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildTasksHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'UPCOMING TASKS',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2.0,
-            color: FlowColors.slate400,
-          ),
-        ),
-        Text(
-          'See all',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: FlowColors.primary.withOpacity(0.8),
-          ),
-        ),
-      ],
-    );
-  }
-
-
-  Widget _buildProjectGrid(List<ProjectModel> projects, WidgetRef ref) {
-    if (projects.isEmpty) {
-      return const Text('No projects yet.', style: TextStyle(color: FlowColors.slate400));
-    }
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 800 ? 4 : (constraints.maxWidth > 600 ? 3 : 2);
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.0,
-          ),
-          itemCount: projects.length,
-          itemBuilder: (context, index) {
-            final project = projects[index];
-            final projectColor = FlowColors.parseProjectColor(project.color);
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            return FlowCard(
-              backgroundColor: FlowColors.getSubtleProjectColor(projectColor, isDark),
-              padding: 20,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProjectDetailScreen(project: project)),
-                );
-              },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: projectColor.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(_parseIcon(project.icon), size: 18, color: projectColor),
-                  ),
-                  const Spacer(),
-                  Text(
-                    project.title,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: -0.2),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildProjectProgress(project.id, ref, projectColor),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildProjectProgress(String projectId, WidgetRef ref, Color color) {
-    final tasksAsync = ref.watch(tasksProvider);
-    return tasksAsync.when(
-      data: (tasks) {
-        final projectTasks = tasks.where((t) => t.projectId == projectId).toList();
-        if (projectTasks.isEmpty) return FlowProgressBar(progress: 0, color: color);
-        final completed = projectTasks.where((t) => t.completed).length;
-        return FlowProgressBar(progress: completed / projectTasks.length, color: color);
-      },
-      loading: () => FlowProgressBar(progress: 0, color: color),
-      error: (_, __) => FlowProgressBar(progress: 0, color: color),
-    );
-  }
 
   IconData _parseIcon(String iconName) {
     switch (iconName.toLowerCase()) {
@@ -686,7 +581,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  Widget _buildProjectListCompact(List<ProjectModel> projectsList) {
+  Widget _buildProjectListCompact(BuildContext context, WidgetRef ref, List<ProjectModel> projectsList) {
     if (projectsList.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -714,7 +609,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: projectColor.withOpacity(0.1),
+                    color: projectColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -783,7 +678,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  Widget _buildRecentTasks(List<TaskModel> tasks, List<ProjectModel> projects) {
+  Widget _buildRecentTasks(BuildContext context, WidgetRef ref, List<TaskModel> tasks, List<ProjectModel> projects) {
     if (tasks.isEmpty) {
       return const Text('All caught up!', style: TextStyle(color: FlowColors.slate400));
     }
@@ -881,7 +776,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(100),
       ),
       child: Row(

@@ -51,7 +51,7 @@ class IdeasScreen extends ConsumerWidget {
                         child: projectsAsync.when(
                           data: (projects) => _buildIdeaCard(context, idea, ideaNotifier, projects, ref),
                           loading: () => _buildIdeaCard(context, idea, ideaNotifier, [], ref),
-                          error: (_, __) => _buildIdeaCard(context, idea, ideaNotifier, [], ref),
+                          error: (_, _) => _buildIdeaCard(context, idea, ideaNotifier, [], ref),
                         ),
                       );
                     },
@@ -106,7 +106,7 @@ class IdeasScreen extends ConsumerWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: FlowColors.surfaceDark.withOpacity(0.05),
+          color: FlowColors.surfaceDark.withValues(alpha: 0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: FlowColors.slate500),
@@ -114,86 +114,6 @@ class IdeasScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilters(BuildContext context, WidgetRef ref) {
-    final projectsAsync = ref.watch(projectNotifierProvider);
-    final selectedProjectId = ref.watch(selectedProjectFilterProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Project Filters
-        projectsAsync.when(
-          data: (projects) {
-            if (projects.isEmpty) return const SizedBox.shrink();
-            return Container(
-              height: 44,
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: projects.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        avatar: const Icon(LucideIcons.layers, size: 14),
-                        label: const Text('All Projects'),
-                        selected: selectedProjectId == null,
-                        onSelected: (selected) {
-                          ref.read(selectedProjectFilterProvider.notifier).state = null;
-                        },
-                        selectedColor: FlowColors.primary.withOpacity(0.1),
-                        checkmarkColor: FlowColors.primary,
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          color: selectedProjectId == null ? FlowColors.primary : FlowColors.slate500,
-                          fontWeight: selectedProjectId == null ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        backgroundColor: Colors.transparent,
-                        shape: StadiumBorder(side: BorderSide(
-                          color: selectedProjectId == null ? FlowColors.primary : FlowColors.slate400.withOpacity(0.2),
-                        )),
-                      ),
-                    );
-                  }
-
-                  final project = projects[index - 1];
-                  final isSelected = selectedProjectId == project.id;
-                  final projectColor = FlowColors.parseProjectColor(project.color);
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      avatar: Icon(_parseIcon(project.icon), size: 14, color: isSelected ? projectColor : FlowColors.slate500),
-                      label: Text(project.title),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        ref.read(selectedProjectFilterProvider.notifier).state = selected ? project.id : null;
-                      },
-                      selectedColor: projectColor.withOpacity(0.1),
-                      checkmarkColor: projectColor,
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        color: isSelected ? projectColor : FlowColors.slate500,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      shape: StadiumBorder(side: BorderSide(
-                        color: isSelected ? projectColor : FlowColors.slate400.withOpacity(0.2),
-                      )),
-                    ),
-                  );
-                },
-              ),
-            );
-          },
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
 
 
   Widget _buildIdeaCard(BuildContext context, IdeaModel idea, IdeaNotifier notifier, List<ProjectModel> projects, WidgetRef ref) {
@@ -328,7 +248,7 @@ class IdeasScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.sparkles, size: 64, color: FlowColors.primary.withOpacity(0.2)),
+          Icon(LucideIcons.sparkles, size: 64, color: FlowColors.primary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           const Text(
             'No ideas yet',
@@ -360,27 +280,5 @@ class IdeasScreen extends ConsumerWidget {
       weight: Importance.low,
       isSystemProject: true,
     );
-  }
-
-  IconData _parseIcon(String iconName) {
-    switch (iconName.toLowerCase()) {
-      case 'work': return LucideIcons.briefcase;
-      case 'home': return LucideIcons.home;
-      case 'favorite': return LucideIcons.heart;
-      case 'bolt': return LucideIcons.zap;
-      case 'menu_book': return LucideIcons.book;
-      case 'coffee': return LucideIcons.coffee;
-      case 'public': return LucideIcons.globe;
-      case 'anchor': return LucideIcons.anchor;
-      case 'fitness_center': return LucideIcons.dumbbell;
-      case 'shopping_cart': return LucideIcons.shoppingCart;
-      case 'flight': return LucideIcons.plane;
-      case 'music_note': return LucideIcons.music;
-      case 'pets': return LucideIcons.dog;
-      case 'spa': return LucideIcons.flower;
-      case 'code': return LucideIcons.code;
-      case 'savings': return LucideIcons.banknote;
-      default: return LucideIcons.folder;
-    }
   }
 }

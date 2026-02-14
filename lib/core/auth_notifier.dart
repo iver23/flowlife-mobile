@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -54,11 +53,9 @@ class AuthNotifier extends Notifier<User?> {
       // google_sign_in 7.x: Use authenticate() for interactive sign-in
       if (GoogleSignIn.instance.supportsAuthenticate()) {
         final result = await GoogleSignIn.instance.authenticate();
-        if (result == null) return;
 
         // Get authorization with access token
         final authorization = await result.authorizationClient.authorizeScopes(['email']);
-        if (authorization == null) return;
 
         final AuthCredential credential = GoogleAuthProvider.credential(
           accessToken: authorization.accessToken,

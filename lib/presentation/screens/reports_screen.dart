@@ -6,7 +6,6 @@ import '../../core/task_notifier.dart';
 import '../../core/project_notifier.dart';
 import '../../core/study_notifier.dart';
 import '../../data/models/models.dart';
-import '../../data/models/study_models.dart';
 import '../widgets/ui_components.dart';
 
 class ReportsScreen extends ConsumerWidget {
@@ -32,10 +31,10 @@ class ReportsScreen extends ConsumerWidget {
         data: (tasks) => projectsAsync.when(
           data: (projects) => _buildBody(context, ref, tasks, projects, studyState),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => const Center(child: Text('Error loading projects')),
+          error: (_, _) => const Center(child: Text('Error loading projects')),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const Center(child: Text('Error loading tasks')),
+        error: (_, _) => const Center(child: Text('Error loading tasks')),
       ),
     );
   }
@@ -110,7 +109,7 @@ class ReportsScreen extends ConsumerWidget {
               );
             },
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
 
           const SizedBox(height: 100),
@@ -187,7 +186,7 @@ class ReportsScreen extends ConsumerWidget {
             dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
-              color: FlowColors.primary.withOpacity(0.1),
+              color: FlowColors.primary.withValues(alpha: 0.1),
             ),
           ),
         ],
@@ -245,7 +244,7 @@ class ReportsScreen extends ConsumerWidget {
         borderData: FlBorderData(show: false),
         barGroups: data.asMap().entries.map((e) => BarChartGroupData(
           x: e.key,
-          barRods: [BarChartRodData(toY: e.value, color: Colors.orange.withOpacity(0.8), width: 6, borderRadius: BorderRadius.circular(2))],
+          barRods: [BarChartRodData(toY: e.value, color: Colors.orange.withValues(alpha: 0.8), width: 6, borderRadius: BorderRadius.circular(2))],
         )).toList(),
       ),
     );
@@ -350,7 +349,7 @@ class ReportsScreen extends ConsumerWidget {
     for (int i = 1; i < 24; i++) {
       if (counts[i] > counts[maxIdx]) maxIdx = i;
     }
-    return '${maxIdx}:00';
+    return '$maxIdx:00';
   }
 
   List<double> _getWeeklyTrendData(List<TaskModel> tasks) {
